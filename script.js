@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
   // 1. 현재 연도 메인 통합 API
-  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycby7318OaG4EWW5oUAnkU9Jm5KkLwM8L12Y812/exec"; 
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzL5p4Gfllf7kAtT4EThm655xQ8vXInG52eGzJ-RmsS8Yg8T3v5eD0u0aN4j6Uf2bA8/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   let mainData = [];
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalDefData = [];
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
-  let currentSheetYear = 1970; // 메인 시트 기준 연도 저장용 변수
+  let currentSheetYear = 1970;
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -20,18 +20,14 @@ document.addEventListener("DOMContentLoaded", function() {
     let attempt = 1;
     let waitTime = 1000;
     while (true) {
-      console.log(`🚀 [요청 시도] ${name} (${attempt}번째 시도) - URL: ${url}`);
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
         const data = await res.json();
-        
         if (!data) throw new Error("수신된 데이터가 비어 있습니다.");
-        
-        console.log(`✅ [수신 성공] ${name} (${attempt}번째 시도 완료)`, data);
         return data;
       } catch (err) {
-        console.warn(`⚠️ [수신 실패] ${name} (${attempt}번째 시도 실패) - ${waitTime/1000}초 후 재시도... 사유: ${err.message}`);
+        console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
         await delay(waitTime);
         attempt++;
         waitTime = Math.min(waitTime + 500, 3000); 
@@ -48,38 +44,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
   Promise.all(apiRequests.map(req => fetchWithSmartRetry(req.url, req.name)))
   .then(([mainRes, gdpRes, defRes, capRes]) => {
-    console.group("📡 [API 수신 데이터 종합 확인]");
-    console.log("1. 메인 API 응답:", mainRes);
-    console.log("2. GDP 시계열 API 응답:", gdpRes);
-    console.log("3. 국방비 시계열 API 응답:", defRes);
-    console.log("4. 1인당GDP 시계열 API 응답:", capRes);
-    console.groupEnd();
-
     mainData = mainRes ? (mainRes.data || mainRes) : [];
     globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
-
-    const extractCountryName = (item) => {
-      if (!item || typeof item !== 'object') return '';
-      return item['국가'] || item['카테고리'] || item['country'] || item['Category'] || Object.values(item)[0] || '';
-    };
-
-    console.group("🔍 [API 국가명 파싱 결과 검증]");
-    const checkNames = (dataArr, label) => {
-      if (!dataArr || dataArr.length === 0) {
-        console.warn(`${label}: 데이터가 없거나 올바르지 않습니다.`);
-        return;
-      }
-      const names = dataArr.map(item => extractCountryName(item)).filter(Boolean);
-      console.log(`${label} 국가 목록 (${names.length}개):`, names);
-    };
-
-    checkNames(mainData, "1. 메인 API");
-    checkNames(globalGdpData, "2. GDP 시계열 API");
-    checkNames(globalDefData, "3. 국방비 시계열 API");
-    checkNames(globalCapData, "4. 1인당 GDP 시계열 API");
-    console.groupEnd();
 
     document.getElementById('loading').style.display = 'none';
 
@@ -163,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('top-def-country').innerText = topDef['국가'] || topDef['카테고리'] || '-';
     document.getElementById('top-def-val').innerText = formatMoney((parseFloat(topDef['국방비(10억달러)']) || 0) * 10);
 
-    document.getElementById('top-pop-country').innerText = topPop['국가'] || topPop['카테고리'] || '-';
+    document.getElementById('top-pop-country').innerText = topPop['top-pop-country'] || topPop['국가'] || topPop['카테고리'] || '-';
     document.getElementById('top-pop-val').innerText = formatPopulation(topPop['인구(만명)']);
 
     document.getElementById('top-cap-country').innerText = topCap['국가'] || topCap['카테고리'] || '-';
@@ -186,7 +154,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function cleanName(str) {
     if (!str) return '';
-    return String(str).trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
+    return String(str)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s\u200B-\u200D\uFEFF_\-\(\)]/g, '');
+  }
+
+  function extractCountryFromRow(row) {
+    if (!row || typeof row !== 'object') return '';
+    if (row['국가']) return row['국가'];
+    if (row['카테고리']) return row['카테고리'];
+    if (row['country']) return row['country'];
+    if (row['Category']) return row['Category'];
+
+    for (let k of Object.keys(row)) {
+      let val = String(row[k]).trim();
+      if (isNaN(Number(val)) && val.length > 0 && !k.includes('Year') && !k.includes('연도')) {
+        return val;
+      }
+    }
+    return '';
   }
 
   function getSortedYearKeys(seriesData) {
@@ -226,13 +213,13 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 💡 메인 데이터 정렬 (방법 B: 값이 같으면 국가명 기준 2차 정렬)
+    // 1. 현재 메인 데이터 정렬
     let currentList = mainData.map(item => {
       let rawVal = parseFloat(item[key]) || 0;
       if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
         rawVal *= 10;
       }
-      const rawCountry = (item['국가'] || item['카테고리'] || '').trim();
+      const rawCountry = extractCountryFromRow(item);
       return {
         country: rawCountry,
         cleanKey: cleanName(rawCountry),
@@ -241,11 +228,12 @@ document.addEventListener("DOMContentLoaded", function() {
     })
     .filter(item => item.country !== '')
     .sort((a, b) => {
-      if (b.val !== a.val) {
-        return b.val - a.val;
-      }
+      if (b.val !== a.val) return b.val - a.val;
       return a.cleanKey.localeCompare(b.cleanKey);
     });
+
+    // 메인 데이터에 존재하는 국가들의 cleanKey Set 생성
+    const mainCountryKeys = new Set(currentList.map(item => item.cleanKey));
 
     let targetSeriesData = [];
     if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
@@ -254,53 +242,49 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const prevRankMap = new Map();
 
-    // 💡 인구(만명) 항목이 아니며, 시계열 데이터가 존재하는 경우에만 전년도 순위 계산
     if (key !== '인구(만명)' && targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
-
-      console.group(`📊 [${title}] 시계열 데이터 파싱 정밀 디버깅`);
-      console.log("감지된 전체 연도 컬럼 목록:", yearKeys);
 
       const validYearKeys = yearKeys.filter(k => {
         const y = parseInt(k.replace(/[^\d]/g, ''), 10);
         return y <= currentSheetYear;
       });
 
-      console.log(`메인 기준 연도(${currentSheetYear}년) 이하 유효 연도 목록:`, validYearKeys);
-
       if (validYearKeys.length > 0) {
         let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
         let prevYearKey = validYearKeys[targetIndex];
-        console.log("선택된 비교 대상 전년도 키:", prevYearKey);
 
-        // 💡 전년도 데이터 정렬 (방법 B: 값이 같으면 국가명 기준 2차 정렬)
-        let prevList = targetSeriesData.map(item => {
-          let rawVal = parseFloat(item[prevYearKey]) || 0;
-          if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
-            rawVal *= 10;
-          }
-          
-          let rawCountry = item['국가'] || item['카테고리'] || item['country'] || item['Category'] || Object.values(item)[0] || '';
-          
-          return {
-            rawCountry: String(rawCountry).trim(),
-            cleanKey: cleanName(rawCountry),
-            val: rawVal
-          };
-        })
-        .filter(item => item.cleanKey !== '')
-        .sort((a, b) => {
-          if (b.val !== a.val) {
-            return b.val - a.val;
-          }
-          return a.cleanKey.localeCompare(b.cleanKey);
-        });
+        // 💡 [방법 A] 현재 메인 데이터에 존재하는 국가들만 추출하여 그들 간의 전년도 순위 산출
+        let prevList = targetSeriesData
+          .map(item => {
+            let rawVal = parseFloat(item[prevYearKey]) || 0;
+            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+              rawVal *= 10;
+            }
+            let rawCountry = extractCountryFromRow(item);
+            return {
+              rawCountry: String(rawCountry).trim(),
+              cleanKey: cleanName(rawCountry),
+              val: rawVal
+            };
+          })
+          // 현재 메인 화면에 존재하는 국가만 필터링
+          .filter(item => item.cleanKey !== '' && mainCountryKeys.has(item.cleanKey))
+          .sort((a, b) => {
+            if (b.val !== a.val) return b.val - a.val;
+            return a.cleanKey.localeCompare(b.cleanKey);
+          });
 
+        // 상대 순위 매핑
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
+
+        console.group(`🔍 [${title}] 방법 A: 상대 순위 매칭 검증`);
+        console.log(`비교 연도 키: ${prevYearKey}`);
+        console.log(`메인 국가 수: ${currentList.length}개 / 시계열 상대 매칭 성공: ${prevRankMap.size}개`);
+        console.groupEnd();
       }
-      console.groupEnd();
     }
 
     let listData = currentList.map((item, idx) => {
@@ -341,7 +325,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
       let rankDiffHtml = "";
       if (item.isWorld || key === '인구(만명)') {
-        // 인구 항목이거나 전세계 항목인 경우 변동 표시 제외
         rankDiffHtml = "";
       } else if (!item.prevRank) {
         rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
