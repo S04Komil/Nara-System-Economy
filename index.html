@@ -8,16 +8,13 @@
 </head>
 <body>
 
-  <!-- 상단 네비게이션 메뉴 -->
+  <!-- 상단 네비게이션 메뉴 (메인 버튼 제거) -->
   <nav>
     <div class="logo-container" onclick="showMainView()">
       <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
       <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
     </div>
     <ul class="nav-menu">
-      <li class="nav-item">
-        <button id="nav-main-btn" class="active" onclick="showMainView()">메인</button>
-      </li>
       <li class="nav-item">
         <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">GDP순위</button>
       </li>
@@ -42,7 +39,7 @@
       <div id="main-view">
         <div class="main-header">
           <h2 class="main-title">종목별 1위 현황</h2>
-          <div class="year-badge" id="data-year">2026년 기준</div>
+          <div class="year-badge" id="data-year">기준 연도 불러오는 중...</div>
         </div>
 
         <div class="top-cards-grid">
@@ -107,8 +104,12 @@
 
       fetch(API_URL)
         .then(response => response.json())
-        .then(data => {
+        .then(res => {
           document.getElementById('loading').style.display = 'none';
+
+          // 기존 구조(배열)와 새 구조(객체) 모두 대응하도록 하위 호환성 처리
+          let data = res.data || res;
+          let sheetName = res.sheetName || (data[0] ? (data[0]['연도'] || data[0]['year']) : null);
 
           if (!data || data.length === 0) {
             document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
@@ -119,8 +120,11 @@
           globalData = data;
           document.getElementById('dashboard').style.display = 'block';
 
-          if(data[0]['연도'] || data[0]['year']) {
-            document.getElementById('data-year').innerText = `${data[0]['연도'] || data[0]['year']}년 기준`;
+          // 시트 이름(연도) 반영
+          if (sheetName) {
+            document.getElementById('data-year').innerText = `${sheetName}년 기준`;
+          } else {
+            document.getElementById('data-year').innerText = `최신 데이터 기준`;
           }
 
           renderMainCards(data);
@@ -184,7 +188,6 @@
         document.getElementById('rank-view').style.display = 'none';
 
         document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('nav-main-btn').classList.add('active');
       };
 
       window.switchCategory = function(key, title, unitType, navBtnId) {
