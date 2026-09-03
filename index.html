@@ -19,14 +19,68 @@
     body {
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
       margin: 0;
-      padding: 24px;
+      padding: 0;
       background-color: var(--bg-color);
       color: var(--text-color);
     }
 
+    /* 상단 네비게이션 바 */
+    nav {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      height: 60px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      margin-right: 32px;
+    }
+
+    .logo-img {
+      height: 36px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 8px;
+    }
+
+    .nav-item button {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a5568;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-item button:hover {
+      background-color: #edf2f7;
+      color: var(--primary-color);
+    }
+
+    .nav-item button.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
     .container {
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 24px auto;
+      padding: 0 24px;
     }
 
     header {
@@ -71,56 +125,7 @@
       padding: 20px;
       border-radius: 8px;
       border: 1px solid var(--border-color);
-      margin-bottom: 24px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .controls {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    input[type="text"] {
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .table-container {
-      background: var(--card-bg);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      overflow-x: auto;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-
-    th {
-      background-color: #edf2f7;
-      padding: 12px 16px;
-      font-weight: 600;
-      border-bottom: 2px solid var(--border-color);
-      white-space: nowrap;
-    }
-
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-      white-space: nowrap;
-    }
-
-    tbody tr:hover {
-      background-color: #f7fafc;
     }
 
     #loading {
@@ -132,6 +137,30 @@
   </style>
 </head>
 <body>
+
+  <!-- 상단 네비게이션 메뉴 -->
+  <nav>
+    <div class="logo-container">
+      <!-- logo.png 이미지를 사용중인 로고 경로 또는 URL로 변경해주세요 -->
+      <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', this)">GDP순위</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', this)">국방비순위</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', this)">인구순위</button>
+      </li>
+      <li class="nav-item">
+        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', this)">1인당GDP순위</button>
+      </li>
+    </ul>
+  </nav>
+
   <div class="container">
     <header>
       <h1>나라시스템 경제 통계 대시보드</h1>
@@ -155,38 +184,18 @@
 
       <!-- 차트 영역 -->
       <div class="chart-section">
-        <h3 style="margin-top:0;">상위 10개국 GDP 비교</h3>
-        <canvas id="gdpChart" height="100"></canvas>
-      </div>
-
-      <!-- 검색 및 테이블 -->
-      <div class="controls">
-        <input type="text" id="search-input" placeholder="국가명 또는 검색어를 입력하세요..." onkeyup="filterTable()">
-      </div>
-
-      <div class="table-container">
-        <table id="data-table">
-          <thead id="table-head"></thead>
-          <tbody id="table-body"></tbody>
-        </table>
+        <h3 id="chart-title" style="margin-top:0;">GDP 순위 (상위 10개국)</h3>
+        <canvas id="statChart" height="100"></canvas>
       </div>
     </div>
   </div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
-    
-    // 표시할 컬럼 정의 (국가명 포함)
-    const TARGET_COLUMNS = [
-      "국가",
-      "GDP(10억달러)",
-      "국방비(10억달러)",
-      "인구(만명)",
-      "1인당GDP",
-      "강대국 등급"
-    ];
 
     let globalData = [];
+    let chartInstance = null;
+    let currentKey = 'GDP(10억달러)';
 
     fetch(API_URL)
       .then(response => response.json())
@@ -203,8 +212,7 @@
         document.getElementById('dashboard').style.display = 'block';
 
         renderKPI(data);
-        renderChart(data);
-        renderTable(data);
+        renderChart(data, currentKey);
       })
       .catch(error => {
         console.error('Error:', error);
@@ -221,21 +229,26 @@
       document.getElementById('kpi-top-gdp').innerText = topCountry['국가'] || '-';
     }
 
-    function renderChart(data) {
-      const ctx = document.getElementById('gdpChart').getContext('2d');
+    function renderChart(data, dataKey) {
+      const ctx = document.getElementById('statChart').getContext('2d');
+      
       const chartData = [...data]
-        .sort((a, b) => (parseFloat(b['GDP(10억달러)']) || 0) - (parseFloat(a['GDP(10억달러)']) || 0))
+        .sort((a, b) => (parseFloat(b[dataKey]) || 0) - (parseFloat(a[dataKey]) || 0))
         .slice(0, 10);
 
       const labels = chartData.map(item => item['국가'] || 'N/A');
-      const values = chartData.map(item => parseFloat(item['GDP(10억달러)']) || 0);
+      const values = chartData.map(item => parseFloat(item[dataKey]) || 0);
 
-      new Chart(ctx, {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [{
-            label: 'GDP (10억달러)',
+            label: dataKey,
             data: values,
             backgroundColor: 'rgba(43, 108, 176, 0.75)',
             borderColor: 'rgba(43, 108, 176, 1)',
@@ -251,25 +264,16 @@
       });
     }
 
-    function renderTable(data) {
-      const thead = document.getElementById('table-head');
-      thead.innerHTML = `<tr>${TARGET_COLUMNS.map(col => `<th>${col}</th>`).join('')}</tr>`;
+    // 상단 메뉴 전환 함수
+    function switchCategory(key, title, btnElement) {
+      currentKey = key;
+      document.getElementById('chart-title').innerText = title;
 
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = data.map(row => {
-        const cols = TARGET_COLUMNS.map(col => `<td>${row[col] !== undefined ? row[col] : ''}</td>`).join('');
-        return `<tr>${cols}</tr>`;
-      }).join('');
-    }
+      // 버튼 활성화 클래스 조절
+      document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
 
-    function filterTable() {
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const filtered = globalData.filter(row => {
-        return TARGET_COLUMNS.some(col => 
-          String(row[col] || '').toLowerCase().includes(query)
-        );
-      });
-      renderTable(filtered);
+      renderChart(globalData, currentKey);
     }
   </script>
 </body>
