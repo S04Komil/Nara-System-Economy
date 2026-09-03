@@ -4,178 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>나라시스템 경제 데이터 통계 대시보드</title>
-  <style>
-    :root {
-      --bg-color: #f8f9fa;
-      --card-bg: #ffffff;
-      --primary-color: #2b6cb0;
-      --border-color: #e2e8f0;
-      --text-color: #2d3748;
-    }
-
-    body {
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-    }
-
-    /* 상단 네비게이션 바 */
-    nav {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    height: 100px; /* 기존 80px -> 100px로 변경 */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-      margin-right: 32px;
-    }
-
-  .logo-img {
-    height: 80px; /* 기존 65px -> 80px로 변경 */
-    width: auto;
-    object-fit: contain;
-  }
-
-    .nav-menu {
-      display: flex;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: 8px;
-    }
-
-    .nav-item button {
-      background: none;
-      border: none;
-      padding: 8px 16px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #4a5568;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-
-    .nav-item button:hover {
-      background-color: #edf2f7;
-      color: var(--primary-color);
-    }
-
-    .nav-item button.active {
-      background-color: var(--primary-color);
-      color: white;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 24px auto;
-      padding: 0 24px;
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .kpi-card {
-      background: var(--card-bg);
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .kpi-title {
-      font-size: 0.875rem;
-      color: #718096;
-      margin-bottom: 8px;
-    }
-
-    .kpi-value {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--primary-color);
-    }
-
-    .rank-section {
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    /* 순위 리스트 스타일링 */
-    .rank-list {
-      list-style: none;
-      padding: 0;
-      margin: 16px 0 0 0;
-    }
-
-    .rank-item {
-      display: flex;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 1.05rem;
-    }
-
-    .rank-item:last-child {
-      border-bottom: none;
-    }
-
-    .rank-num {
-      font-weight: bold;
-      width: 32px;
-      color: var(--primary-color);
-    }
-
-    .rank-country {
-      font-weight: 600;
-      margin-right: 12px;
-      min-width: 100px;
-    }
-
-    .rank-val {
-      color: #4a5568;
-    }
-
-    #loading {
-      padding: 40px;
-      text-align: center;
-      font-size: 1.1rem;
-      color: #718096;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- 상단 네비게이션 메뉴 -->
   <nav>
-    <div class="logo-container">
-      <img src="logo.png" alt="로고" class="logo-img">
+    <div class="logo-container" onclick="showMainView()">
+      <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
     </div>
     <ul class="nav-menu">
       <li class="nav-item">
-        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', '최고 GDP 국가', this)">GDP순위</button>
+        <button id="nav-main-btn" class="active" onclick="showMainView()">메인</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', '최고 국방비 국가', this)">국방비순위</button>
+        <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">GDP순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', '최다 인구 국가', this)">인구순위</button>
+        <button id="nav-def-btn" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">국방비순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', '최고 1인당 GDP 국가', this)">1인당GDP순위</button>
+        <button id="nav-pop-btn" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">인구순위</button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
       </li>
     </ul>
   </nav>
@@ -184,21 +37,65 @@
     <div id="loading">데이터를 불러오는 중입니다...</div>
 
     <div id="dashboard" style="display: none;">
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-title">총 국가 수</div>
-          <div class="kpi-value" id="kpi-count">0</div>
+      
+      <!-- 1. 메인 대시보드 화면 -->
+      <div id="main-view">
+        <div class="main-header">
+          <h2 class="main-title">종목별 1위 현황</h2>
+          <div class="year-badge" id="data-year">2026년 기준</div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-title" id="kpi-top-title">최고 GDP 국가</div>
-          <div class="kpi-value" id="kpi-top-country">-</div>
+
+        <div class="top-cards-grid">
+          <!-- GDP 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">GDP 1위</div>
+              <div class="top-card-country" id="top-gdp-country">-</div>
+              <div class="top-card-val" id="top-gdp-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
+          </div>
+
+          <!-- 국방비 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">국방비 1위</div>
+              <div class="top-card-country" id="top-def-country">-</div>
+              <div class="top-card-val" id="top-def-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
+          </div>
+
+          <!-- 인구수 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">인구수 1위</div>
+              <div class="top-card-country" id="top-pop-country">-</div>
+              <div class="top-card-val" id="top-pop-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
+          </div>
+
+          <!-- 1인당 GDP 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">1인당 GDP 1위</div>
+              <div class="top-card-country" id="top-cap-country">-</div>
+              <div class="top-card-val" id="top-cap-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
+          </div>
         </div>
       </div>
 
-      <div class="rank-section">
-        <h3 id="rank-title" style="margin:0 0 12px 0;">GDP 순위 (상위 10개국)</h3>
-        <ol class="rank-list" id="rank-list"></ol>
+      <!-- 2. 순위 상세보기 화면 -->
+      <div id="rank-view" style="display: none;">
+        <div class="rank-section">
+          <h3 id="rank-title" style="margin:0 0 16px 0;">순위 목록</h3>
+          <ol class="rank-list" id="rank-list"></ol>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -207,9 +104,6 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
       let globalData = [];
-      let currentKey = 'GDP(10억달러)';
-      let currentType = '달러';
-      let currentKpiTitle = '최고 GDP 국가';
 
       fetch(API_URL)
         .then(response => response.json())
@@ -225,28 +119,17 @@
           globalData = data;
           document.getElementById('dashboard').style.display = 'block';
 
-          renderKPI(data, currentKey, currentKpiTitle);
-          renderRankList(data, currentKey, currentType);
+          if(data[0]['연도'] || data[0]['year']) {
+            document.getElementById('data-year').innerText = `${data[0]['연도'] || data[0]['year']}년 기준`;
+          }
+
+          renderMainCards(data);
         })
         .catch(error => {
           console.error('Error:', error);
           document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
         });
 
-      // KPI 카드 데이터 업데이트 (선택된 항목 기준 1위 국가 산출)
-      function renderKPI(data, dataKey, kpiTitleText) {
-        document.getElementById('kpi-count').innerText = `${data.length}개`;
-        document.getElementById('kpi-top-title').innerText = kpiTitleText;
-
-        const topCountry = data.reduce((max, item) => {
-          const val = parseFloat(item[dataKey]) || 0;
-          return val > (parseFloat(max[dataKey]) || 0) ? item : max;
-        }, data[0]);
-
-        document.getElementById('kpi-top-country').innerText = topCountry['국가'] || '-';
-      }
-
-      // 숫자 금액을 조, 억, 만 단위 문자열로 자동 변환
       function formatMoney(billionVal) {
         let val = Math.round((parseFloat(billionVal) || 0) * 100000000);
         if (val === 0) return "0달러";
@@ -265,27 +148,65 @@
         return result.trim() + "달러";
       }
 
-      // 인구수(만 명 단위) 변환
       function formatPopulation(tenThousandVal) {
         let val = Math.round((parseFloat(tenThousandVal) || 0) * 10000);
         if (val >= 100000000) {
           const eok = (val / 100000000).toFixed(2);
-          return `${eok}억명`;
+          return `${eok}억 명`;
         } else {
-          return `${(val / 10000).toLocaleString()}만명`;
+          return `${(val / 10000).toLocaleString()}만 명`;
         }
       }
 
-      function renderRankList(data, dataKey, unitType) {
+      function renderMainCards(data) {
+        const getTop = (key) => data.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, data[0]);
+
+        const topGdp = getTop('GDP(10억달러)');
+        const topDef = getTop('국방비(10억달러)');
+        const topPop = getTop('인구(만명)');
+        const topCap = getTop('1인당GDP');
+
+        document.getElementById('top-gdp-country').innerText = topGdp['국가'] || '-';
+        document.getElementById('top-gdp-val').innerText = formatMoney(topGdp['GDP(10억달러)']);
+
+        document.getElementById('top-def-country').innerText = topDef['국가'] || '-';
+        document.getElementById('top-def-val').innerText = formatMoney(topDef['국방비(10억달러)']);
+
+        document.getElementById('top-pop-country').innerText = topPop['국가'] || '-';
+        document.getElementById('top-pop-val').innerText = formatPopulation(topPop['인구(만명)']);
+
+        document.getElementById('top-cap-country').innerText = topCap['국가'] || '-';
+        document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
+      }
+
+      window.showMainView = function() {
+        document.getElementById('main-view').style.display = 'block';
+        document.getElementById('rank-view').style.display = 'none';
+
+        document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('nav-main-btn').classList.add('active');
+      };
+
+      window.switchCategory = function(key, title, unitType, navBtnId) {
+        document.getElementById('main-view').style.display = 'none';
+        document.getElementById('rank-view').style.display = 'block';
+
+        document.getElementById('rank-title').innerText = title;
+
+        document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+        if(navBtnId) {
+          document.getElementById(navBtnId).classList.add('active');
+        }
+
         const listEl = document.getElementById('rank-list');
         listEl.innerHTML = '';
 
-        const sortedData = [...data]
-          .sort((a, b) => (parseFloat(b[dataKey]) || 0) - (parseFloat(a[dataKey]) || 0))
+        const sortedData = [...globalData]
+          .sort((a, b) => (parseFloat(b[key]) || 0) - (parseFloat(a[key]) || 0))
           .slice(0, 10);
 
         sortedData.forEach((item, index) => {
-          const rawVal = parseFloat(item[dataKey]) || 0;
+          const rawVal = parseFloat(item[key]) || 0;
           let formattedVal = "";
 
           if (unitType === '달러') {
@@ -293,7 +214,7 @@
           } else if (unitType === '명') {
             formattedVal = formatPopulation(rawVal);
           } else if (unitType === '달러_직접') {
-            formattedVal = `${Math.round(rawVal).toLocaleString()}달러`;
+            formattedVal = `${Math.round(rawVal).toLocaleString()} 달러`;
           }
 
           const li = document.createElement('li');
@@ -305,20 +226,6 @@
           `;
           listEl.appendChild(li);
         });
-      }
-
-      window.switchCategory = function(key, title, unitType, kpiTitleText, btnElement) {
-        currentKey = key;
-        currentType = unitType;
-        currentKpiTitle = kpiTitleText;
-
-        document.getElementById('rank-title').innerText = title;
-
-        document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-        btnElement.classList.add('active');
-
-        renderKPI(globalData, currentKey, currentKpiTitle);
-        renderRankList(globalData, currentKey, currentType);
       };
     });
   </script>
