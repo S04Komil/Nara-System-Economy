@@ -13,56 +13,58 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
-  // 딜레이용 함수
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // 실패 시 지연 시간을 늘려가며 성공할 때까지 계속 재시도하는 함수
+  // 성공 시까지 개별 재시도 및 실시간 콘솔 출력 함수
   const fetchWithSmartRetry = async (url, name) => {
     let attempt = 1;
-    let waitTime = 1000; // 첫 재시도 대기시간 1초
+    let waitTime = 1000;
 
     while (true) {
+      console.log(`🚀 [요청 시도] ${name} (${attempt}번째 시도) - URL: ${url}`);
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
         const data = await res.json();
         
-        // 데이터 구조가 비어있지 않은지 검증
         if (!data) throw new Error("수신된 데이터가 비어 있습니다.");
         
-        console.log(`✅ [성공] ${name} (${attempt}번째 시도)`);
+        console.log(`✅ [수신 성공] ${name} (${attempt}번째 시도 완료)`, data);
         return data;
       } catch (err) {
-        console.warn(`⚠️ [실패] ${name} (${attempt}번째 시도) - ${waitTime/1000}초 후 재시도...`, err.message);
+        console.warn(`⚠️ [수신 실패] ${name} (${attempt}번째 시도 실패) - ${waitTime/1000}초 후 재시도... 사유: ${err.message}`);
         await delay(waitTime);
         attempt++;
-        // 재시도 간격을 조금씩 늘려 Google API 서번트 서버 과부하 방지 (최대 3초)
         waitTime = Math.min(waitTime + 500, 3000); 
       }
     }
   };
 
   const apiRequests = [
-    { url: API_URL, name: "메인 API", key: "main" },
-    { url: API_URL_GDP, name: "GDP 시계열 API", key: "gdp" },
-    { url: API_URL_DEF, name: "국방비 시계열 API", key: "def" },
-    { url: API_URL_CAP, name: "1인당 GDP 시계열 API", key: "cap" }
+    { url: API_URL, name: "메인 API" },
+    { url: API_URL_GDP, name: "GDP 시계열 API" },
+    { url: API_URL_DEF, name: "국방비 시계열 API" },
+    { url: API_URL_CAP, name: "1인당 GDP 시계열 API" }
   ];
 
-  // 각 API가 독립적으로 성공할 때까지 백그라운드 재시도 수행
   Promise.all(apiRequests.map(req => fetchWithSmartRetry(req.url, req.name)))
   .then(([mainRes, gdpRes, defRes, capRes]) => {
-    console.group("📡 [API 데이터 수신 완료 및 국가명 검증]");
+    console.group("📡 [API 수신 데이터 종합 확인]");
+    console.log("1. 메인 API 응답:", mainRes);
+    console.log("2. GDP 시계열 API 응답:", gdpRes);
+    console.log("3. 국방비 시계열 API 응답:", defRes);
+    console.log("4. 1인당GDP 시계열 API 응답:", capRes);
+    console.groupEnd();
 
     mainData = mainRes ? (mainRes.data || mainRes) : [];
     globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 데이터 검증 콘솔 출력
+    console.group("🔍 [API 국가명 파싱 결과 검증]");
     const checkNames = (dataArr, label) => {
       if (!dataArr || dataArr.length === 0) {
-        console.warn(`${label}: 데이터 없음`);
+        console.warn(`${label}: 데이터가 없거나 올바르지 않습니다.`);
         return;
       }
       const names = dataArr.map(item => item['국가'] || item['카테고리'] || Object.values(item)[0]).filter(Boolean);
@@ -73,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function() {
     checkNames(globalGdpData, "2. GDP 시계열 API");
     checkNames(globalDefData, "3. 국방비 시계열 API");
     checkNames(globalCapData, "4. 1인당 GDP 시계열 API");
-
     console.groupEnd();
 
     document.getElementById('loading').style.display = 'none';
@@ -289,6 +290,27 @@ document.addEventListener("DOMContentLoaded", function() {
       });
       listData.sort((a, b) => b.val - a.val);
     }
+
+    console.group(`🔍 [${title}] 시계열 순위 매칭 검증`);
+    let successCount = 0;
+    let failList = [];
+
+    listData.forEach(item => {
+      if (item.isWorld) return;
+      if (item.prevRank) {
+        successCount++;
+      } else {
+        failList.push(item.country);
+      }
+    });
+
+    console.log(`순위 변동 매칭 성공: ${successCount}개 / 실패(NEW): ${failList.length}개`);
+    if (failList.length > 0) {
+      console.warn("시계열 데이터에서 이전 연도 데이터를 찾지 못한 국가:", failList);
+    } else {
+      console.log("모든 국가의 순위 매칭이 정상적으로 완료되었습니다!");
+    }
+    console.groupEnd();
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
