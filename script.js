@@ -59,7 +59,8 @@ document.addEventListener("DOMContentLoaded", function() {
       def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
     });
 
-    let cap = pop > 0 ? (gdp / pop) * 100000 : 0;
+    // GDP의 10배율을 상쇄하기 위해 100000 대신 10000을 곱함
+    let cap = pop > 0 ? (gdp / pop) * 10000 : 0;
     worldTotals = { gdp, pop, def, cap };
   }
 
@@ -126,16 +127,17 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
   };
 
-  // 연도 키('1934년', '1935년' 등) 추출 함수
+  // 연도 키('1934년' 또는 '1934' 등) 정렬 추출 함수
   function getSortedYearKeys(seriesData) {
     if (!seriesData || seriesData.length === 0) return [];
     
     const sample = seriesData[0];
-    const yearKeys = Object.keys(sample).filter(k => /^\d+년$/.test(k.trim()));
+    // 숫자 또는 뒤에 '년'이 붙은 형태를 모두 연도 키로 추출
+    const yearKeys = Object.keys(sample).filter(k => /^\d+년?$/.test(k.trim()));
 
     return yearKeys.sort((a, b) => {
-      const yearA = parseInt(a.replace('년', ''), 10);
-      const yearB = parseInt(b.replace('년', ''), 10);
+      const yearA = parseInt(a.replace(/\D/g, ''), 10);
+      const yearB = parseInt(b.replace(/\D/g, ''), 10);
       return yearA - yearB;
     });
   }
@@ -159,14 +161,15 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 1. 현재 연도 메인 데이터 정렬 (A열 '국가' 기준)
+    // 1. 현재 연도 메인 데이터 정렬
     let currentList = mainData.map(item => {
       let rawVal = parseFloat(item[key]) || 0;
       if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
         rawVal *= 10;
       }
       return {
-        country: (item['국가'] || '').trim(), // A열 국가명
+        country: (item['국가'] || '').trim(),
+        category: (item['카테고리'] || '').trim(),
         val: rawVal
       };
     }).filter(item => item.country !== '').sort((a, b) => b.val - a.val);
@@ -182,8 +185,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
-      if (yearKeys.length >= 2) {
-        const prevYearKey = yearKeys[yearKeys.length - 2]; // 직전 연도 열 (예: '1942년')
+      if (yearKeys.length > 0) {
+        // 시계열 데이터에 현재 연도가 포함되어 있으면 직전 연도(length - 2), 없으면 가장 최근 연도(length - 1) 사용
+        const targetIndex = yearKeys.length >= 2 ? yearKeys.length - 2 : yearKeys.length - 1;
+        const prevYearKey = yearKeys[targetIndex];
 
         let prevList = targetSeriesData.map(item => {
           let rawVal = parseFloat(item[prevYearKey]) || 0;
@@ -191,24 +196,26 @@ document.addEventListener("DOMContentLoaded", function() {
             rawVal *= 10;
           }
           return {
-            country: (item['국가'] || '').trim(), // A열 국가명
+            country: (item['국가'] || '').trim(),
+            category: (item['카테고리'] || '').trim(),
             val: rawVal
           };
         })
-        .filter(item => item.country !== '' && item.val > 0)
+        .filter(item => (item.country !== '' || item.category !== '') && item.val > 0)
         .sort((a, b) => b.val - a.val);
 
-        // A열 국가명을 Key로 하여 직전 연도 순위 저장
         prevList.forEach((item, idx) => {
-          prevRankMap.set(item.country, idx + 1);
+          const rank = idx + 1;
+          if (item.country) prevRankMap.set(item.country, rank);
+          if (item.category) prevRankMap.set(item.category, rank);
         });
       }
     }
 
-    // 3. 최종 데이터 바인딩 및 순위 변동 계산 (A열 국가명 기반)
+    // 3. 최종 데이터 바인딩 및 순위 변동 계산
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
-      const prevRank = prevRankMap.get(item.country);
+      const prevRank = prevRankMap.get(item.country) || prevRankMap.get(item.category);
 
       return {
         country: item.country,
