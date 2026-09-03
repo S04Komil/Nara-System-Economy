@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // 1. 현재 연도 메인 통합 API
   const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
-  // 2. 항목별 전체 연도 시계열 API
+  // 2. 항목별 전체 연도 시계열 API (업데이트됨)
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
   const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
@@ -20,14 +20,12 @@ document.addEventListener("DOMContentLoaded", function() {
     fetch(API_URL_CAP).then(res => res.json()).catch(err => { console.error("1인당GDP API 에러:", err); return null; })
   ])
   .then(([mainRes, gdpRes, defRes, capRes]) => {
-    // ================= [1. API 수신 확인용 로그] =================
     console.group("📡 [API 수신 상태 확인]");
     console.log("1. 메인 API 응답:", mainRes);
     console.log("2. GDP 시계열 API 응답:", gdpRes);
     console.log("3. 국방비 시계열 API 응답:", defRes);
     console.log("4. 1인당GDP 시계열 API 응답:", capRes);
     console.groupEnd();
-    // ============================================================
 
     document.getElementById('loading').style.display = 'none';
 
@@ -154,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   window.switchCategory = function(key, title, unitType, navBtnId) {
+    document.getElementById('main-view').style.display = 'block' === 'none' ? 'block' : 'none';
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('rank-view').style.display = 'block';
 
@@ -212,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function() {
             val: rawVal
           };
         })
-        .filter(item => item.cleanKey !== '')
+        .filter(item => item.cleanKey !== '' && item.val > 0)
         .sort((a, b) => b.val - a.val);
 
         prevList.forEach((item, idx) => {
@@ -249,7 +248,6 @@ document.addEventListener("DOMContentLoaded", function() {
       listData.sort((a, b) => b.val - a.val);
     }
 
-    // ================= [2. 국가별 매칭 성공 여부 검증 로그] =================
     console.group(`🔍 [${title}] 시계열 매칭 검증`);
     let successCount = 0;
     let failList = [];
@@ -270,7 +268,6 @@ document.addEventListener("DOMContentLoaded", function() {
       console.log("모든 국가의 시계열 매칭이 정상 완료되었습니다!");
     }
     console.groupEnd();
-    // =======================================================================
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
