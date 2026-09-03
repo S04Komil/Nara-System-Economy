@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
-  // 1. 현재 연도 메인 통합 API (대시보드 메인 카드용)
+  // 1. 현재 연도 메인 통합 API
   const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
-  // 2. 항목별 전체 연도 시계열 API (실제 배포된 Apps Script /exec 주소를 넣어주세요)
-  const API_URL_GDP = "https://script.google.com/macros/s/AKfycby615xcDIINI3ER0PuYnjGTlahZfxHVVB0IcCaLt8T1fs6xP6s4WEDCh-K7xF0aOu8gRg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzWJGsXLiZoqtRZZ9c-KLgD8TYbIHKE0pRQdMMioJUcwXN9Qh9OJKweTH_pmag73uOKPw/exec";
+  // 2. 항목별 전체 연도 시계열 API
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbz1-시계열GDP-API주소/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz1-시계열국방비-API주소/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyLFzzbPTc9zJO5KIfkMSRF8-KZqMymmcC1pQcM702reQYa20h1NZ-QIe6sWa8lUULbiQ/exec";
 
   let mainData = [];
@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
-  // 4개 API 병렬 동시 호출
   Promise.all([
     fetch(API_URL).then(res => res.json()).catch(() => null),
     fetch(API_URL_GDP).then(res => res.json()).catch(() => null),
@@ -55,7 +54,6 @@ document.addEventListener("DOMContentLoaded", function() {
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
     data.forEach(item => {
-      // GDP 및 국방비 수치 10배 곱 적용
       gdp += ((parseFloat(item['GDP(10억달러)']) || 0) * 10);
       pop += (parseFloat(item['인구(만명)']) || 0);
       def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
@@ -102,11 +100,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const topCap = getTop('1인당GDP');
 
     document.getElementById('top-gdp-country').innerText = topGdp['국가'] || '-';
-    // 메인 카드 10배 곱 적용
     document.getElementById('top-gdp-val').innerText = formatMoney((parseFloat(topGdp['GDP(10억달러)']) || 0) * 10);
 
     document.getElementById('top-def-country').innerText = topDef['국가'] || '-';
-    // 메인 카드 10배 곱 적용
     document.getElementById('top-def-val').innerText = formatMoney((parseFloat(topDef['국방비(10억달러)']) || 0) * 10);
 
     document.getElementById('top-pop-country').innerText = topPop['국가'] || '-';
@@ -130,6 +126,20 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
   };
 
+  // 연도 키('1934년', '1935년' 등) 추출 함수
+  function getSortedYearKeys(seriesData) {
+    if (!seriesData || seriesData.length === 0) return [];
+    
+    const sample = seriesData[0];
+    const yearKeys = Object.keys(sample).filter(k => /^\d+년$/.test(k.trim()));
+
+    return yearKeys.sort((a, b) => {
+      const yearA = parseInt(a.replace('년', ''), 10);
+      const yearB = parseInt(b.replace('년', ''), 10);
+      return yearA - yearB;
+    });
+  }
+
   window.switchCategory = function(key, title, unitType, navBtnId) {
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('rank-view').style.display = 'block';
@@ -149,57 +159,56 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 카테고리별 직전 연도 데이터 탐색용 키 설정
-    let prevKey = `${key}_prev`;
-    if (key === 'GDP(10억달러)') prevKey = 'GDP_prev';
-    else if (key === '국방비(10억달러)') prevKey = '국방비_prev';
-    else if (key === '인구(만명)') prevKey = '인구_prev';
-    else if (key === '1인당GDP') prevKey = '1인당GDP_prev';
-
-    // 1. 선택 탭에 알맞은 시계열/전체 연도 글로벌 데이터 지정
-    let targetSeriesData = mainData;
-    if (key === 'GDP(10억달러)' && globalGdpData.length > 0) targetSeriesData = globalGdpData;
-    else if (key === '국방비(10억달러)' && globalDefData.length > 0) targetSeriesData = globalDefData;
-    else if (key === '1인당GDP' && globalCapData.length > 0) targetSeriesData = globalCapData;
-
-    // 2. 현재 연도 데이터 정렬 (10배 곱 포함)
+    // 1. 현재 연도 메인 데이터 정렬 (A열 '국가' 기준)
     let currentList = mainData.map(item => {
       let rawVal = parseFloat(item[key]) || 0;
       if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
         rawVal *= 10;
       }
       return {
-        country: item['국가'] || 'N/A',
-        categoryGroup: item['카테고리'] || item['국가'],
+        country: (item['국가'] || '').trim(), // A열 국가명
         val: rawVal
       };
-    }).sort((a, b) => b.val - a.val);
+    }).filter(item => item.country !== '').sort((a, b) => b.val - a.val);
 
-    // 3. 직전 연도 데이터 정렬 및 순위 Map 구성
-    let prevList = targetSeriesData
-      .filter(item => item[prevKey] !== undefined && item[prevKey] !== null && item[prevKey] !== '')
-      .map(item => {
-        let rawVal = parseFloat(item[prevKey]) || 0;
-        if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
-          rawVal *= 10;
-        }
-        return {
-          country: item['국가'],
-          categoryGroup: item['카테고리'] || item['국가'],
-          val: rawVal
-        };
-      })
-      .sort((a, b) => b.val - a.val);
+    // 2. 카테고리별 시계열 데이터 선택 및 직전 연도 순위 추출
+    let targetSeriesData = [];
+    if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
+    else if (key === '국방비(10억달러)') targetSeriesData = globalDefData;
+    else if (key === '1인당GDP') targetSeriesData = globalCapData;
 
     const prevRankMap = new Map();
-    prevList.forEach((item, idx) => {
-      prevRankMap.set(item.categoryGroup, idx + 1);
-    });
 
-    // 4. 현재 순위와 직전 순위 비교 조합
+    if (targetSeriesData && targetSeriesData.length > 0) {
+      const yearKeys = getSortedYearKeys(targetSeriesData);
+
+      if (yearKeys.length >= 2) {
+        const prevYearKey = yearKeys[yearKeys.length - 2]; // 직전 연도 열 (예: '1942년')
+
+        let prevList = targetSeriesData.map(item => {
+          let rawVal = parseFloat(item[prevYearKey]) || 0;
+          if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+            rawVal *= 10;
+          }
+          return {
+            country: (item['국가'] || '').trim(), // A열 국가명
+            val: rawVal
+          };
+        })
+        .filter(item => item.country !== '' && item.val > 0)
+        .sort((a, b) => b.val - a.val);
+
+        // A열 국가명을 Key로 하여 직전 연도 순위 저장
+        prevList.forEach((item, idx) => {
+          prevRankMap.set(item.country, idx + 1);
+        });
+      }
+    }
+
+    // 3. 최종 데이터 바인딩 및 순위 변동 계산 (A열 국가명 기반)
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
-      const prevRank = prevRankMap.get(item.categoryGroup);
+      const prevRank = prevRankMap.get(item.country);
 
       return {
         country: item.country,
@@ -223,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
-    // 5. DOM 출력
+    // 4. HTML DOM 렌더링
     listData.forEach((item, index) => {
       let formattedVal = "";
       if (unitType === '달러') {
@@ -234,7 +243,6 @@ document.addEventListener("DOMContentLoaded", function() {
         formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
       }
 
-      // 순위 변동 (▲, ▼, NEW, -)
       let rankDiffHtml = "";
       if (item.isWorld) {
         rankDiffHtml = "";
