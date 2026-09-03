@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzL5p4Gfllf7kAtT4EThm655xQ8vXInG52eGzJ-RmsS8Yg8T3v5eD0u0aN4j6Uf2bA8/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   let mainData = [];
