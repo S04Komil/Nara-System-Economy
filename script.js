@@ -84,13 +84,12 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
   }
 
-  // 데이터 합산 기반 세계 통계 구하기
   function renderWorldStats(data) {
     if (!data || data.length === 0) return;
 
-    let totalGdp = 0;   // 10억 달러 단위 합산
-    let totalPop = 0;   // 만 명 단위 합산
-    let totalDef = 0;   // 10억 달러 단위 합산
+    let totalGdp = 0;
+    let totalPop = 0;
+    let totalDef = 0;
 
     data.forEach(item => {
       totalGdp += parseFloat(item['GDP(10억달러)']) || 0;
@@ -98,18 +97,10 @@ document.addEventListener("DOMContentLoaded", function() {
       totalDef += parseFloat(item['국방비(10억달러)']) || 0;
     });
 
-    // 1. 세계 총 GDP (합산)
     document.getElementById('world-gdp').innerText = formatMoney(totalGdp);
-
-    // 2. 세계 총 인구수 (합산)
     document.getElementById('world-pop').innerText = formatPopulation(totalPop);
-
-    // 3. 세계 총 국방비 (합산)
     document.getElementById('world-def').innerText = formatMoney(totalDef);
 
-    // 4. 세계 1인당 GDP = (세계 총 GDP / 세계 총 인구수)
-    // totalGdp: 10억 달러 ($1,000,000,000), totalPop: 만 명 (10,000명)
-    // 단위 계산: (totalGdp * 1,000,000,000) / (totalPop * 10,000) = (totalGdp / totalPop) * 100,000
     if (totalPop > 0) {
       let perCapitaGdp = (totalGdp / totalPop) * 100000;
       document.getElementById('world-cap').innerText = `${Math.round(perCapitaGdp).toLocaleString()} 달러`;
@@ -139,9 +130,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
 
+    // 상위 10개만 자르던 .slice(0, 10)을 제거하여 전체 순위 표시
     const sortedData = [...globalData]
-      .sort((a, b) => (parseFloat(b[key]) || 0) - (parseFloat(a[key]) || 0))
-      .slice(0, 10);
+      .sort((a, b) => (parseFloat(b[key]) || 0) - (parseFloat(a[key]) || 0));
 
     sortedData.forEach((item, index) => {
       const rawVal = parseFloat(item[key]) || 0;
