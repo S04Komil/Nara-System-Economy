@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
-  // 성공할 때까지 계속 재시도하는 함수 (1초 간격 재요청)
+  // 개별 API 성공 시까지 독립 재시도 함수
   const fetchUntilSuccess = async (url, name) => {
     let attempt = 1;
     while (true) {
@@ -26,17 +26,21 @@ document.addEventListener("DOMContentLoaded", function() {
       } catch (err) {
         console.warn(`[실패] ${name} (${attempt}번째 시도) - 1초 후 재시도...`, err);
         attempt++;
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 후 재시도
       }
     }
   };
 
-  Promise.all([
-    fetchUntilSuccess(API_URL, "메인 API"),
-    fetchUntilSuccess(API_URL_GDP, "GDP API"),
-    fetchUntilSuccess(API_URL_DEF, "국방비 API"),
-    fetchUntilSuccess(API_URL_CAP, "1인당GDP API")
-  ])
+  // 요청 목록 배열 정의
+  const apiRequests = [
+    { url: API_URL, name: "메인 API" },
+    { url: API_URL_GDP, name: "GDP API" },
+    { url: API_URL_DEF, name: "국방비 API" },
+    { url: API_URL_CAP, name: "1인당GDP API" }
+  ];
+
+  // 배열을 순회하며 동시에 요청을 시작하되, 실패한 항목만 개별 반복
+  Promise.all(apiRequests.map(item => fetchUntilSuccess(item.url, item.name)))
   .then(([mainRes, gdpRes, defRes, capRes]) => {
     console.group("📡 [API 수신 상태 확인]");
     console.log("1. 메인 API 응답:", mainRes);
@@ -266,75 +270,59 @@ document.addEventListener("DOMContentLoaded", function() {
       listData.sort((a, b) => b.val - a.val);
     }
 
-    console.group(`🔍 [${title}] 시계열 매칭 검증`);
-    let successCount = 0;
-    let failList = [];
+    .then(([mainRes, gdpRes, defRes, capRes]) => {
+    console.group("📡 [API 수신 상태 및 국가명 검증]");
+    
+    mainData = mainRes ? (mainRes.data || mainRes) : [];
+    globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
+    globalDefData = defRes ? (defRes.data || defRes) : [];
+    globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    listData.forEach(item => {
-      if (item.isWorld) return;
-      if (item.prevRank) {
-        successCount++;
-      } else {
-        failList.push(item.country);
-      }
-    });
+    // 1. 메인 API 국가명 추출 확인
+    const mainCountries = mainData.map(item => item['국가'] || item['카테고리']).filter(Boolean);
+    console.log("1. 메인 API 국가 목록 (총 " + mainCountries.length + "개):", mainCountries);
 
-    console.log(`매칭 성공: ${successCount}개 / 매칭 실패(NEW): ${failList.length}개`);
-    if (failList.length > 0) {
-      console.warn("시계열 데이터에서 매칭되지 않은 국가 목록:", failList);
-    } else {
-      console.log("모든 국가의 시계열 매칭이 정상 완료되었습니다!");
+    // 2. GDP 시계열 API 국가명 추출 확인
+    if (globalGdpData.length > 0) {
+      const gdpCountries = globalGdpData.map(item => item['국가'] || item['카테고리'] || Object.values(item)[0]);
+      console.log("2. GDP API 국가 목록 (총 " + gdpCountries.length + "개):", gdpCountries);
     }
+
+    // 3. 국방비 시계열 API 국가명 추출 확인
+    if (globalDefData.length > 0) {
+      const defCountries = globalDefData.map(item => item['국가'] || item['카테고리'] || Object.values(item)[0]);
+      console.log("3. 국방비 API 국가 목록 (총 " + defCountries.length + "개):", defCountries);
+    }
+
+    // 4. 1인당 GDP 시계열 API 국가명 추출 확인
+    if (globalCapData.length > 0) {
+      const capCountries = globalCapData.map(item => item['국가'] || item['카테고리'] || Object.values(item)[0]);
+      console.log("4. 1인당 GDP API 국가 목록 (총 " + capCountries.length + "개):", capCountries);
+    }
+
     console.groupEnd();
 
-    const maxValInList = listData.length > 0 ? listData[0].val : 1;
+    document.getElementById('loading').style.display = 'none';
 
-    listData.forEach((item, index) => {
-      let formattedVal = "";
-      if (unitType === '달러') {
-        formattedVal = formatMoney(item.val);
-      } else if (unitType === '명') {
-        formattedVal = formatPopulation(item.val);
-      } else if (unitType === '달러_직접') {
-        formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
-      }
+    if (!mainData || mainData.length === 0) {
+      document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
+      document.getElementById('loading').style.display = 'block';
+      return;
+    }
 
-      let rankDiffHtml = "";
-      if (item.isWorld) {
-        rankDiffHtml = "";
-      } else if (!item.prevRank) {
-        rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
-      } else {
-        const diff = item.prevRank - item.currentRank;
-        if (diff > 0) {
-          rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
-        } else if (diff < 0) {
-          rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
-        } else {
-          rankDiffHtml = `<span class="rank-diff same">-</span>`;
-        }
-      }
+    document.getElementById('dashboard').style.display = 'block';
 
-      let percent = 0;
-      if (key === '1인당GDP') {
-        percent = (item.val / maxValInList) * 100;
-      } else {
-        percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
-      }
-      percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
+    let sheetName = mainRes ? mainRes.sheetName : null;
+    if (sheetName) {
+      document.getElementById('data-year').innerText = `${sheetName}년 기준`;
+    } else {
+      document.getElementById('data-year').innerText = `최신 데이터 기준`;
+    }
 
-      const li = document.createElement('li');
-      li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
-      li.innerHTML = `
-        <div class="rank-bar" style="width: ${percent}%;"></div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="rank-num">${index + 1}.</span>
-          ${rankDiffHtml}
-          <span class="rank-country">${item.country}</span>
-        </div>
-        <span class="rank-val">${formattedVal}</span>
-      `;
-      listEl.appendChild(li);
+    calculateWorldTotals(mainData);
+    renderMainCards(mainData);
+    renderWorldStats();
+  })
     });
   };
 });
