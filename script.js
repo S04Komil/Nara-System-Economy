@@ -68,6 +68,9 @@ document.addEventListener("DOMContentLoaded", function() {
       currentSheetYear = 1970;
     }
 
+    console.log(`🚀 [데이터 로드 완료] 기준 연도: ${currentSheetYear}년`);
+    console.log("📊 메인 데이터 항목 수:", mainData.length);
+
     calculateWorldTotals(mainData);
     renderMainCards(mainData);
     renderWorldStats();
@@ -195,6 +198,8 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   window.switchCategory = function(key, title, unitType, navBtnId) {
+    console.group(`🔍 [카테고리 전환] ${title}`);
+
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('rank-view').style.display = 'block';
 
@@ -251,13 +256,14 @@ document.addEventListener("DOMContentLoaded", function() {
         let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
         let prevYearKey = validYearKeys[targetIndex];
 
-        // 💡 비어있거나 데이터가 없는 항목은 0으로 바꾸지 않고 null로 리턴하여 완벽 제외
+        console.log(`📅 이전 비교 연도 컬럼 키: [${prevYearKey}]`);
+
         let prevList = targetSeriesData
           .map(item => {
             let rawCountry = extractCountryFromRow(item);
             let rawVal = item[prevYearKey];
 
-            // 값이 없거나, 빈 문자열, null, undefined, N/A 형태인 경우 제외
+            // 값이 없거나, 빈 문자열, null, undefined, N/A 형태인 경우 완전히 제외 (0점 처리 안함)
             if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
               return null;
             }
@@ -277,14 +283,15 @@ document.addEventListener("DOMContentLoaded", function() {
               val: numVal
             };
           })
-          // null이거나 국가명이 없는 항목 순위 집계에서 배제
+          // null이거나 국가명이 없는 항목 순위 집계에서 완전히 제거
           .filter(item => item !== null && item.cleanKey !== '')
           .sort((a, b) => {
             if (b.val !== a.val) return b.val - a.val;
             return a.cleanKey.localeCompare(b.cleanKey);
           });
 
-        // 유효한 수치를 가진 국가들만 정렬하여 전년도 순위 매핑
+        console.log(`✅ [${prevYearKey}] 유효 데이터 유치 국가 수: ${prevList.length}개 (빈 값 국가 완벽 제외)`);
+
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
@@ -316,6 +323,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
+
+    console.log("📈 [최종 렌더링 국가 수]:", listData.length);
 
     listData.forEach((item, index) => {
       let formattedVal = "";
@@ -364,5 +373,7 @@ document.addEventListener("DOMContentLoaded", function() {
       `;
       listEl.appendChild(li);
     });
+
+    console.groupEnd();
   };
 });
