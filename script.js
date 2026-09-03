@@ -14,12 +14,21 @@ document.addEventListener("DOMContentLoaded", function() {
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
   Promise.all([
-    fetch(API_URL).then(res => res.json()).catch(() => null),
-    fetch(API_URL_GDP).then(res => res.json()).catch(() => null),
-    fetch(API_URL_DEF).then(res => res.json()).catch(() => null),
-    fetch(API_URL_CAP).then(res => res.json()).catch(() => null)
+    fetch(API_URL).then(res => res.json()).catch(err => { console.error("메인 API 에러:", err); return null; }),
+    fetch(API_URL_GDP).then(res => res.json()).catch(err => { console.error("GDP API 에러:", err); return null; }),
+    fetch(API_URL_DEF).then(res => res.json()).catch(err => { console.error("국방비 API 에러:", err); return null; }),
+    fetch(API_URL_CAP).then(res => res.json()).catch(err => { console.error("1인당GDP API 에러:", err); return null; })
   ])
   .then(([mainRes, gdpRes, defRes, capRes]) => {
+    // ================= [1. API 수신 확인용 로그] =================
+    console.group("📡 [API 수신 상태 확인]");
+    console.log("1. 메인 API 응답:", mainRes);
+    console.log("2. GDP 시계열 API 응답:", gdpRes);
+    console.log("3. 국방비 시계열 API 응답:", defRes);
+    console.log("4. 1인당GDP 시계열 API 응답:", capRes);
+    console.groupEnd();
+    // ============================================================
+
     document.getElementById('loading').style.display = 'none';
 
     mainData = mainRes ? (mainRes.data || mainRes) : [];
@@ -59,7 +68,6 @@ document.addEventListener("DOMContentLoaded", function() {
       def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
     });
 
-    // GDP의 10배율을 상쇄하기 위해 100000 대신 10000을 곱함
     let cap = pop > 0 ? (gdp / pop) * 10000 : 0;
     worldTotals = { gdp, pop, def, cap };
   }
@@ -127,12 +135,15 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
   };
 
-  // 연도 키('1934년' 또는 '1934' 등) 정렬 추출 함수
+  function cleanName(str) {
+    if (!str) return '';
+    return String(str).replace(/\s+/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '');
+  }
+
   function getSortedYearKeys(seriesData) {
     if (!seriesData || seriesData.length === 0) return [];
     
     const sample = seriesData[0];
-    // 숫자 또는 뒤에 '년'이 붙은 형태를 모두 연도 키로 추출
     const yearKeys = Object.keys(sample).filter(k => /^\d+년?$/.test(k.trim()));
 
     return yearKeys.sort((a, b) => {
@@ -161,7 +172,6 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 1. 현재 연도 메인 데이터 정렬
     let currentList = mainData.map(item => {
       let rawVal = parseFloat(item[key]) || 0;
       if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
@@ -174,7 +184,6 @@ document.addEventListener("DOMContentLoaded", function() {
       };
     }).filter(item => item.country !== '').sort((a, b) => b.val - a.val);
 
-    // 2. 카테고리별 시계열 데이터 선택 및 직전 연도 순위 추출
     let targetSeriesData = [];
     if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
     else if (key === '국방비(10억달러)') targetSeriesData = globalDefData;
@@ -186,36 +195,39 @@ document.addEventListener("DOMContentLoaded", function() {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
       if (yearKeys.length > 0) {
-        // 시계열 데이터에 현재 연도가 포함되어 있으면 직전 연도(length - 2), 없으면 가장 최근 연도(length - 1) 사용
-        const targetIndex = yearKeys.length >= 2 ? yearKeys.length - 2 : yearKeys.length - 1;
-        const prevYearKey = yearKeys[targetIndex];
+        let targetIndex = yearKeys.length >= 2 ? yearKeys.length - 2 : yearKeys.length - 1;
+        let prevYearKey = yearKeys[targetIndex];
 
         let prevList = targetSeriesData.map(item => {
           let rawVal = parseFloat(item[prevYearKey]) || 0;
           if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
             rawVal *= 10;
           }
+          
+          let rawCountry = item['국가'] || item['카테고리'] || Object.values(item)[0] || '';
+          
           return {
-            country: (item['국가'] || '').trim(),
-            category: (item['카테고리'] || '').trim(),
+            rawCountry: String(rawCountry).trim(),
+            cleanKey: cleanName(rawCountry),
             val: rawVal
           };
         })
-        .filter(item => (item.country !== '' || item.category !== '') && item.val > 0)
+        .filter(item => item.cleanKey !== '')
         .sort((a, b) => b.val - a.val);
 
         prevList.forEach((item, idx) => {
-          const rank = idx + 1;
-          if (item.country) prevRankMap.set(item.country, rank);
-          if (item.category) prevRankMap.set(item.category, rank);
+          prevRankMap.set(item.cleanKey, idx + 1);
         });
       }
     }
 
-    // 3. 최종 데이터 바인딩 및 순위 변동 계산
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
-      const prevRank = prevRankMap.get(item.country) || prevRankMap.get(item.category);
+      
+      const cleanCountryKey = cleanName(item.country);
+      const cleanCategoryKey = cleanName(item.category);
+      
+      const prevRank = prevRankMap.get(cleanCountryKey) || prevRankMap.get(cleanCategoryKey);
 
       return {
         country: item.country,
@@ -237,9 +249,31 @@ document.addEventListener("DOMContentLoaded", function() {
       listData.sort((a, b) => b.val - a.val);
     }
 
+    // ================= [2. 국가별 매칭 성공 여부 검증 로그] =================
+    console.group(`🔍 [${title}] 시계열 매칭 검증`);
+    let successCount = 0;
+    let failList = [];
+
+    listData.forEach(item => {
+      if (item.isWorld) return;
+      if (item.prevRank) {
+        successCount++;
+      } else {
+        failList.push(item.country);
+      }
+    });
+
+    console.log(`매칭 성공: ${successCount}개 / 매칭 실패(NEW): ${failList.length}개`);
+    if (failList.length > 0) {
+      console.warn("시계열 데이터에서 매칭되지 않은 국가 목록:", failList);
+    } else {
+      console.log("모든 국가의 시계열 매칭이 정상 완료되었습니다!");
+    }
+    console.groupEnd();
+    // =======================================================================
+
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
-    // 4. HTML DOM 렌더링
     listData.forEach((item, index) => {
       let formattedVal = "";
       if (unitType === '달러') {
