@@ -39,9 +39,10 @@ document.addEventListener("DOMContentLoaded", function() {
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
     data.forEach(item => {
-      gdp += parseFloat(item['GDP(10억달러)']) || 0;
-      pop += parseFloat(item['인구(만명)']) || 0;
-      def += parseFloat(item['국방비(10억달러)']) || 0;
+      // GDP와 국방비는 10배 적용
+      gdp += ((parseFloat(item['GDP(10억달러)']) || 0) * 10);
+      pop += (parseFloat(item['인구(만명)']) || 0);
+      def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
     });
 
     let cap = pop > 0 ? (gdp / pop) * 100000 : 0;
@@ -85,10 +86,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const topCap = getTop('1인당GDP');
 
     document.getElementById('top-gdp-country').innerText = topGdp['국가'] || '-';
-    document.getElementById('top-gdp-val').innerText = formatMoney(topGdp['GDP(10억달러)']);
+    // GDP 10배 적용
+    document.getElementById('top-gdp-val').innerText = formatMoney((parseFloat(topGdp['GDP(10억달러)']) || 0) * 10);
 
     document.getElementById('top-def-country').innerText = topDef['국가'] || '-';
-    document.getElementById('top-def-val').innerText = formatMoney(topDef['국방비(10억달러)']);
+    // 국방비 10배 적용
+    document.getElementById('top-def-val').innerText = formatMoney((parseFloat(topDef['국방비(10억달러)']) || 0) * 10);
 
     document.getElementById('top-pop-country').innerText = topPop['국가'] || '-';
     document.getElementById('top-pop-val').innerText = formatPopulation(topPop['인구(만명)']);
@@ -125,19 +128,24 @@ document.addEventListener("DOMContentLoaded", function() {
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
 
-    // 기준 세계 총 값 및 최대값 설정 (바 백분율 계산용)
     let totalBaseVal = 0;
     if (key === 'GDP(10억달러)') totalBaseVal = worldTotals.gdp;
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    let listData = globalData.map(item => ({
-      country: item['국가'] || 'N/A',
-      val: parseFloat(item[key]) || 0,
-      isWorld: false
-    }));
+    let listData = globalData.map(item => {
+      let rawVal = parseFloat(item[key]) || 0;
+      // GDP와 국방비 수치는 10배 곱함
+      if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+        rawVal *= 10;
+      }
+      return {
+        country: item['국가'] || 'N/A',
+        val: rawVal,
+        isWorld: false
+      };
+    });
 
-    // 1인당 GDP 선택 시 목록에 '전세계' 항목 추가
     if (key === '1인당GDP') {
       listData.push({
         country: '전세계',
@@ -146,10 +154,8 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
 
-    // 값 내림차순 정렬
     listData.sort((a, b) => b.val - a.val);
 
-    // 1인당 GDP의 바 비율 계산 기준 (최대값)
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
     listData.forEach((item, index) => {
@@ -162,7 +168,6 @@ document.addEventListener("DOMContentLoaded", function() {
         formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
       }
 
-      // 프로그레스 바 백분율 계산
       let percent = 0;
       if (key === '1인당GDP') {
         percent = (item.val / maxValInList) * 100;
