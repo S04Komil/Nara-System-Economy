@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
       let data = res.data || res;
       let sheetName = res.sheetName || (data[0] ? (data[0]['연도'] || data[0]['year']) : null);
-      let worldStats = res.worldStats || {};
 
       if (!data || data.length === 0) {
         document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
@@ -29,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       renderMainCards(data);
-      renderWorldStats(worldStats);
+      renderWorldStats(data);
     })
     .catch(error => {
       console.error('Error:', error);
@@ -85,28 +84,38 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
   }
 
-  function renderWorldStats(stats) {
-    if (!stats) return;
+  // 데이터 합산 기반 세계 통계 구하기
+  function renderWorldStats(data) {
+    if (!data || data.length === 0) return;
 
-    document.getElementById('world-gdp').innerText = stats['GDP(10억달러)'] ? formatMoney(stats['GDP(10억달러)']) : '-';
-    document.getElementById('world-pop').innerText = stats['인구(만명)'] ? formatPopulation(stats['인구(만명)']) : '-';
-    document.getElementById('world-def').innerText = stats['국방비(10억달러)'] ? formatMoney(stats['국방비(10억달러)']) : '-';
-    document.getElementById('world-cap').innerText = stats['1인당GDP'] ? `${Math.round(parseFloat(stats['1인당GDP']) || 0).toLocaleString()} 달러` : '-';
-    
-    let growth = stats['전연도대비GDP성장률'];
-    if (growth !== undefined && growth !== null && growth !== '') {
-      let growthNum = parseFloat(growth);
-      if (!isNaN(growthNum)) {
-        if (growthNum < 1 && growthNum > -1 && growthNum !== 0) {
-          growth = (growthNum * 100).toFixed(2) + '%';
-        } else {
-          growth = growthNum.toFixed(2) + '%';
-        }
-      }
+    let totalGdp = 0;   // 10억 달러 단위 합산
+    let totalPop = 0;   // 만 명 단위 합산
+    let totalDef = 0;   // 10억 달러 단위 합산
+
+    data.forEach(item => {
+      totalGdp += parseFloat(item['GDP(10억달러)']) || 0;
+      totalPop += parseFloat(item['인구(만명)']) || 0;
+      totalDef += parseFloat(item['국방비(10억달러)']) || 0;
+    });
+
+    // 1. 세계 총 GDP (합산)
+    document.getElementById('world-gdp').innerText = formatMoney(totalGdp);
+
+    // 2. 세계 총 인구수 (합산)
+    document.getElementById('world-pop').innerText = formatPopulation(totalPop);
+
+    // 3. 세계 총 국방비 (합산)
+    document.getElementById('world-def').innerText = formatMoney(totalDef);
+
+    // 4. 세계 1인당 GDP = (세계 총 GDP / 세계 총 인구수)
+    // totalGdp: 10억 달러 ($1,000,000,000), totalPop: 만 명 (10,000명)
+    // 단위 계산: (totalGdp * 1,000,000,000) / (totalPop * 10,000) = (totalGdp / totalPop) * 100,000
+    if (totalPop > 0) {
+      let perCapitaGdp = (totalGdp / totalPop) * 100000;
+      document.getElementById('world-cap').innerText = `${Math.round(perCapitaGdp).toLocaleString()} 달러`;
     } else {
-      growth = '-';
+      document.getElementById('world-cap').innerText = '-';
     }
-    document.getElementById('world-growth').innerText = growth;
   }
 
   window.showMainView = function() {
