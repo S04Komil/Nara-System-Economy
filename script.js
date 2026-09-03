@@ -1,11 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
   // 1. 현재 연도 메인 통합 API
-  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycby7318OaG4EWW5oUAnkU9Jm5KkLwM8L12Y812/exec"; 
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
+  const API_URL_DEF = "https://accounts.google.com/SignOutOptions?hl=ko&continue=https://script.google.com/u/0/home/projects/create%3Fparent%3D1BWPrs_3euui7_7wK62xmz248B4IMm7fLfVWX4x2-fLk%26emtoken%3DAYo8c-C6Y_rYLMcCAfQZDWK5_xsH:1788433042035&ec=GBRAiwMmacros/s/AKfycbzL5p4Gfllf7kAtT4EThm655xQ8vXInG52eGzJ-RmsS8Yg8T3v5eD0u0aN4j6Uf2bA8/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
+
+  // 3. 세계 통계 성장률 API (나라시스템 세계통계 구글시트 연동 Apps Script URL)
+  const API_URL_GROWTH = "YOUR_APPS_SCRIPT_GROWTH_API_URL"; 
 
   let mainData = [];
   let globalGdpData = [];
@@ -74,17 +77,47 @@ document.addEventListener("DOMContentLoaded", function() {
     calculateWorldTotals(mainData);
     renderMainCards(mainData);
     renderWorldStats();
+    
+    // 성장률 데이터 추가 로드
+    fetchWorldGrowthData();
   })
   .catch(error => {
     console.error('Data Fetch Error:', error);
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
+  // 세계 성장률 데이터 가져오기 함수
+  function fetchWorldGrowthData() {
+    if (!API_URL_GROWTH || API_URL_GROWTH.includes("YOUR_APPS_SCRIPT")) return;
+
+    fetch(API_URL_GROWTH)
+      .then(res => res.json())
+      .then(data => {
+        if (!data) return;
+        
+        const formatGrowth = (val) => {
+          if (val === null || val === undefined || isNaN(val)) return "-";
+          const num = parseFloat(val);
+          const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
+          return `${prefix}${Math.abs(num).toFixed(2)}%`;
+        };
+
+        const gdpEl = document.getElementById('world-gdp-growth');
+        const popEl = document.getElementById('world-pop-growth');
+        const capEl = document.getElementById('world-cap-growth');
+
+        if (gdpEl) gdpEl.innerText = formatGrowth(data.gdpGrowthRate);
+        if (popEl) popEl.innerText = formatGrowth(data.popGrowthRate);
+        if (capEl) capEl.innerText = formatGrowth(data.capGrowthRate);
+      })
+      .catch(err => console.error("성장률 데이터 로드 실패:", err));
+  }
+
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
     data.forEach(item => {
       let cName = extractCountryFromRow(item);
-      if (cleanName(cName) === '전세계') return; // 총합 계산 시 전세계 행 제외
+      if (cleanName(cName) === '전세계') return;
 
       gdp += ((parseFloat(item['GDP(10억달러)']) || 0) * 10);
       pop += (parseFloat(item['인구(만명)']) || 0);
@@ -124,7 +157,6 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function renderMainCards(data) {
-    // '전세계'를 제외한 순수 국가 목록 생성
     const validCountries = data.filter(item => cleanName(extractCountryFromRow(item)) !== '전세계');
 
     const getTop = (key) => validCountries.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, validCountries[0]);
@@ -224,12 +256,10 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 1. 현재 메인 데이터 정렬 ('전세계' 및 유효하지 않거나 0 이하 데이터 완벽 제외)
     let currentList = mainData.map(item => {
       let rawCountry = extractCountryFromRow(item);
       let cleanedName = cleanName(rawCountry);
 
-      // 💡 '전세계' 행은 순위 정렬에서 완전히 제쳐둡니다.
       if (cleanedName === '전세계') return null;
 
       let rawVal = item[key];
@@ -279,13 +309,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
         console.log(`📅 이전 비교 연도 컬럼 키: [${prevYearKey}]`);
 
-        // 과거 시계열에서도 '전세계' 및 0 이하인 값 순위 집계 제외
         let prevList = targetSeriesData
           .map(item => {
             let rawCountry = extractCountryFromRow(item);
             let cleanedName = cleanName(rawCountry);
 
-            // 💡 과거 순위 산정 시에도 '전세계' 제외
             if (cleanedName === '전세계') return null;
 
             let rawVal = item[prevYearKey];
@@ -316,14 +344,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         console.log(`✅ [${prevYearKey}] 유효 데이터 국가 수 (전세계 제외): ${prevList.length}개`);
 
-        // Pure 국가끼리만 비교 순위 집계
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
       }
     }
 
-    // 순위 할당
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
       const prevRank = prevRankMap.get(item.cleanKey);
@@ -337,16 +363,14 @@ document.addEventListener("DOMContentLoaded", function() {
       };
     });
 
-    // 💡 1인당 GDP일 때 '전세계' 카드는 참고용으로 목록 마지막/위치에 합쳐서 시각화만 수행
     if (key === '1인당GDP') {
       listData.push({
         country: '전세계',
         val: worldTotals.cap,
-        currentRank: null, // 순위 없음
+        currentRank: null,
         prevRank: null,
         isWorld: true
       });
-      // 값에 따라 정렬하여 막대 그래프 위치 배치
       listData.sort((a, b) => b.val - a.val);
     }
 
@@ -354,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     console.log("📈 [최종 순위 집계 국가 수]:", currentList.length);
 
-    let rankCounter = 1; // 순수 국가용 순위 카운터
+    let rankCounter = 1;
 
     listData.forEach((item) => {
       let formattedVal = "";
@@ -370,12 +394,11 @@ document.addEventListener("DOMContentLoaded", function() {
       let rankDisplay = "";
 
       if (item.isWorld) {
-        // 전세계인 경우 순위 숫자를 표시하지 않고 변동 태그도 미표시
         rankDisplay = "-";
         rankDiffHtml = "";
       } else {
         rankDisplay = `${rankCounter}.`;
-        rankCounter++; // 국가일 때만 순위 번호 증가
+        rankCounter++;
 
         if (key === '인구(만명)') {
           rankDiffHtml = "";
