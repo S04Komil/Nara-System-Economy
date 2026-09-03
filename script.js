@@ -12,13 +12,13 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalDefData = [];
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
+  let currentSheetYear = 1970; // 메인 시트 기준 연도 저장용 변수
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   const fetchWithSmartRetry = async (url, name) => {
     let attempt = 1;
     let waitTime = 1000;
-
     while (true) {
       console.log(`🚀 [요청 시도] ${name} (${attempt}번째 시도) - URL: ${url}`);
       try {
@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 객체/배열 내부 항목에서 국가명 키를 유연하게 찾는 헬퍼 함수
     const extractCountryName = (item) => {
       if (!item || typeof item !== 'object') return '';
       return item['국가'] || item['카테고리'] || item['country'] || item['Category'] || Object.values(item)[0] || '';
@@ -95,8 +94,10 @@ document.addEventListener("DOMContentLoaded", function() {
     let sheetName = mainRes ? mainRes.sheetName : null;
     if (sheetName) {
       document.getElementById('data-year').innerText = `${sheetName}년 기준`;
+      currentSheetYear = parseInt(sheetName, 10) || 1970;
     } else {
       document.getElementById('data-year').innerText = `최신 데이터 기준`;
+      currentSheetYear = 1970;
     }
 
     calculateWorldTotals(mainData);
@@ -185,18 +186,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function cleanName(str) {
     if (!str) return '';
-    return String(str).replace(/\s+/g, '').replace(/[^a-zA-Z0-9가-힣]/g, '').toLowerCase();
+    return String(str).trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF]/g, '');
   }
 
   function getSortedYearKeys(seriesData) {
     if (!seriesData || seriesData.length === 0) return [];
     
-    const sample = seriesData[0];
-    const yearKeys = Object.keys(sample).filter(k => /^\d+년?$/.test(k.trim()));
+    const sample = seriesData.find(item => item && typeof item === 'object') || {};
+    const keys = Object.keys(sample);
+
+    const yearKeys = keys.filter(k => {
+      const cleanedKey = k.replace(/[^\d]/g, '');
+      return cleanedKey.length >= 2 && cleanedKey.length <= 4;
+    });
 
     return yearKeys.sort((a, b) => {
-      const yearA = parseInt(a.replace(/\D/g, ''), 10);
-      const yearB = parseInt(b.replace(/\D/g, ''), 10);
+      const yearA = parseInt(a.replace(/[^\d]/g, ''), 10);
+      const yearB = parseInt(b.replace(/[^\d]/g, ''), 10);
       return yearA - yearB;
     });
   }
@@ -241,13 +247,22 @@ document.addEventListener("DOMContentLoaded", function() {
     if (targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
-      console.log(`[${title}] 감지된 연도 컬럼 목록:`, yearKeys);
+      console.group(`📊 [${title}] 시계열 데이터 파싱 정밀 디버깅`);
+      console.log("감지된 전체 연도 컬럼 목록:", yearKeys);
 
-      if (yearKeys.length > 0) {
-        // 전년도(마지막에서 두번째 연도) 기준, 만약 연도가 1개만 있다면 그 연도를 기준으로 설정
-        let targetIndex = yearKeys.length >= 2 ? yearKeys.length - 2 : yearKeys.length - 1;
-        let prevYearKey = yearKeys[targetIndex];
-        console.log(`[${title}] 이전 순위 비교 기준 연도:`, prevYearKey);
+      // 메인 기준 연도(currentSheetYear) 이하의 연도 컬럼만 사용하도록 필터링
+      const validYearKeys = yearKeys.filter(k => {
+        const y = parseInt(k.replace(/[^\d]/g, ''), 10);
+        return y <= currentSheetYear;
+      });
+
+      console.log(`메인 기준 연도(${currentSheetYear}년) 이하 유효 연도 목록:`, validYearKeys);
+
+      if (validYearKeys.length > 0) {
+        // 메인 연도 이전 연도 (마지막-1 또는 1개뿐인 경우 해당 연도)
+        let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
+        let prevYearKey = validYearKeys[targetIndex];
+        console.log("선택된 비교 대상 전년도 키:", prevYearKey);
 
         let prevList = targetSeriesData.map(item => {
           let rawVal = parseFloat(item[prevYearKey]) || 0;
@@ -263,13 +278,14 @@ document.addEventListener("DOMContentLoaded", function() {
             val: rawVal
           };
         })
-        .filter(item => item.cleanKey !== '' && item.val > 0)
+        .filter(item => item.cleanKey !== '')
         .sort((a, b) => b.val - a.val);
 
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
       }
+      console.groupEnd();
     }
 
     let listData = currentList.map((item, idx) => {
@@ -297,27 +313,6 @@ document.addEventListener("DOMContentLoaded", function() {
       listData.sort((a, b) => b.val - a.val);
     }
 
-    console.group(`🔍 [${title}] 시계열 순위 매칭 검증`);
-    let successCount = 0;
-    let failList = [];
-
-    listData.forEach(item => {
-      if (item.isWorld) return;
-      if (item.prevRank) {
-        successCount++;
-      } else {
-        failList.push(item.country);
-      }
-    });
-
-    console.log(`순위 변동 매칭 성공: ${successCount}개 / 매칭 실패(NEW): ${failList.length}개`);
-    if (failList.length > 0) {
-      console.warn("이전 연도 데이터를 찾지 못한 국가:", failList);
-    } else {
-      console.log("모든 국가의 순위 매칭이 정상적으로 완료되었습니다!");
-    }
-    console.groupEnd();
-
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
     listData.forEach((item, index) => {
@@ -342,6 +337,7 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (diff < 0) {
           rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
         } else {
+          // 💡 변동 없음 클래스(same) 추가
           rankDiffHtml = `<span class="rank-diff same">-</span>`;
         }
       }
