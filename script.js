@@ -13,11 +13,29 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
+  // 성공할 때까지 계속 재시도하는 함수 (1초 간격 재요청)
+  const fetchUntilSuccess = async (url, name) => {
+    let attempt = 1;
+    while (true) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+        const data = await res.json();
+        console.log(`[성공] ${name} (${attempt}번째 시도)`);
+        return data;
+      } catch (err) {
+        console.warn(`[실패] ${name} (${attempt}번째 시도) - 1초 후 재시도...`, err);
+        attempt++;
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+      }
+    }
+  };
+
   Promise.all([
-    fetch(API_URL).then(res => res.json()).catch(err => { console.error("메인 API 에러:", err); return null; }),
-    fetch(API_URL_GDP).then(res => res.json()).catch(err => { console.error("GDP API 에러:", err); return null; }),
-    fetch(API_URL_DEF).then(res => res.json()).catch(err => { console.error("국방비 API 에러:", err); return null; }),
-    fetch(API_URL_CAP).then(res => res.json()).catch(err => { console.error("1인당GDP API 에러:", err); return null; })
+    fetchUntilSuccess(API_URL, "메인 API"),
+    fetchUntilSuccess(API_URL_GDP, "GDP API"),
+    fetchUntilSuccess(API_URL_DEF, "국방비 API"),
+    fetchUntilSuccess(API_URL_CAP, "1인당GDP API")
   ])
   .then(([mainRes, gdpRes, defRes, capRes]) => {
     console.group("📡 [API 수신 상태 확인]");
