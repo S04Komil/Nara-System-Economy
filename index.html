@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>나라시스템 경제 데이터 통계 대시보드</title>
   
-  <!-- Chart.js 및 CSS 라이브러리 추가 -->
+  <!-- Chart.js 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -39,7 +39,6 @@
       color: #1a202c;
     }
 
-    /* 상단 요약 카드 (KPI) */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -67,7 +66,6 @@
       color: var(--primary-color);
     }
 
-    /* 차트 및 컨트롤 영역 */
     .chart-section {
       background: var(--card-bg);
       padding: 20px;
@@ -92,7 +90,6 @@
       min-width: 200px;
     }
 
-    /* 테이블 스타일링 */
     .table-container {
       background: var(--card-bg);
       border-radius: 8px;
@@ -138,31 +135,31 @@
   <div class="container">
     <header>
       <h1>나라시스템 경제 통계 대시보드</h1>
-      <p style="color: #718096; margin: 0;">실시간 실시간 경제 데이터 및 지표 통계 분석</p>
+      <p style="color: #718096; margin: 0;">주요 국가 지표 통계 요약</p>
     </header>
 
     <div id="loading">데이터를 불러오는 중입니다...</div>
 
     <div id="dashboard" style="display: none;">
-      <!-- 주요 주요 지표 요약 카드 -->
+      <!-- 주요 지표 요약 카드 -->
       <div class="kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-title">총 항목 수</div>
+          <div class="kpi-title">총 국가 수</div>
           <div class="kpi-value" id="kpi-count">0</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-title">최고 GDP 항목</div>
+          <div class="kpi-title">최고 GDP 국가</div>
           <div class="kpi-value" id="kpi-top-gdp">-</div>
         </div>
       </div>
 
-      <!-- 시각화 차트 영역 -->
+      <!-- 차트 영역 -->
       <div class="chart-section">
-        <h3 style="margin-top:0;">주요 국가/항목별 GDP 비교</h3>
+        <h3 style="margin-top:0;">상위 10개국 GDP 비교</h3>
         <canvas id="gdpChart" height="100"></canvas>
       </div>
 
-      <!-- 검색 및 테이블 영역 -->
+      <!-- 검색 및 테이블 -->
       <div class="controls">
         <input type="text" id="search-input" placeholder="국가명 또는 검색어를 입력하세요..." onkeyup="filterTable()">
       </div>
@@ -178,8 +175,18 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+    
+    // 표시할 컬럼 정의 (국가명 포함)
+    const TARGET_COLUMNS = [
+      "국가",
+      "GDP(10억달러)",
+      "국방비(10억달러)",
+      "인구(만명)",
+      "1인당GDP",
+      "강대국 등급"
+    ];
+
     let globalData = [];
-    let chartInstance = null;
 
     fetch(API_URL)
       .then(response => response.json())
@@ -204,11 +211,8 @@
         document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
       });
 
-    // 1. KPI 카드 업데이트
     function renderKPI(data) {
       document.getElementById('kpi-count').innerText = `${data.length}개`;
-      
-      // GDP 컬럼 추출 및 최고 수치 항목 산출 (컬럼명이 'GDP(10억달러)' 기준)
       const topCountry = data.reduce((max, item) => {
         const val = parseFloat(item['GDP(10억달러)']) || 0;
         return val > (parseFloat(max['GDP(10억달러)']) || 0) ? item : max;
@@ -217,11 +221,8 @@
       document.getElementById('kpi-top-gdp').innerText = topCountry['국가'] || '-';
     }
 
-    // 2. Chart.js 막대 차트 생성
     function renderChart(data) {
       const ctx = document.getElementById('gdpChart').getContext('2d');
-      
-      // 상위 10개 항목만 차트로 표시
       const chartData = [...data]
         .sort((a, b) => (parseFloat(b['GDP(10억달러)']) || 0) - (parseFloat(a['GDP(10억달러)']) || 0))
         .slice(0, 10);
@@ -229,7 +230,7 @@
       const labels = chartData.map(item => item['국가'] || 'N/A');
       const values = chartData.map(item => parseFloat(item['GDP(10억달러)']) || 0);
 
-      chartInstance = new Chart(ctx, {
+      new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
@@ -250,28 +251,22 @@
       });
     }
 
-    // 3. 데이터 테이블 생성
     function renderTable(data) {
-      const headers = Object.keys(data[0]);
-      
-      // 헤더 생성
       const thead = document.getElementById('table-head');
-      thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+      thead.innerHTML = `<tr>${TARGET_COLUMNS.map(col => `<th>${col}</th>`).join('')}</tr>`;
 
-      // 바디 생성
       const tbody = document.getElementById('table-body');
       tbody.innerHTML = data.map(row => {
-        const cols = headers.map(h => `<td>${row[h] !== undefined ? row[h] : ''}</td>`).join('');
+        const cols = TARGET_COLUMNS.map(col => `<td>${row[col] !== undefined ? row[col] : ''}</td>`).join('');
         return `<tr>${cols}</tr>`;
       }).join('');
     }
 
-    // 4. 실시간 검색 필터
     function filterTable() {
       const query = document.getElementById('search-input').value.toLowerCase();
       const filtered = globalData.filter(row => {
-        return Object.values(row).some(val => 
-          String(val).toLowerCase().includes(query)
+        return TARGET_COLUMNS.some(col => 
+          String(row[col] || '').toLowerCase().includes(query)
         );
       });
       renderTable(filtered);
