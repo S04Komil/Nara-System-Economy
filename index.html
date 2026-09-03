@@ -5,6 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>나라시스템 경제 데이터 통계 대시보드</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* 세계 통계 카드 전용 스타일 */
+    .world-stats-section {
+      margin-top: 36px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+    .world-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .world-card {
+      background: var(--card-bg, #ffffff);
+      padding: 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .world-card-title {
+      font-size: 0.85rem;
+      color: #718096;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .world-card-val {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2b6cb0;
+    }
+  </style>
 </head>
 <body>
 
@@ -83,9 +119,37 @@
             <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
           </div>
         </div>
+
+        <!-- 2. 세계 통계 섹션 -->
+        <div class="world-stats-section">
+          <h2 class="section-title">세계 통계</h2>
+          <div class="world-cards-grid">
+            <div class="world-card">
+              <div class="world-card-title">세계 총 GDP</div>
+              <div class="world-card-val" id="world-gdp">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 총 인구수</div>
+              <div class="world-card-val" id="world-pop">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 총 국방비</div>
+              <div class="world-card-val" id="world-def">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 평균 1인당 GDP</div>
+              <div class="world-card-val" id="world-cap">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">전년 대비 성장률</div>
+              <div class="world-card-val" id="world-growth">-</div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- 2. 순위 상세보기 화면 -->
+      <!-- 3. 순위 상세보기 화면 -->
       <div id="rank-view" style="display: none;">
         <div class="rank-section">
           <h3 id="rank-title" style="margin:0 0 16px 0;">순위 목록</h3>
@@ -107,9 +171,9 @@
         .then(res => {
           document.getElementById('loading').style.display = 'none';
 
-          // 기존 구조(배열)와 새 구조(객체) 모두 대응하도록 하위 호환성 처리
           let data = res.data || res;
           let sheetName = res.sheetName || (data[0] ? (data[0]['연도'] || data[0]['year']) : null);
+          let worldStats = res.worldStats || {};
 
           if (!data || data.length === 0) {
             document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
@@ -128,6 +192,7 @@
           }
 
           renderMainCards(data);
+          renderWorldStats(worldStats);
         })
         .catch(error => {
           console.error('Error:', error);
@@ -181,6 +246,31 @@
 
         document.getElementById('top-cap-country').innerText = topCap['국가'] || '-';
         document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
+      }
+
+      function renderWorldStats(stats) {
+        if (!stats) return;
+
+        // 세계통계 시트의 열 헤더 이름에 매핑
+        document.getElementById('world-gdp').innerText = stats['GDP(10억달러)'] ? formatMoney(stats['GDP(10억달러)']) : '-';
+        document.getElementById('world-pop').innerText = stats['인구(만명)'] ? formatPopulation(stats['인구(만명)']) : '-';
+        document.getElementById('world-def').innerText = stats['국방비(10억달러)'] ? formatMoney(stats['국방비(10억달러)']) : '-';
+        document.getElementById('world-cap').innerText = stats['1인당GDP'] ? `${Math.round(parseFloat(stats['1인당GDP']) || 0).toLocaleString()} 달러` : '-';
+        
+        let growth = stats['전연도대비GDP성장률'];
+        if (growth !== undefined && growth !== null && growth !== '') {
+          let growthNum = parseFloat(growth);
+          if (!isNaN(growthNum)) {
+            if (growthNum < 1 && growthNum > -1 && growthNum !== 0) {
+              growth = (growthNum * 100).toFixed(2) + '%';
+            } else {
+              growth = growthNum.toFixed(2) + '%';
+            }
+          }
+        } else {
+          growth = '-';
+        }
+        document.getElementById('world-growth').innerText = growth;
       }
 
       window.showMainView = function() {
