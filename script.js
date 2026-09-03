@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     console.log(`🚀 [데이터 로드 완료] 기준 연도: ${currentSheetYear}년`);
-    console.log("📊 메인 데이터 항목 수:", mainData.length);
+    console.log("📊 메인 데이터 원본 수:", mainData.length);
 
     calculateWorldTotals(mainData);
     renderMainCards(mainData);
@@ -83,6 +83,9 @@ document.addEventListener("DOMContentLoaded", function() {
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
     data.forEach(item => {
+      let cName = extractCountryFromRow(item);
+      if (cleanName(cName) === '전세계') return; // 총합 계산 시 전세계 행 제외
+
       gdp += ((parseFloat(item['GDP(10억달러)']) || 0) * 10);
       pop += (parseFloat(item['인구(만명)']) || 0);
       def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
@@ -121,7 +124,10 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function renderMainCards(data) {
-    const getTop = (key) => data.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, data[0]);
+    // '전세계'를 제외한 순수 국가 목록 생성
+    const validCountries = data.filter(item => cleanName(extractCountryFromRow(item)) !== '전세계');
+
+    const getTop = (key) => validCountries.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, validCountries[0]);
 
     const topGdp = getTop('GDP(10억달러)');
     const topDef = getTop('국방비(10억달러)');
@@ -218,20 +224,35 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    // 1. 현재 메인 데이터 정렬
+    // 1. 현재 메인 데이터 정렬 ('전세계' 및 유효하지 않거나 0 이하 데이터 완벽 제외)
     let currentList = mainData.map(item => {
-      let rawVal = parseFloat(item[key]) || 0;
-      if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
-        rawVal *= 10;
+      let rawCountry = extractCountryFromRow(item);
+      let cleanedName = cleanName(rawCountry);
+
+      // 💡 '전세계' 행은 순위 정렬에서 완전히 제쳐둡니다.
+      if (cleanedName === '전세계') return null;
+
+      let rawVal = item[key];
+      if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+        return null;
       }
-      const rawCountry = extractCountryFromRow(item);
+
+      let numVal = parseFloat(rawVal);
+      if (isNaN(numVal) || numVal <= 0) {
+        return null;
+      }
+
+      if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+        numVal *= 10;
+      }
+
       return {
         country: rawCountry,
-        cleanKey: cleanName(rawCountry),
-        val: rawVal
+        cleanKey: cleanedName,
+        val: numVal
       };
     })
-    .filter(item => item.country !== '')
+    .filter(item => item !== null && item.country !== '')
     .sort((a, b) => {
       if (b.val !== a.val) return b.val - a.val;
       return a.cleanKey.localeCompare(b.cleanKey);
@@ -258,18 +279,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
         console.log(`📅 이전 비교 연도 컬럼 키: [${prevYearKey}]`);
 
+        // 과거 시계열에서도 '전세계' 및 0 이하인 값 순위 집계 제외
         let prevList = targetSeriesData
           .map(item => {
             let rawCountry = extractCountryFromRow(item);
-            let rawVal = item[prevYearKey];
+            let cleanedName = cleanName(rawCountry);
 
-            // 값이 없거나, 빈 문자열, null, undefined, N/A 형태인 경우 완전히 제외 (0점 처리 안함)
+            // 💡 과거 순위 산정 시에도 '전세계' 제외
+            if (cleanedName === '전세계') return null;
+
+            let rawVal = item[prevYearKey];
             if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
               return null;
             }
 
             let numVal = parseFloat(rawVal);
-            if (isNaN(numVal)) {
+            if (isNaN(numVal) || numVal <= 0) {
               return null;
             }
 
@@ -279,25 +304,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
             return {
               rawCountry: String(rawCountry).trim(),
-              cleanKey: cleanName(rawCountry),
+              cleanKey: cleanedName,
               val: numVal
             };
           })
-          // null이거나 국가명이 없는 항목 순위 집계에서 완전히 제거
           .filter(item => item !== null && item.cleanKey !== '')
           .sort((a, b) => {
             if (b.val !== a.val) return b.val - a.val;
             return a.cleanKey.localeCompare(b.cleanKey);
           });
 
-        console.log(`✅ [${prevYearKey}] 유효 데이터 유치 국가 수: ${prevList.length}개 (빈 값 국가 완벽 제외)`);
+        console.log(`✅ [${prevYearKey}] 유효 데이터 국가 수 (전세계 제외): ${prevList.length}개`);
 
+        // Pure 국가끼리만 비교 순위 집계
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
       }
     }
 
+    // 순위 할당
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
       const prevRank = prevRankMap.get(item.cleanKey);
@@ -311,22 +337,26 @@ document.addEventListener("DOMContentLoaded", function() {
       };
     });
 
+    // 💡 1인당 GDP일 때 '전세계' 카드는 참고용으로 목록 마지막/위치에 합쳐서 시각화만 수행
     if (key === '1인당GDP') {
       listData.push({
         country: '전세계',
         val: worldTotals.cap,
-        currentRank: null,
+        currentRank: null, // 순위 없음
         prevRank: null,
         isWorld: true
       });
+      // 값에 따라 정렬하여 막대 그래프 위치 배치
       listData.sort((a, b) => b.val - a.val);
     }
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
-    console.log("📈 [최종 렌더링 국가 수]:", listData.length);
+    console.log("📈 [최종 순위 집계 국가 수]:", currentList.length);
 
-    listData.forEach((item, index) => {
+    let rankCounter = 1; // 순수 국가용 순위 카운터
+
+    listData.forEach((item) => {
       let formattedVal = "";
       if (unitType === '달러') {
         formattedVal = formatMoney(item.val);
@@ -337,18 +367,29 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       let rankDiffHtml = "";
-      if (item.isWorld || key === '인구(만명)') {
+      let rankDisplay = "";
+
+      if (item.isWorld) {
+        // 전세계인 경우 순위 숫자를 표시하지 않고 변동 태그도 미표시
+        rankDisplay = "-";
         rankDiffHtml = "";
-      } else if (!item.prevRank) {
-        rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
       } else {
-        const diff = item.prevRank - item.currentRank;
-        if (diff > 0) {
-          rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
-        } else if (diff < 0) {
-          rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
+        rankDisplay = `${rankCounter}.`;
+        rankCounter++; // 국가일 때만 순위 번호 증가
+
+        if (key === '인구(만명)') {
+          rankDiffHtml = "";
+        } else if (!item.prevRank) {
+          rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
         } else {
-          rankDiffHtml = `<span class="rank-diff same">-</span>`;
+          const diff = item.prevRank - item.currentRank;
+          if (diff > 0) {
+            rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
+          } else if (diff < 0) {
+            rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
+          } else {
+            rankDiffHtml = `<span class="rank-diff same">-</span>`;
+          }
         }
       }
 
@@ -365,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function() {
       li.innerHTML = `
         <div class="rank-bar" style="width: ${percent}%;"></div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="rank-num">${index + 1}.</span>
+          <span class="rank-num">${rankDisplay}</span>
           ${rankDiffHtml}
           <span class="rank-country">${item.country}</span>
         </div>
