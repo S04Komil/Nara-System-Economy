@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
   // 1. 현재 연도 메인 통합 API
-  const API_URL = "https://script.google.com/macros/s/AKfycby7318OaG4EWW5oUAnkU9Jm5KkLwM8L12Y812/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec"; 
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://accounts.google.com/SignOutOptions?hl=ko&continue=https://script.google.com/u/0/home/projects/create%3Fparent%3D1BWPrs_3euui7_7wK62xmz248B4IMm7fLfVWX4x2-fLk%26emtoken%3DAYo8c-C6Y_rYLMcCAfQZDWK5_xsH:1788433042035&ec=GBRAiwMmacros/s/AKfycbzL5p4Gfllf7kAtT4EThm655xQ8vXInG52eGzJ-RmsS8Yg8T3v5eD0u0aN4j6Uf2bA8/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   // 3. 세계 통계 성장률 API (나라시스템 세계통계 구글시트 연동 Apps Script URL)
