@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
   // 2. 항목별 전체 연도 시계열 API (실제 배포된 Apps Script /exec 주소를 넣어주세요)
-  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbx.../exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycby.../exec";
-  const API_URL_CAP = "https://script.google.com/macros/s/AKfycbz.../exec";
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycby615xcDIINI3ER0PuYnjGTlahZfxHVVB0IcCaLt8T1fs6xP6s4WEDCh-K7xF0aOu8gRg/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzWJGsXLiZoqtRZZ9c-KLgD8TYbIHKE0pRQdMMioJUcwXN9Qh9OJKweTH_pmag73uOKPw/exec";
+  const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyLFzzbPTc9zJO5KIfkMSRF8-KZqMymmcC1pQcM702reQYa20h1NZ-QIe6sWa8lUULbiQ/exec";
 
   let mainData = [];
   let globalGdpData = [];
