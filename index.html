@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>나라시스템 경제 데이터 통계 대시보드</title>
-  
-  <!-- Chart.js 라이브러리 -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg-color: #f8f9fa;
@@ -78,7 +75,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 800px;
       margin: 24px auto;
       padding: 0 24px;
     }
@@ -95,7 +92,7 @@
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -120,12 +117,46 @@
       color: var(--primary-color);
     }
 
-    .chart-section {
+    .rank-section {
       background: var(--card-bg);
-      padding: 20px;
+      padding: 24px;
       border-radius: 8px;
       border: 1px solid var(--border-color);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* 순위 리스트 스타일링 */
+    .rank-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 0 0;
+    }
+
+    .rank-item {
+      display: flex;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 1.05rem;
+    }
+
+    .rank-item:last-child {
+      border-bottom: none;
+    }
+
+    .rank-num {
+      font-weight: bold;
+      width: 32px;
+      color: var(--primary-color);
+    }
+
+    .rank-country {
+      font-weight: 600;
+      margin-right: 12px;
+      min-width: 100px;
+    }
+
+    .rank-val {
+      color: #4a5568;
     }
 
     #loading {
@@ -146,21 +177,25 @@
     </div>
     <ul class="nav-menu">
       <li class="nav-item">
-        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', this)">GDP순위</button>
+        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', this)">GDP순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', this)">국방비순위</button>
+        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', this)">국방비순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', this)">인구순위</button>
+        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', this)">인구순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', this)">1인당GDP순위</button>
+        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', this)">1인당GDP순위</button>
       </li>
     </ul>
   </nav>
 
   <div class="container">
+    <header>
+      <h1>나라시스템 경제 통계 대시보드</h1>
+      <p style="color: #718096; margin: 0;">주요 국가 지표 통계 요약</p>
+    </header>
 
     <div id="loading">데이터를 불러오는 중입니다...</div>
 
@@ -176,9 +211,9 @@
         </div>
       </div>
 
-      <div class="chart-section">
-        <h3 id="chart-title" style="margin-top:0;">GDP 순위 (상위 10개국)</h3>
-        <canvas id="statChart" height="100"></canvas>
+      <div class="rank-section">
+        <h3 id="rank-title" style="margin:0 0 12px 0;">GDP 순위 (상위 10개국)</h3>
+        <ol class="rank-list" id="rank-list"></ol>
       </div>
     </div>
   </div>
@@ -188,8 +223,8 @@
       const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
       let globalData = [];
-      let chartInstance = null;
       let currentKey = 'GDP(10억달러)';
+      let currentType = '달러';
 
       fetch(API_URL)
         .then(response => response.json())
@@ -206,7 +241,7 @@
           document.getElementById('dashboard').style.display = 'block';
 
           renderKPI(data);
-          renderChart(data, currentKey);
+          renderRankList(data, currentKey, currentType);
         })
         .catch(error => {
           console.error('Error:', error);
@@ -223,49 +258,76 @@
         document.getElementById('kpi-top-gdp').innerText = topCountry['국가'] || '-';
       }
 
-      function renderChart(data, dataKey) {
-        const ctx = document.getElementById('statChart').getContext('2d');
-        
-        const chartData = [...data]
+      // 숫자 금액을 조, 억, 만 단위 문자열로 자동 변환
+      function formatMoney(billionVal) {
+        let val = Math.round((parseFloat(billionVal) || 0) * 100000000); // 10억 달러 -> 달러 환산
+        if (val === 0) return "0달러";
+
+        let result = "";
+        const jo = Math.floor(val / 1000000000000);
+        val %= 1000000000000;
+        const eok = Math.floor(val / 100000000);
+        val %= 100000000;
+        const man = Math.floor(val / 10000);
+
+        if (jo > 0) result += `${jo}조 `;
+        if (eok > 0) result += `${eok.toLocaleString()}억 `;
+        if (man > 0) result += `${man.toLocaleString()}만`;
+
+        return result.trim() + "달러";
+      }
+
+      // 인구수(만 명 단위) 변환
+      function formatPopulation(tenThousandVal) {
+        let val = Math.round((parseFloat(tenThousandVal) || 0) * 10000);
+        if (val >= 100000000) {
+          const eok = (val / 100000000).toFixed(2);
+          return `${eok}억명`;
+        } else {
+          return `${(val / 10000).toLocaleString()}만명`;
+        }
+      }
+
+      function renderRankList(data, dataKey, unitType) {
+        const listEl = document.getElementById('rank-list');
+        listEl.innerHTML = '';
+
+        const sortedData = [...data]
           .sort((a, b) => (parseFloat(b[dataKey]) || 0) - (parseFloat(a[dataKey]) || 0))
           .slice(0, 10);
 
-        const labels = chartData.map(item => item['국가'] || 'N/A');
-        const values = chartData.map(item => parseFloat(item[dataKey]) || 0);
+        sortedData.forEach((item, index) => {
+          const rawVal = parseFloat(item[dataKey]) || 0;
+          let formattedVal = "";
 
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
-
-        chartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: dataKey,
-              data: values,
-              backgroundColor: 'rgba(43, 108, 176, 0.75)',
-              borderColor: 'rgba(43, 108, 176, 1)',
-              borderWidth: 1,
-              borderRadius: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
+          if (unitType === '달러') {
+            formattedVal = formatMoney(rawVal);
+          } else if (unitType === '명') {
+            formattedVal = formatPopulation(rawVal);
+          } else if (unitType === '달러_직접') {
+            formattedVal = `${Math.round(rawVal).toLocaleString()}달러`;
           }
+
+          const li = document.createElement('li');
+          li.className = 'rank-item';
+          li.innerHTML = `
+            <span class="rank-num">${index + 1}.</span>
+            <span class="rank-country">${item['국가'] || 'N/A'}</span>
+            <span class="rank-val">${formattedVal}</span>
+          `;
+          listEl.appendChild(li);
         });
       }
 
-      window.switchCategory = function(key, title, btnElement) {
+      window.switchCategory = function(key, title, unitType, btnElement) {
         currentKey = key;
-        document.getElementById('chart-title').innerText = title;
+        currentType = unitType;
+        document.getElementById('rank-title').innerText = title;
 
         document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
 
-        renderChart(globalData, currentKey);
+        renderRankList(globalData, currentKey, currentType);
       };
     });
   </script>
