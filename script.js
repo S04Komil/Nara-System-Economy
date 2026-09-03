@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzL5p4Gfllf7kAtT4EThm655xQ8vXInG52eGzJ-RmsS8Yg8T3v5eD0u0aN4j6Uf2bA8/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   let mainData = [];
@@ -226,16 +226,26 @@ document.addEventListener("DOMContentLoaded", function() {
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
+    // 💡 메인 데이터 정렬 (방법 B: 값이 같으면 국가명 기준 2차 정렬)
     let currentList = mainData.map(item => {
       let rawVal = parseFloat(item[key]) || 0;
       if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
         rawVal *= 10;
       }
+      const rawCountry = (item['국가'] || item['카테고리'] || '').trim();
       return {
-        country: (item['국가'] || item['카테고리'] || '').trim(),
+        country: rawCountry,
+        cleanKey: cleanName(rawCountry),
         val: rawVal
       };
-    }).filter(item => item.country !== '').sort((a, b) => b.val - a.val);
+    })
+    .filter(item => item.country !== '')
+    .sort((a, b) => {
+      if (b.val !== a.val) {
+        return b.val - a.val;
+      }
+      return a.cleanKey.localeCompare(b.cleanKey);
+    });
 
     let targetSeriesData = [];
     if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
@@ -244,13 +254,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const prevRankMap = new Map();
 
-    if (targetSeriesData && targetSeriesData.length > 0) {
+    // 💡 인구(만명) 항목이 아니며, 시계열 데이터가 존재하는 경우에만 전년도 순위 계산
+    if (key !== '인구(만명)' && targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
       console.group(`📊 [${title}] 시계열 데이터 파싱 정밀 디버깅`);
       console.log("감지된 전체 연도 컬럼 목록:", yearKeys);
 
-      // 메인 기준 연도(currentSheetYear) 이하의 연도 컬럼만 사용하도록 필터링
       const validYearKeys = yearKeys.filter(k => {
         const y = parseInt(k.replace(/[^\d]/g, ''), 10);
         return y <= currentSheetYear;
@@ -259,11 +269,11 @@ document.addEventListener("DOMContentLoaded", function() {
       console.log(`메인 기준 연도(${currentSheetYear}년) 이하 유효 연도 목록:`, validYearKeys);
 
       if (validYearKeys.length > 0) {
-        // 메인 연도 이전 연도 (마지막-1 또는 1개뿐인 경우 해당 연도)
         let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
         let prevYearKey = validYearKeys[targetIndex];
         console.log("선택된 비교 대상 전년도 키:", prevYearKey);
 
+        // 💡 전년도 데이터 정렬 (방법 B: 값이 같으면 국가명 기준 2차 정렬)
         let prevList = targetSeriesData.map(item => {
           let rawVal = parseFloat(item[prevYearKey]) || 0;
           if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
@@ -279,7 +289,12 @@ document.addEventListener("DOMContentLoaded", function() {
           };
         })
         .filter(item => item.cleanKey !== '')
-        .sort((a, b) => b.val - a.val);
+        .sort((a, b) => {
+          if (b.val !== a.val) {
+            return b.val - a.val;
+          }
+          return a.cleanKey.localeCompare(b.cleanKey);
+        });
 
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
@@ -290,8 +305,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let listData = currentList.map((item, idx) => {
       const currentRank = idx + 1;
-      const cleanCountryKey = cleanName(item.country);
-      const prevRank = prevRankMap.get(cleanCountryKey);
+      const prevRank = prevRankMap.get(item.cleanKey);
 
       return {
         country: item.country,
@@ -326,7 +340,8 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       let rankDiffHtml = "";
-      if (item.isWorld) {
+      if (item.isWorld || key === '인구(만명)') {
+        // 인구 항목이거나 전세계 항목인 경우 변동 표시 제외
         rankDiffHtml = "";
       } else if (!item.prevRank) {
         rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
@@ -337,7 +352,6 @@ document.addEventListener("DOMContentLoaded", function() {
         } else if (diff < 0) {
           rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
         } else {
-          // 💡 변동 없음 클래스(same) 추가
           rankDiffHtml = `<span class="rank-diff same">-</span>`;
         }
       }
