@@ -1,168 +1,125 @@
-document.addEventListener("DOMContentLoaded", function() {
-  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나라시스템 경제 데이터 통계 대시보드</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  let globalData = [];
+  <!-- 상단 네비게이션 메뉴 -->
+  <nav>
+    <div class="logo-container" onclick="showMainView()">
+      <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">GDP순위</button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-def-btn" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">국방비순위</button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-pop-btn" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">인구순위</button>
+      </li>
+      <li class="nav-item">
+        <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
+      </li>
+    </ul>
+  </nav>
 
-  fetch(API_URL)
-    .then(response => response.json())
-    .then(res => {
-      document.getElementById('loading').style.display = 'none';
+  <div class="container">
+    <div id="loading">데이터를 불러오는 중입니다...</div>
 
-      let data = res.data || res;
-      let sheetName = res.sheetName || (data[0] ? (data[0]['연도'] || data[0]['year']) : null);
+    <div id="dashboard" style="display: none;">
+      
+      <!-- 1. 메인 대시보드 화면 -->
+      <div id="main-view">
+        <div class="main-header">
+          <h2 class="main-title">종목별 1위 현황</h2>
+          <div class="year-badge" id="data-year">기준 연도 불러오는 중...</div>
+        </div>
 
-      if (!data || data.length === 0) {
-        document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
-        document.getElementById('loading').style.display = 'block';
-        return;
-      }
+        <div class="top-cards-grid">
+          <!-- GDP 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">GDP 1위</div>
+              <div class="top-card-country" id="top-gdp-country">-</div>
+              <div class="top-card-val" id="top-gdp-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
+          </div>
 
-      globalData = data;
-      document.getElementById('dashboard').style.display = 'block';
+          <!-- 국방비 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">국방비 1위</div>
+              <div class="top-card-country" id="top-def-country">-</div>
+              <div class="top-card-val" id="top-def-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
+          </div>
 
-      // 시트 이름(연도) 반영
-      if (sheetName) {
-        document.getElementById('data-year').innerText = `${sheetName}년 기준`;
-      } else {
-        document.getElementById('data-year').innerText = `최신 데이터 기준`;
-      }
+          <!-- 인구수 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">인구수 1위</div>
+              <div class="top-card-country" id="top-pop-country">-</div>
+              <div class="top-card-val" id="top-pop-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
+          </div>
 
-      renderMainCards(data);
-      renderWorldStats(data);
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
-    });
+          <!-- 1인당 GDP 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">1인당 GDP 1위</div>
+              <div class="top-card-country" id="top-cap-country">-</div>
+              <div class="top-card-val" id="top-cap-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
+          </div>
+        </div>
 
-  function formatMoney(billionVal) {
-    let val = Math.round((parseFloat(billionVal) || 0) * 100000000);
-    if (val === 0) return "0달러";
+        <!-- 2. 세계 통계 섹션 (성장률 제거) -->
+        <div class="world-stats-section">
+          <h2 class="section-title">세계 통계</h2>
+          <div class="world-cards-grid">
+            <div class="world-card">
+              <div class="world-card-title">세계 총 GDP</div>
+              <div class="world-card-val" id="world-gdp">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 총 인구수</div>
+              <div class="world-card-val" id="world-pop">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 총 국방비</div>
+              <div class="world-card-val" id="world-def">-</div>
+            </div>
+            <div class="world-card">
+              <div class="world-card-title">세계 평균 1인당 GDP</div>
+              <div class="world-card-val" id="world-cap">-</div>
+            </div>
+          </div>
+        </div>
 
-    let result = "";
-    const jo = Math.floor(val / 1000000000000);
-    val %= 1000000000000;
-    const eok = Math.floor(val / 100000000);
-    val %= 100000000;
-    const man = Math.floor(val / 10000);
+      </div>
 
-    if (jo > 0) result += `${jo}조 `;
-    if (eok > 0) result += `${eok.toLocaleString()}억 `;
-    if (man > 0) result += `${man.toLocaleString()}만`;
+      <!-- 3. 순위 상세보기 화면 -->
+      <div id="rank-view" style="display: none;">
+        <div class="rank-section">
+          <h3 id="rank-title" style="margin:0 0 16px 0;">순위 목록</h3>
+          <ol class="rank-list" id="rank-list"></ol>
+        </div>
+      </div>
 
-    return result.trim() + "달러";
-  }
+    </div>
+  </div>
 
-  function formatPopulation(tenThousandVal) {
-    let val = Math.round((parseFloat(tenThousandVal) || 0) * 10000);
-    if (val >= 100000000) {
-      const eok = (val / 100000000).toFixed(2);
-      return `${eok}억 명`;
-    } else {
-      return `${(val / 10000).toLocaleString()}만 명`;
-    }
-  }
-
-  function renderMainCards(data) {
-    const getTop = (key) => data.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, data[0]);
-
-    const topGdp = getTop('GDP(10억달러)');
-    const topDef = getTop('국방비(10억달러)');
-    const topPop = getTop('인구(만명)');
-    const topCap = getTop('1인당GDP');
-
-    document.getElementById('top-gdp-country').innerText = topGdp['국가'] || '-';
-    document.getElementById('top-gdp-val').innerText = formatMoney(topGdp['GDP(10억달러)']);
-
-    document.getElementById('top-def-country').innerText = topDef['국가'] || '-';
-    document.getElementById('top-def-val').innerText = formatMoney(topDef['국방비(10억달러)']);
-
-    document.getElementById('top-pop-country').innerText = topPop['국가'] || '-';
-    document.getElementById('top-pop-val').innerText = formatPopulation(topPop['인구(만명)']);
-
-    document.getElementById('top-cap-country').innerText = topCap['국가'] || '-';
-    document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
-  }
-
-  // 데이터 합산 기반 세계 통계 구하기
-  function renderWorldStats(data) {
-    if (!data || data.length === 0) return;
-
-    let totalGdp = 0;   // 10억 달러 단위 합산
-    let totalPop = 0;   // 만 명 단위 합산
-    let totalDef = 0;   // 10억 달러 단위 합산
-
-    data.forEach(item => {
-      totalGdp += parseFloat(item['GDP(10억달러)']) || 0;
-      totalPop += parseFloat(item['인구(만명)']) || 0;
-      totalDef += parseFloat(item['국방비(10억달러)']) || 0;
-    });
-
-    // 1. 세계 총 GDP (합산)
-    document.getElementById('world-gdp').innerText = formatMoney(totalGdp);
-
-    // 2. 세계 총 인구수 (합산)
-    document.getElementById('world-pop').innerText = formatPopulation(totalPop);
-
-    // 3. 세계 총 국방비 (합산)
-    document.getElementById('world-def').innerText = formatMoney(totalDef);
-
-    // 4. 세계 1인당 GDP = (세계 총 GDP / 세계 총 인구수)
-    // totalGdp: 10억 달러 ($1,000,000,000), totalPop: 만 명 (10,000명)
-    // 단위 계산: (totalGdp * 1,000,000,000) / (totalPop * 10,000) = (totalGdp / totalPop) * 100,000
-    if (totalPop > 0) {
-      let perCapitaGdp = (totalGdp / totalPop) * 100000;
-      document.getElementById('world-cap').innerText = `${Math.round(perCapitaGdp).toLocaleString()} 달러`;
-    } else {
-      document.getElementById('world-cap').innerText = '-';
-    }
-  }
-
-  window.showMainView = function() {
-    document.getElementById('main-view').style.display = 'block';
-    document.getElementById('rank-view').style.display = 'none';
-
-    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-  };
-
-  window.switchCategory = function(key, title, unitType, navBtnId) {
-    document.getElementById('main-view').style.display = 'none';
-    document.getElementById('rank-view').style.display = 'block';
-
-    document.getElementById('rank-title').innerText = title;
-
-    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-    if(navBtnId) {
-      document.getElementById(navBtnId).classList.add('active');
-    }
-
-    const listEl = document.getElementById('rank-list');
-    listEl.innerHTML = '';
-
-    const sortedData = [...globalData]
-      .sort((a, b) => (parseFloat(b[key]) || 0) - (parseFloat(a[key]) || 0))
-      .slice(0, 10);
-
-    sortedData.forEach((item, index) => {
-      const rawVal = parseFloat(item[key]) || 0;
-      let formattedVal = "";
-
-      if (unitType === '달러') {
-        formattedVal = formatMoney(rawVal);
-      } else if (unitType === '명') {
-        formattedVal = formatPopulation(rawVal);
-      } else if (unitType === '달러_직접') {
-        formattedVal = `${Math.round(rawVal).toLocaleString()} 달러`;
-      }
-
-      const li = document.createElement('li');
-      li.className = 'rank-item';
-      li.innerHTML = `
-        <span class="rank-num">${index + 1}.</span>
-        <span class="rank-country">${item['국가'] || 'N/A'}</span>
-        <span class="rank-val">${formattedVal}</span>
-      `;
-      listEl.appendChild(li);
-    });
-  };
-});
+  <script src="script.js"></script>
+</body>
+</html>
