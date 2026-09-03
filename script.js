@@ -1,40 +1,56 @@
 document.addEventListener("DOMContentLoaded", function() {
+  // 1. 메인 연도 데이터 API
   const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+  
+  // 2. 항목별 시계열(전체 연도) API - (실제 구글 Apps Script 웹앱 URL을 입력해주세요)
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycby615xcDIINI3ER0PuYnjGTlahZfxHVVB0IcCaLt8T1fs6xP6s4WEDCh-K7xF0aOu8gRg/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzWJGsXLiZoqtRZZ9c-KLgD8TYbIHKE0pRQdMMioJUcwXN9Qh9OJKweTH_pmag73uOKPw/exec";
+  const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyLFzzbPTc9zJO5KIfkMSRF8-KZqMymmcC1pQcM702reQYa20h1NZ-QIe6sWa8lUULbiQ/exec";
 
-  let globalData = [];
+  let mainData = [];
+  let globalGdpData = [];
+  let globalDefData = [];
+  let globalCapData = [];
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
-  fetch(API_URL)
-    .then(response => response.json())
-    .then(res => {
-      document.getElementById('loading').style.display = 'none';
+  // 4개 API 병렬 호출
+  Promise.all([
+    fetch(API_URL).then(res => res.json()).catch(() => null),
+    fetch(API_URL_GDP).then(res => res.json()).catch(() => null),
+    fetch(API_URL_DEF).then(res => res.json()).catch(() => null),
+    fetch(API_URL_CAP).then(res => res.json()).catch(() => null)
+  ])
+  .then(([mainRes, gdpRes, defRes, capRes]) => {
+    document.getElementById('loading').style.display = 'none';
 
-      let data = res.data || res;
-      let sheetName = res.sheetName || (data[0] ? (data[0]['연도'] || data[0]['year']) : null);
+    mainData = mainRes ? (mainRes.data || mainRes) : [];
+    globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
+    globalDefData = defRes ? (defRes.data || defRes) : [];
+    globalCapData = capRes ? (capRes.data || capRes) : [];
 
-      if (!data || data.length === 0) {
-        document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
-        document.getElementById('loading').style.display = 'block';
-        return;
-      }
+    if (!mainData || mainData.length === 0) {
+      document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
+      document.getElementById('loading').style.display = 'block';
+      return;
+    }
 
-      globalData = data;
-      document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'block';
 
-      if (sheetName) {
-        document.getElementById('data-year').innerText = `${sheetName}년 기준`;
-      } else {
-        document.getElementById('data-year').innerText = `최신 데이터 기준`;
-      }
+    let sheetName = mainRes ? mainRes.sheetName : null;
+    if (sheetName) {
+      document.getElementById('data-year').innerText = `${sheetName}년 기준`;
+    } else {
+      document.getElementById('data-year').innerText = `최신 데이터 기준`;
+    }
 
-      calculateWorldTotals(data);
-      renderMainCards(data);
-      renderWorldStats();
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
-    });
+    calculateWorldTotals(mainData);
+    renderMainCards(mainData);
+    renderWorldStats();
+  })
+  .catch(error => {
+    console.error('Data Fetch Error:', error);
+    document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
+  });
 
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
@@ -125,33 +141,63 @@ document.addEventListener("DOMContentLoaded", function() {
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
 
-    // 기준 세계 총 값 및 최대값 설정 (바 백분율 계산용)
     let totalBaseVal = 0;
     if (key === 'GDP(10억달러)') totalBaseVal = worldTotals.gdp;
     else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
     else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
 
-    let listData = globalData.map(item => ({
-      country: item['국가'] || 'N/A',
-      val: parseFloat(item[key]) || 0,
-      isWorld: false
-    }));
+    const prevKey = `${key}_prev`;
 
-    // 1인당 GDP 선택 시 목록에 '전세계' 항목 추가
+    // 1. 현재 연도 데이터 구성 및 정렬
+    let currentList = mainData.map(item => ({
+      country: item['국가'] || 'N/A',
+      categoryGroup: item['카테고리'] || item['국가'],
+      val: parseFloat(item[key]) || 0
+    })).sort((a, b) => b.val - a.val);
+
+    // 2. 직전 연도 데이터 구성 및 정렬 (순위 맵 생성을 위함)
+    let prevList = mainData
+      .filter(item => item[prevKey] !== undefined && item[prevKey] !== null && item[prevKey] !== '')
+      .map(item => ({
+        country: item['국가'],
+        categoryGroup: item['카테고리'] || item['국가'],
+        val: parseFloat(item[prevKey]) || 0
+      }))
+      .sort((a, b) => b.val - a.val);
+
+    const prevRankMap = new Map();
+    prevList.forEach((item, idx) => {
+      prevRankMap.set(item.categoryGroup, idx + 1);
+    });
+
+    // 3. 현재/직전 순위 비교 조합
+    let listData = currentList.map((item, idx) => {
+      const currentRank = idx + 1;
+      const prevRank = prevRankMap.get(item.categoryGroup);
+
+      return {
+        country: item.country,
+        val: item.val,
+        currentRank: currentRank,
+        prevRank: prevRank || null,
+        isWorld: false
+      };
+    });
+
     if (key === '1인당GDP') {
       listData.push({
         country: '전세계',
         val: worldTotals.cap,
+        currentRank: null,
+        prevRank: null,
         isWorld: true
       });
+      listData.sort((a, b) => b.val - a.val);
     }
 
-    // 값 내림차순 정렬
-    listData.sort((a, b) => b.val - a.val);
-
-    // 1인당 GDP의 바 비율 계산 기준 (최대값)
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
 
+    // 4. 화면 출력 및 순위 변동(▲/▼/NEW/-) 아이콘 표시
     listData.forEach((item, index) => {
       let formattedVal = "";
       if (unitType === '달러') {
@@ -162,7 +208,23 @@ document.addEventListener("DOMContentLoaded", function() {
         formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
       }
 
-      // 프로그레스 바 백분율 계산
+      // 순위 변동 HTML 생성
+      let rankDiffHtml = "";
+      if (item.isWorld) {
+        rankDiffHtml = "";
+      } else if (!item.prevRank) {
+        rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
+      } else {
+        const diff = item.prevRank - item.currentRank;
+        if (diff > 0) {
+          rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
+        } else if (diff < 0) {
+          rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
+        } else {
+          rankDiffHtml = `<span class="rank-diff same">-</span>`;
+        }
+      }
+
       let percent = 0;
       if (key === '1인당GDP') {
         percent = (item.val / maxValInList) * 100;
@@ -175,8 +237,9 @@ document.addEventListener("DOMContentLoaded", function() {
       li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
       li.innerHTML = `
         <div class="rank-bar" style="width: ${percent}%;"></div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
           <span class="rank-num">${index + 1}.</span>
+          ${rankDiffHtml}
           <span class="rank-country">${item.country}</span>
         </div>
         <span class="rank-val">${formattedVal}</span>
