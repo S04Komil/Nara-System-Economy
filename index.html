@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>나라시스템 경제 데이터</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>나라시스템 경제 데이터 목록</h1>
+  <div id="loading">데이터를 불러오는 중...</div>
+  <table id="data-table" style="display:none;">
+    <thead id="table-head"></thead>
+    <tbody id="table-body"></tbody>
+  </table>
 
+  <script>
+    // 배포 시 생성된 웹 앱 URL 입력
+    const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+
+    fetch(API_URL)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        
+        if (!data || data.length === 0) {
+          document.getElementById('loading').innerText = '데이터가 없습니다.';
+          document.getElementById('loading').style.display = 'block';
+          return;
+        }
+
+        document.getElementById('data-table').style.display = 'table';
+        
+        // 테이블 헤더 자동 생성
+        const headers = Object.keys(data[0]);
+        const thead = document.getElementById('table-head');
+        let headRow = '<tr>';
+        headers.forEach(header => {
+          headRow += `<th>${header}</th>`;
+        });
+        headRow += '</tr>';
+        thead.innerHTML = headRow;
+
+        // 테이블 데이터 자동 생성
+        const tbody = document.getElementById('table-body');
+        data.forEach(row => {
+          let bodyRow = '<tr>';
+          headers.forEach(header => {
+            bodyRow += `<td>${row[header] !== undefined ? row[header] : ''}</td>`;
+          });
+          bodyRow += '</tr>';
+          tbody.innerHTML += bodyRow;
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
+      });
+  </script>
+</body>
+</html>
