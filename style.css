@@ -296,3 +296,10 @@ nav {
   color: #d69e2e;
   background-color: #fefcbf;
 }
+
+/* 순위 변동 없음(-) 배지 강조 */
+.rank-diff.same {
+  color: #5f6368;
+  background-color: #f1f3f4;
+  border: 1px solid #dadce0;
+}
