@@ -232,9 +232,6 @@ document.addEventListener("DOMContentLoaded", function() {
       return a.cleanKey.localeCompare(b.cleanKey);
     });
 
-    // 메인 데이터에 존재하는 국가들의 cleanKey Set 생성
-    const mainCountryKeys = new Set(currentList.map(item => item.cleanKey));
-
     let targetSeriesData = [];
     if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
     else if (key === '국방비(10억달러)') targetSeriesData = globalDefData;
@@ -254,36 +251,43 @@ document.addEventListener("DOMContentLoaded", function() {
         let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
         let prevYearKey = validYearKeys[targetIndex];
 
-        // 💡 [방법 A] 현재 메인 데이터에 존재하는 국가들만 추출하여 그들 간의 전년도 순위 산출
+        // 💡 비어있거나 데이터가 없는 항목은 0으로 바꾸지 않고 null로 리턴하여 완벽 제외
         let prevList = targetSeriesData
           .map(item => {
-            let rawVal = parseFloat(item[prevYearKey]) || 0;
-            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
-              rawVal *= 10;
-            }
             let rawCountry = extractCountryFromRow(item);
+            let rawVal = item[prevYearKey];
+
+            // 값이 없거나, 빈 문자열, null, undefined, N/A 형태인 경우 제외
+            if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+              return null;
+            }
+
+            let numVal = parseFloat(rawVal);
+            if (isNaN(numVal)) {
+              return null;
+            }
+
+            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+              numVal *= 10;
+            }
+
             return {
               rawCountry: String(rawCountry).trim(),
               cleanKey: cleanName(rawCountry),
-              val: rawVal
+              val: numVal
             };
           })
-          // 현재 메인 화면에 존재하는 국가만 필터링
-          .filter(item => item.cleanKey !== '' && mainCountryKeys.has(item.cleanKey))
+          // null이거나 국가명이 없는 항목 순위 집계에서 배제
+          .filter(item => item !== null && item.cleanKey !== '')
           .sort((a, b) => {
             if (b.val !== a.val) return b.val - a.val;
             return a.cleanKey.localeCompare(b.cleanKey);
           });
 
-        // 상대 순위 매핑
+        // 유효한 수치를 가진 국가들만 정렬하여 전년도 순위 매핑
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
         });
-
-        console.group(`🔍 [${title}] 방법 A: 상대 순위 매칭 검증`);
-        console.log(`비교 연도 키: ${prevYearKey}`);
-        console.log(`메인 국가 수: ${currentList.length}개 / 시계열 상대 매칭 성공: ${prevRankMap.size}개`);
-        console.groupEnd();
       }
     }
 
