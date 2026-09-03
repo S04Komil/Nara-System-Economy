@@ -264,3 +264,35 @@ nav {
 .rank-item.world-item .rank-bar {
   background: #bee3f8;
 }
+/* 순위 변동 배지 기본 스타일 */
+.rank-diff {
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* 상승: 빨간색 계열 */
+.rank-diff.up {
+  color: #e53e3e;
+  background-color: #fff5f5;
+}
+
+/* 하락: 파란색 계열 */
+.rank-diff.down {
+  color: #3182ce;
+  background-color: #ebf8ff;
+}
+
+/* 유지 */
+.rank-diff.same {
+  color: #a0aec0;
+}
+
+/* 신규 진입 */
+.rank-diff.new {
+  color: #d69e2e;
+  background-color: #fefcbf;
+}
