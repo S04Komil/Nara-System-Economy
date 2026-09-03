@@ -80,16 +80,6 @@
       padding: 0 24px;
     }
 
-    header {
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      margin: 0 0 8px 0;
-      color: #1a202c;
-    }
-
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -177,26 +167,21 @@
     </div>
     <ul class="nav-menu">
       <li class="nav-item">
-        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', this)">GDP순위</button>
+        <button class="active" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', '최고 GDP 국가', this)">GDP순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', this)">국방비순위</button>
+        <button onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', '최고 국방비 국가', this)">국방비순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', this)">인구순위</button>
+        <button onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', '최다 인구 국가', this)">인구순위</button>
       </li>
       <li class="nav-item">
-        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', this)">1인당GDP순위</button>
+        <button onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', '최고 1인당 GDP 국가', this)">1인당GDP순위</button>
       </li>
     </ul>
   </nav>
 
   <div class="container">
-    <header>
-      <h1>나라시스템 경제 통계 대시보드</h1>
-      <p style="color: #718096; margin: 0;">주요 국가 지표 통계 요약</p>
-    </header>
-
     <div id="loading">데이터를 불러오는 중입니다...</div>
 
     <div id="dashboard" style="display: none;">
@@ -206,8 +191,8 @@
           <div class="kpi-value" id="kpi-count">0</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-title">최고 GDP 국가</div>
-          <div class="kpi-value" id="kpi-top-gdp">-</div>
+          <div class="kpi-title" id="kpi-top-title">최고 GDP 국가</div>
+          <div class="kpi-value" id="kpi-top-country">-</div>
         </div>
       </div>
 
@@ -225,6 +210,7 @@
       let globalData = [];
       let currentKey = 'GDP(10억달러)';
       let currentType = '달러';
+      let currentKpiTitle = '최고 GDP 국가';
 
       fetch(API_URL)
         .then(response => response.json())
@@ -240,7 +226,7 @@
           globalData = data;
           document.getElementById('dashboard').style.display = 'block';
 
-          renderKPI(data);
+          renderKPI(data, currentKey, currentKpiTitle);
           renderRankList(data, currentKey, currentType);
         })
         .catch(error => {
@@ -248,19 +234,22 @@
           document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
         });
 
-      function renderKPI(data) {
+      // KPI 카드 데이터 업데이트 (선택된 항목 기준 1위 국가 산출)
+      function renderKPI(data, dataKey, kpiTitleText) {
         document.getElementById('kpi-count').innerText = `${data.length}개`;
+        document.getElementById('kpi-top-title').innerText = kpiTitleText;
+
         const topCountry = data.reduce((max, item) => {
-          const val = parseFloat(item['GDP(10억달러)']) || 0;
-          return val > (parseFloat(max['GDP(10억달러)']) || 0) ? item : max;
+          const val = parseFloat(item[dataKey]) || 0;
+          return val > (parseFloat(max[dataKey]) || 0) ? item : max;
         }, data[0]);
 
-        document.getElementById('kpi-top-gdp').innerText = topCountry['국가'] || '-';
+        document.getElementById('kpi-top-country').innerText = topCountry['국가'] || '-';
       }
 
       // 숫자 금액을 조, 억, 만 단위 문자열로 자동 변환
       function formatMoney(billionVal) {
-        let val = Math.round((parseFloat(billionVal) || 0) * 100000000); // 10억 달러 -> 달러 환산
+        let val = Math.round((parseFloat(billionVal) || 0) * 100000000);
         if (val === 0) return "0달러";
 
         let result = "";
@@ -319,14 +308,17 @@
         });
       }
 
-      window.switchCategory = function(key, title, unitType, btnElement) {
+      window.switchCategory = function(key, title, unitType, kpiTitleText, btnElement) {
         currentKey = key;
         currentType = unitType;
+        currentKpiTitle = kpiTitleText;
+
         document.getElementById('rank-title').innerText = title;
 
         document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
 
+        renderKPI(globalData, currentKey, currentKpiTitle);
         renderRankList(globalData, currentKey, currentType);
       };
     });
