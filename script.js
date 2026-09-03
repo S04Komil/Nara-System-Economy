@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   // 3. 세계 통계 성장률 API (나라시스템 세계통계 구글시트 연동 Apps Script URL)
-  const API_URL_GROWTH = "YOUR_APPS_SCRIPT_GROWTH_API_URL"; 
+  const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
 
   let mainData = [];
   let globalGdpData = [];
