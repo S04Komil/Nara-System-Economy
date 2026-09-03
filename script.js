@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
   const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
   // 3개의 독립된 Apps Script API URL 설정
-  const API_URL_GDP = "https://script.google.com/macros/s/AKfycby615xcDIINI3ER0PuYnjGTlahZfxHVVB0IcCaLt8T1fs6xP6s4WEDCh-K7xF0aOu8gRg/execc";
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycby615xcDIINI3ER0PuYnjGTlahZfxHVVB0IcCaLt8T1fs6xP6s4WEDCh-K7xF0aOu8gRg/exec";
   const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzWJGsXLiZoqtRZZ9c-KLgD8TYbIHKE0pRQdMMioJUcwXN9Qh9OJKweTH_pmag73uOKPw/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyLFzzbPTc9zJO5KIfkMSRF8-KZqMymmcC1pQcM702reQYa20h1NZ-QIe6sWa8lUULbiQ/exec";
 
@@ -13,22 +13,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
 
-  // 3개의 API를 병렬로 동시 호출
+  // 4개의 API를 병렬로 동시 호출 (API_URL 추가)
   Promise.all([
+    fetch(API_URL).then(res => res.json()).catch(() => null),
     fetch(API_URL_GDP).then(res => res.json()).catch(() => null),
     fetch(API_URL_DEF).then(res => res.json()).catch(() => null),
     fetch(API_URL_CAP).then(res => res.json()).catch(() => null)
   ])
-  .then(([gdpRes, defRes, capRes]) => {
+  .then(([mainRes, gdpRes, defRes, capRes]) => {
     document.getElementById('loading').style.display = 'none';
 
+    // 1. API_URL에서 현재 연도 메인 데이터 및 연도 정보 추출
+    let mainData = mainRes ? (mainRes.data || mainRes) : [];
+    
+    // 2. 각 항목별 전체 연도 데이터 저장
     globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 기준 연도 설정 (GDP 응답 기준)
-    if (gdpRes && gdpRes.sheetName) {
-      currentSheetYear = gdpRes.sheetName;
+    // 기준 연도 설정 (API_URL의 sheetName 기준)
+    if (mainRes && mainRes.sheetName) {
+      currentSheetYear = mainRes.sheetName;
       document.getElementById('data-year').innerText = `${currentSheetYear}년 기준`;
     } else {
       document.getElementById('data-year').innerText = `최신 데이터 기준`;
@@ -36,8 +41,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById('dashboard').style.display = 'block';
 
-    calculateWorldTotals();
-    renderMainCards();
+    // 메인 카드 및 전체 통계 연산은 API_URL(mainData) 기반으로 수행
+    calculateWorldTotals(mainData);
+    renderMainCards(mainData);
     renderWorldStats();
   })
   .catch(error => {
