@@ -203,3 +203,37 @@ nav {
   font-size: 1.1rem;
   color: #718096;
 }
+/* 세계 통계 카드 전용 스타일 */
+    .world-stats-section {
+      margin-top: 36px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+    .world-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .world-card {
+      background: var(--card-bg, #ffffff);
+      padding: 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .world-card-title {
+      font-size: 0.85rem;
+      color: #718096;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .world-card-val {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2b6cb0;
+    }
