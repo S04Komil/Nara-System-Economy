@@ -16,16 +16,16 @@
     </div>
     <ul class="nav-menu">
       <li class="nav-item">
-        <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">GDP순위</button>
+        <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn')">GDP순위</button>
       </li>
       <li class="nav-item">
-        <button id="nav-def-btn" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">국방비순위</button>
+        <button id="nav-def-btn" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (전체)', '달러', 'nav-def-btn')">국방비순위</button>
       </li>
       <li class="nav-item">
-        <button id="nav-pop-btn" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">인구순위</button>
+        <button id="nav-pop-btn" onclick="switchCategory('인구(만명)', '인구 순위 (전체)', '명', 'nav-pop-btn')">인구순위</button>
       </li>
       <li class="nav-item">
-        <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
+        <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
       </li>
     </ul>
   </nav>
@@ -50,7 +50,7 @@
               <div class="top-card-country" id="top-gdp-country">-</div>
               <div class="top-card-val" id="top-gdp-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (상위 10개국)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 국방비 1위 카드 -->
@@ -60,7 +60,7 @@
               <div class="top-card-country" id="top-def-country">-</div>
               <div class="top-card-val" id="top-def-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (상위 10개국)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (전체)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 인구수 1위 카드 -->
@@ -70,7 +70,7 @@
               <div class="top-card-country" id="top-pop-country">-</div>
               <div class="top-card-val" id="top-pop-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('인구(만명)', '인구 순위 (상위 10개국)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('인구(만명)', '인구 순위 (전체)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 1인당 GDP 1위 카드 -->
@@ -80,11 +80,11 @@
               <div class="top-card-country" id="top-cap-country">-</div>
               <div class="top-card-val" id="top-cap-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (상위 10개국)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
           </div>
         </div>
 
-        <!-- 2. 세계 통계 섹션 (성장률 제거) -->
+        <!-- 2. 세계 통계 섹션 -->
         <div class="world-stats-section">
           <h2 class="section-title">세계 통계</h2>
           <div class="world-cards-grid">
