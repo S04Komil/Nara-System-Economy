@@ -497,7 +497,6 @@ document.addEventListener("DOMContentLoaded", function() {
       const li = document.createElement('li');
       li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
       
-      // 클릭 시 국기/국가명 모달 출력 처리
       const countryClickableAttr = item.isWorld ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
 
       li.innerHTML = `
@@ -519,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   // -------------------------------------------------------------
-  // 팝업 모달 함수 (1행~11행 레이아웃 연동)
+  // 팝업 모달 함수 (수정 반영)
   // -------------------------------------------------------------
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
@@ -582,19 +581,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const capRankEl = document.getElementById('modal-cap-rank');
     if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
 
-    // 7행: 세율과 국가예산
+    // 7행: 세율과 국가예산 (M열 국가예산: 10억 단위 x10 반영)
     const taxEl = document.getElementById('modal-tax');
     if (taxEl) taxEl.innerText = item['세율'] !== undefined && item['세율'] !== '' ? `${item['세율']}%` : '-';
+    
+    const rawBudget = (parseFloat(item['국가예산']) || 0) * 10;
     const budgetEl = document.getElementById('modal-budget');
-    if (budgetEl) budgetEl.innerText = item['국가예산'] ? formatMoney(item['국가예산']) : '-';
+    if (budgetEl) budgetEl.innerText = rawBudget > 0 ? formatMoney(rawBudget) : '-';
 
-    // 8행: 경제체제와 주업
+    // 8행: 경제체제와 주업 (O열 주업 매핑)
     const systemEl = document.getElementById('modal-system');
     if (systemEl) systemEl.innerText = item['경제체제'] || '-';
     const industryEl = document.getElementById('modal-industry');
     if (industryEl) industryEl.innerText = item['주업'] || '-';
 
-    // 9행: 복지수준
+    // 9행: 복지수준 (Q열 복지수준 매핑)
     const welfareEl = document.getElementById('modal-welfare');
     if (welfareEl) welfareEl.innerText = item['복지수준'] || '-';
 
@@ -602,10 +603,16 @@ document.addEventListener("DOMContentLoaded", function() {
     const treasuryEl = document.getElementById('modal-treasury');
     if (treasuryEl) treasuryEl.innerText = item['국고'] ? formatMoney(item['국고']) : '-';
 
-    // 11행: 경제성장률 (스프레드시트 내 '최종경제성장률' 열 우선 참조)
-    const growthVal = item['최종경제성장률'] !== undefined && item['최종경제성장률'] !== '' ? item['최종경제성장률'] : item['경제성장률'];
+    // 11행: 경제성장률 (소수점 이하 2자리 제한 적용)
+    const rawGrowth = item['최종경제성장률'] !== undefined && item['최종경제성장률'] !== '' ? item['최종경제성장률'] : item['경제성장률'];
     const growthEl = document.getElementById('modal-growth');
-    if (growthEl) growthEl.innerText = growthVal !== undefined && growthVal !== '' ? `${growthVal}%` : '-';
+    if (growthEl) {
+      if (rawGrowth !== undefined && rawGrowth !== '' && !isNaN(parseFloat(rawGrowth))) {
+        growthEl.innerText = `${parseFloat(rawGrowth).toFixed(2)}%`;
+      } else {
+        growthEl.innerText = '-';
+      }
+    }
 
     // 모달 출력
     const modal = document.getElementById('country-modal');
