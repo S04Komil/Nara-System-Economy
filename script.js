@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalGdpData = [];
   let globalDefData = [];
   let globalCapData = [];
+  let flagMap = new Map(); // GDP 시계열 B열 국기 URL 저장용 Map
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
 
@@ -52,6 +53,9 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
+    // GDP 시계열 데이터에서 B열 국기 URL 매핑 추출
+    extractFlags(globalGdpData);
+
     document.getElementById('loading').style.display = 'none';
 
     if (!mainData || mainData.length === 0) {
@@ -86,9 +90,40 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
+  // GDP 시계열 데이터의 B열(국기 URL) 추출 함수
+  function extractFlags(gdpData) {
+    if (!gdpData || gdpData.length === 0) return;
+
+    gdpData.forEach(row => {
+      let country = extractCountryFromRow(row);
+      let keyName = cleanName(country);
+
+      if (!keyName) return;
+
+      let keys = Object.keys(row);
+      let flagUrl = "";
+
+      if (row['국기']) flagUrl = row['국기'];
+      else if (row['flag']) flagUrl = row['flag'];
+      else if (row['Flag']) flagUrl = row['Flag'];
+      else if (keys.length > 1) {
+        let secondVal = String(row[keys[1]]).trim();
+        if (secondVal.startsWith('http://') || secondVal.startsWith('https://')) {
+          flagUrl = secondVal;
+        }
+      }
+
+      if (flagUrl) {
+        flagMap.set(keyName, flagUrl);
+      }
+    });
+
+    console.log(`🚩 [국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
+  }
+
   // 세계 성장률 데이터 가져오기 함수
   function fetchWorldGrowthData() {
-    if (!API_URL_GROWTH || API_URL_GROWTH.includes("YOUR_APPS_SCRIPT")) return;
+    if (!API_URL_GROWTH) return;
 
     fetch(API_URL_GROWTH)
       .then(res => res.json())
@@ -356,6 +391,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
       return {
         country: item.country,
+        cleanKey: item.cleanKey,
         val: item.val,
         currentRank: currentRank,
         prevRank: prevRank || null,
@@ -366,6 +402,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (key === '1인당GDP') {
       listData.push({
         country: '전세계',
+        cleanKey: '전세계',
         val: worldTotals.cap,
         currentRank: null,
         prevRank: null,
@@ -416,6 +453,13 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
+      // 국기 이미지 태그 생성 (순위 변동 오른쪽, 국가명 왼쪽에 위치)
+      let flagHtml = "";
+      const flagUrl = flagMap.get(item.cleanKey);
+      if (flagUrl && !item.isWorld) {
+        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-left: 2px; vertical-align: middle;">`;
+      }
+
       let percent = 0;
       if (key === '1인당GDP') {
         percent = (item.val / maxValInList) * 100;
@@ -431,6 +475,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="rank-num">${rankDisplay}</span>
           ${rankDiffHtml}
+          ${flagHtml}
           <span class="rank-country">${item.country}</span>
         </div>
         <span class="rank-val">${formattedVal}</span>
