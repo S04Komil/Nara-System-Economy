@@ -90,9 +90,9 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  // 국방비 시계열 데이터의 C열 또는 '국기링크' 추출 함수
+  // 국방비 시계열 데이터의 '국기링크' 추출 및 매핑 함수
   function extractFlags(defData) {
-    if (!defData || defData.length === 0) return;
+    if (!defData || !Array.isArray(defData) || defData.length === 0) return;
 
     defData.forEach(row => {
       let country = extractCountryFromRow(row);
@@ -100,29 +100,32 @@ document.addEventListener("DOMContentLoaded", function() {
 
       if (!keyName) return;
 
-      let keys = Object.keys(row);
       let flagUrl = "";
 
-      // 1. 헤더명 우선 매칭
-      if (row['국기링크']) flagUrl = row['국기링크'];
-      else if (row['국기']) flagUrl = row['국기'];
-      else if (row['flag']) flagUrl = row['flag'];
-      else if (row['Flag']) flagUrl = row['Flag'];
+      // 1. 헤더명 '국기링크' 우선 매칭 및 대소문자/유사 키 체크
+      if (row['국기링크']) flagUrl = String(row['국기링크']).trim();
+      else if (row['국기']) flagUrl = String(row['국기']).trim();
+      else if (row['flag']) flagUrl = String(row['flag']).trim();
+      else if (row['Flag']) flagUrl = String(row['Flag']).trim();
 
-      // 2. 매칭 안될 경우 세 번째 열(C열, keys[2]) 확인
-      if (!flagUrl && keys.length > 2) {
-        let thirdVal = String(row[keys[2]]).trim();
-        if (thirdVal.startsWith('http://') || thirdVal.startsWith('https://')) {
-          flagUrl = thirdVal;
+      // 2. 키 이름 매칭이 안 된 경우, 객체 값 중 http/https로 시작하는 URL 추출
+      if (!flagUrl) {
+        let keys = Object.keys(row);
+        for (let k of keys) {
+          let val = String(row[k]).trim();
+          if (val.startsWith('http://') || val.startsWith('https://')) {
+            flagUrl = val;
+            break;
+          }
         }
       }
 
-      if (flagUrl) {
+      if (flagUrl && flagUrl !== 'N/A' && flagUrl !== '-') {
         flagMap.set(keyName, flagUrl);
       }
     });
 
-    console.log(`🚩 [국방비 시계열 기준 국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
+    console.log(`🚩 [국방비 시계열 Apps Script 기준 국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
   }
 
   // 세계 성장률 데이터 가져오기 함수
