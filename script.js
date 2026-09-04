@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
-  // 3. 세계 통계 성장률 API (나라시스템 세계통계 구글시트 연동 Apps Script URL)
+  // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
 
   let mainData = [];
@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 국방비 시계열 데이터(globalDefData)에서 국기 이미지 URL 추출
-    extractFlags(globalDefData);
+    // 국방비 시계열 데이터(globalDefData 또는 defRes)에서 국기 이미지 URL 추출
+    extractFlags(globalDefData, defRes);
 
     document.getElementById('loading').style.display = 'none';
 
@@ -90,11 +90,28 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  // 국방비 시계열 데이터의 '국기링크' 추출 및 매핑 함수
-  function extractFlags(defData) {
-    if (!defData || !Array.isArray(defData) || defData.length === 0) return;
+  // 국방비 시계열 데이터의 '국기링크' 추출 및 매핑 함수 (강화 버전)
+  function extractFlags(defData, rawRes) {
+    // 1. 응답 형태가 배열인지 또는 { data: [...] } 형태인지 확인 및 유효 배열 추출
+    let list = [];
+    if (Array.isArray(defData) && defData.length > 0) {
+      list = defData;
+    } else if (defData && Array.isArray(defData.data)) {
+      list = defData.data;
+    } else if (rawRes && Array.isArray(rawRes.data)) {
+      list = rawRes.data;
+    } else if (Array.isArray(rawRes)) {
+      list = rawRes;
+    }
 
-    defData.forEach(row => {
+    if (!list || list.length === 0) {
+      console.warn("⚠️ [국기 매핑 실패] 국방비 시계열 데이터 배열을 찾을 수 없거나 비어 있습니다.");
+      return;
+    }
+
+    list.forEach(row => {
+      if (!row || typeof row !== 'object') return;
+
       let country = extractCountryFromRow(row);
       let keyName = cleanName(country);
 
@@ -102,16 +119,26 @@ document.addEventListener("DOMContentLoaded", function() {
 
       let flagUrl = "";
 
-      // 1. 헤더명 '국기링크' 우선 매칭 및 대소문자/유사 키 체크
+      // 2-1. 헤더명 직접 매칭
       if (row['국기링크']) flagUrl = String(row['국기링크']).trim();
       else if (row['국기']) flagUrl = String(row['국기']).trim();
       else if (row['flag']) flagUrl = String(row['flag']).trim();
       else if (row['Flag']) flagUrl = String(row['Flag']).trim();
 
-      // 2. 키 이름 매칭이 안 된 경우, 객체 값 중 http/https로 시작하는 URL 추출
+      // 2-2. 헤더 키 이름 정규화 검색 (공백/대소문자/특수문자 제거 후 비교)
       if (!flagUrl) {
-        let keys = Object.keys(row);
-        for (let k of keys) {
+        for (let k of Object.keys(row)) {
+          let cleanKey = k.replace(/[\s_]/g, '').toLowerCase();
+          if (cleanKey === '국기링크' || cleanKey === '국기' || cleanKey === '국기url' || cleanKey === 'flag' || cleanKey === 'flagurl') {
+            flagUrl = String(row[k]).trim();
+            break;
+          }
+        }
+      }
+
+      // 2-3. 객체 값 중 http:// 또는 https:// 로 시작하는 URL 탐색
+      if (!flagUrl) {
+        for (let k of Object.keys(row)) {
           let val = String(row[k]).trim();
           if (val.startsWith('http://') || val.startsWith('https://')) {
             flagUrl = val;
