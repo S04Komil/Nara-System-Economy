@@ -281,14 +281,11 @@ document.addEventListener("DOMContentLoaded", function() {
     return '';
   }
 
-  // 데이터의 키(Header)들 중 정규화하여 탐색하는 유틸리티 함수
   function getPropByCleanKey(row, targetKeyName) {
     if (!row || typeof row !== 'object') return undefined;
     
-    // 1. 단순 일치 검색
     if (row[targetKeyName] !== undefined) return row[targetKeyName];
 
-    // 2. 공백 및 특수문자 제거 후 일치 검색
     const targetClean = cleanName(targetKeyName);
     for (let k of Object.keys(row)) {
       if (cleanName(k) === targetClean) {
@@ -572,11 +569,25 @@ document.addEventListener("DOMContentLoaded", function() {
     const gdpRankEl = document.getElementById('modal-gdp-rank');
     if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP(10억달러)', cleanKey);
 
-    // 4행: GDP대비국방비, 국방비, 국방비순위
+    // 4행: GDP대비국방비, 국방비, 국방비순위 (소수점 2자리 + % 포맷팅 적용)
     const rawDef = (parseFloat(getPropByCleanKey(item, '국방비(10억달러)')) || 0) * 10;
-    const defRatioCalculated = rawGdp > 0 ? ((rawDef / rawGdp) * 100).toFixed(2) + "%" : "-";
+    const rawDefRatio = getPropByCleanKey(item, 'GDP대비국방비');
+    
+    let defRatioDisplay = "-";
+    if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
+      let numRatio = parseFloat(rawDefRatio);
+      // 이미 100을 곱한 값(예: 2.5)인지 소수점 비율(예: 0.025)인지 판단하여 처리
+      if (numRatio > 0 && numRatio < 1 && String(rawDefRatio).includes(".")) {
+        numRatio = numRatio * 100;
+      }
+      defRatioDisplay = `${numRatio.toFixed(2)}%`;
+    } else if (rawGdp > 0) {
+      defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
+    }
+
     const defRatioEl = document.getElementById('modal-def-ratio');
-    if (defRatioEl) defRatioEl.innerText = getPropByCleanKey(item, 'GDP대비국방비') || defRatioCalculated;
+    if (defRatioEl) defRatioEl.innerText = defRatioDisplay;
+
     const defEl = document.getElementById('modal-def');
     if (defEl) defEl.innerText = formatMoney(rawDef);
     const defRankEl = document.getElementById('modal-def-rank');
@@ -595,7 +606,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const capRankEl = document.getElementById('modal-cap-rank');
     if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
 
-    // 7행: 세율과 국가예산 (M열 '국가예산' 매핑 + 10배 처리)
+    // 7행: 세율과 국가예산
     const taxVal = getPropByCleanKey(item, '세율');
     const taxEl = document.getElementById('modal-tax');
     if (taxEl) taxEl.innerText = taxVal !== undefined && taxVal !== '' ? `${taxVal}%` : '-';
@@ -605,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const budgetEl = document.getElementById('modal-budget');
     if (budgetEl) budgetEl.innerText = rawBudget > 0 ? formatMoney(rawBudget) : '-';
 
-    // 8행: 경제체제와 주업 (O열 '주업' 매핑)
+    // 8행: 경제체제와 주업
     const systemEl = document.getElementById('modal-system');
     if (systemEl) systemEl.innerText = getPropByCleanKey(item, '경제체제') || '-';
     
@@ -613,7 +624,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const industryEl = document.getElementById('modal-industry');
     if (industryEl) industryEl.innerText = mainIndustry;
 
-    // 9행: 복지수준 (Q열 '복지수준' 매핑)
+    // 9행: 복지수준
     const welfareEl = document.getElementById('modal-welfare');
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
 
@@ -622,7 +633,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const treasuryEl = document.getElementById('modal-treasury');
     if (treasuryEl) treasuryEl.innerText = treasuryVal ? formatMoney(treasuryVal) : '-';
 
-    // 11행: 경제성장률 (소수점 이하 2자리 제한 적용)
+    // 11행: 경제성장률
     const rawGrowth = getPropByCleanKey(item, '최종경제성장률') !== undefined && getPropByCleanKey(item, '최종경제성장률') !== '' 
       ? getPropByCleanKey(item, '최종경제성장률') 
       : getPropByCleanKey(item, '경제성장률');
