@@ -192,9 +192,13 @@ document.addEventListener("DOMContentLoaded", function() {
     worldTotals = { gdp, pop, def, cap };
   }
 
+  // 마이너스(-) 음수 금액 지원 포맷팅 함수
   function formatMoney(billionVal) {
-    let val = Math.round((parseFloat(billionVal) || 0) * 100000000);
-    if (val === 0) return "0달러";
+    let rawNum = parseFloat(billionVal) || 0;
+    if (rawNum === 0) return "0달러";
+
+    const isNegative = rawNum < 0;
+    let val = Math.round(Math.abs(rawNum) * 100000000);
 
     let result = "";
     const jo = Math.floor(val / 1000000000000);
@@ -207,7 +211,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (eok > 0) result += `${eok.toLocaleString()}억 `;
     if (man > 0) result += `${man.toLocaleString()}만`;
 
-    return result.trim() + "달러";
+    const formattedText = result.trim() ? `${result.trim()}달러` : "0달러";
+    return isNegative ? `-${formattedText}` : formattedText;
   }
 
   function formatPopulation(tenThousandVal) {
@@ -576,7 +581,6 @@ document.addEventListener("DOMContentLoaded", function() {
     let defRatioDisplay = "-";
     if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
       let numRatio = parseFloat(rawDefRatio);
-      // 이미 100을 곱한 값(예: 2.5)인지 소수점 비율(예: 0.025)인지 판단하여 처리
       if (numRatio > 0 && numRatio < 1 && String(rawDefRatio).includes(".")) {
         numRatio = numRatio * 100;
       }
@@ -614,7 +618,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const rawBudgetVal = getPropByCleanKey(item, '국가예산');
     const rawBudget = (parseFloat(rawBudgetVal) || 0) * 10;
     const budgetEl = document.getElementById('modal-budget');
-    if (budgetEl) budgetEl.innerText = rawBudget > 0 ? formatMoney(rawBudget) : '-';
+    if (budgetEl) budgetEl.innerText = rawBudget !== 0 ? formatMoney(rawBudget) : '-';
 
     // 8행: 경제체제와 주업
     const systemEl = document.getElementById('modal-system');
@@ -628,10 +632,16 @@ document.addEventListener("DOMContentLoaded", function() {
     const welfareEl = document.getElementById('modal-welfare');
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
 
-    // 10행: 국고
-    const treasuryVal = getPropByCleanKey(item, '국고');
+    // 10행: 국고 (음수값 처리 지원)
+    const rawTreasuryVal = getPropByCleanKey(item, '국고');
     const treasuryEl = document.getElementById('modal-treasury');
-    if (treasuryEl) treasuryEl.innerText = treasuryVal ? formatMoney(treasuryVal) : '-';
+    if (treasuryEl) {
+      if (rawTreasuryVal !== undefined && rawTreasuryVal !== '' && !isNaN(parseFloat(rawTreasuryVal))) {
+        treasuryEl.innerText = formatMoney(rawTreasuryVal);
+      } else {
+        treasuryEl.innerText = '-';
+      }
+    }
 
     // 11행: 경제성장률
     const rawGrowth = getPropByCleanKey(item, '최종경제성장률') !== undefined && getPropByCleanKey(item, '최종경제성장률') !== '' 
