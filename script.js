@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalGdpData = [];
   let globalDefData = [];
   let globalCapData = [];
-  let flagMap = new Map(); // GDP 시계열 B열 국기 URL 저장용 Map
+  let flagMap = new Map(); // GDP 시계열 B열 국기 URL 저장용
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
 
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // GDP 시계열 데이터에서 B열 국기 URL 매핑 추출
+    // GDP 시계열 데이터의 B열에서 국기 이미지 URL 추출
     extractFlags(globalGdpData);
 
     document.getElementById('loading').style.display = 'none';
@@ -453,11 +453,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 국기 이미지 태그 생성 (순위 변동 오른쪽, 국가명 왼쪽에 위치)
+      // 국기 이미지 태그 생성 (순위 변동 우측, 국가명 좌측)
       let flagHtml = "";
       const flagUrl = flagMap.get(item.cleanKey);
       if (flagUrl && !item.isWorld) {
-        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-left: 2px; vertical-align: middle;">`;
+        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
       }
 
       let percent = 0;
