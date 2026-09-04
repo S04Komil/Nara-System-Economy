@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalGdpData = [];
   let globalDefData = [];
   let globalCapData = [];
-  let flagMap = new Map(); // GDP 시계열 B열 국기 URL 저장용
+  let flagMap = new Map(); // GDP 시계열 C열 국기 URL 저장용
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
 
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // GDP 시계열 데이터의 B열에서 국기 이미지 URL 추출
+    // GDP 시계열 데이터의 C열에서 국기 이미지 URL 추출
     extractFlags(globalGdpData);
 
     document.getElementById('loading').style.display = 'none';
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  // GDP 시계열 데이터의 B열(국기 URL) 추출 함수
+  // GDP 시계열 데이터의 C열(국기 URL) 추출 함수
   function extractFlags(gdpData) {
     if (!gdpData || gdpData.length === 0) return;
 
@@ -103,13 +103,16 @@ document.addEventListener("DOMContentLoaded", function() {
       let keys = Object.keys(row);
       let flagUrl = "";
 
+      // 1. 헤더명으로 우선 찾기
       if (row['국기']) flagUrl = row['국기'];
       else if (row['flag']) flagUrl = row['flag'];
       else if (row['Flag']) flagUrl = row['Flag'];
-      else if (keys.length > 1) {
-        let secondVal = String(row[keys[1]]).trim();
-        if (secondVal.startsWith('http://') || secondVal.startsWith('https://')) {
-          flagUrl = secondVal;
+
+      // 2. 헤더명 매칭 실패 시 C열(세 번째 인덱스: keys[2])에서 URL 추출
+      if (!flagUrl && keys.length > 2) {
+        let thirdVal = String(row[keys[2]]).trim();
+        if (thirdVal.startsWith('http://') || thirdVal.startsWith('https://')) {
+          flagUrl = thirdVal;
         }
       }
 
