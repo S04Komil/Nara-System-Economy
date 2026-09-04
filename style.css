@@ -303,3 +303,20 @@ nav {
   background-color: #f1f3f4;
   border: 1px solid #dadce0;
 }
+
+/* 순위 항목 내부 요소 정렬 */
+.rank-item div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 국기 이미지 스타일 정의 */
+.rank-flag {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2); /* 국기 테두리 시각화 */
+  flex-shrink: 0;
+}
