@@ -53,7 +53,20 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 국방비 시계열 데이터(globalDefData 또는 defRes)에서 국기 이미지 URL 추출
+    // 🔥 [디버깅 추가] 국방비 시계열 API 응답 원본 콘솔 출력
+    console.group("🔍 [국방비 시계열 API 원본 데이터 검사]");
+    console.log("1. Raw Response (defRes):", defRes);
+    console.log("2. Processed globalDefData:", globalDefData);
+    if (Array.isArray(globalDefData) && globalDefData.length > 0) {
+      console.log("3. 첫 번째 행(Row) 샘플 객체:", globalDefData[0]);
+      console.log("4. 첫 번째 행의 키(Key) 목록:", Object.keys(globalDefData[0]));
+    } else if (defRes && defRes.data && defRes.data.length > 0) {
+      console.log("3. defRes.data 첫 번째 행 샘플:", defRes.data[0]);
+      console.log("4. defRes.data 키 목록:", Object.keys(defRes.data[0]));
+    }
+    console.groupEnd();
+
+    // 국방비 시계열 데이터에서 국기 이미지 URL 추출
     extractFlags(globalDefData, defRes);
 
     document.getElementById('loading').style.display = 'none';
@@ -90,9 +103,8 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  // 국방비 시계열 데이터의 '국기링크' 추출 및 매핑 함수 (강화 버전)
+  // 국방비 시계열 데이터의 '국기링크' 추출 및 매핑 함수
   function extractFlags(defData, rawRes) {
-    // 1. 응답 형태가 배열인지 또는 { data: [...] } 형태인지 확인 및 유효 배열 추출
     let list = [];
     if (Array.isArray(defData) && defData.length > 0) {
       list = defData;
@@ -119,13 +131,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
       let flagUrl = "";
 
-      // 2-1. 헤더명 직접 매칭
+      // 1. 헤더명 직접 매칭
       if (row['국기링크']) flagUrl = String(row['국기링크']).trim();
       else if (row['국기']) flagUrl = String(row['국기']).trim();
       else if (row['flag']) flagUrl = String(row['flag']).trim();
       else if (row['Flag']) flagUrl = String(row['Flag']).trim();
 
-      // 2-2. 헤더 키 이름 정규화 검색 (공백/대소문자/특수문자 제거 후 비교)
+      // 2. 헤더 키 이름 정규화 검색 (공백/대소문자/특수문자 제거 후 비교)
       if (!flagUrl) {
         for (let k of Object.keys(row)) {
           let cleanKey = k.replace(/[\s_]/g, '').toLowerCase();
@@ -136,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 2-3. 객체 값 중 http:// 또는 https:// 로 시작하는 URL 탐색
+      // 3. 객체 값 중 http:// 또는 https:// 로 시작하는 URL 탐색
       if (!flagUrl) {
         for (let k of Object.keys(row)) {
           let val = String(row[k]).trim();
@@ -487,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 국기 이미지 태그 생성 (순위 변동 우측, 국가명 좌측)
+      // 국기 이미지 태그 생성
       let flagHtml = "";
       const flagUrl = flagMap.get(item.cleanKey);
       if (flagUrl && !item.isWorld) {
