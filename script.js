@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // 2. 항목별 전체 연도 시계열 API
   const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbzBR1_K63Ynh5dmyXTEqsdq_208QZyUhDtN3x898rHvYm7CiENiBHiwyfp2i4gqMdRTdQ/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
   // 3. 세계 통계 성장률 API (나라시스템 세계통계 구글시트 연동 Apps Script URL)
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalGdpData = [];
   let globalDefData = [];
   let globalCapData = [];
-  let flagMap = new Map(); // GDP 시계열 C열 국기 URL 저장용
+  let flagMap = new Map(); // 국방비 시계열 국기링크 URL 저장용
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
 
@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // GDP 시계열 데이터의 C열에서 국기 이미지 URL 추출
-    extractFlags(globalGdpData);
+    // 국방비 시계열 데이터(globalDefData)에서 국기 이미지 URL 추출
+    extractFlags(globalDefData);
 
     document.getElementById('loading').style.display = 'none';
 
@@ -90,11 +90,11 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  // GDP 시계열 데이터의 C열(국기 URL) 추출 함수
-  function extractFlags(gdpData) {
-    if (!gdpData || gdpData.length === 0) return;
+  // 국방비 시계열 데이터의 C열 또는 '국기링크' 추출 함수
+  function extractFlags(defData) {
+    if (!defData || defData.length === 0) return;
 
-    gdpData.forEach(row => {
+    defData.forEach(row => {
       let country = extractCountryFromRow(row);
       let keyName = cleanName(country);
 
@@ -103,12 +103,13 @@ document.addEventListener("DOMContentLoaded", function() {
       let keys = Object.keys(row);
       let flagUrl = "";
 
-      // 1. 헤더명으로 우선 찾기
-      if (row['국기']) flagUrl = row['국기'];
+      // 1. 헤더명 우선 매칭
+      if (row['국기링크']) flagUrl = row['국기링크'];
+      else if (row['국기']) flagUrl = row['국기'];
       else if (row['flag']) flagUrl = row['flag'];
       else if (row['Flag']) flagUrl = row['Flag'];
 
-      // 2. 헤더명 매칭 실패 시 C열(세 번째 인덱스: keys[2])에서 URL 추출
+      // 2. 매칭 안될 경우 세 번째 열(C열, keys[2]) 확인
       if (!flagUrl && keys.length > 2) {
         let thirdVal = String(row[keys[2]]).trim();
         if (thirdVal.startsWith('http://') || thirdVal.startsWith('https://')) {
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
 
-    console.log(`🚩 [국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
+    console.log(`🚩 [국방비 시계열 기준 국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
   }
 
   // 세계 성장률 데이터 가져오기 함수
