@@ -518,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   // -------------------------------------------------------------
-  // 팝업 모달 함수 (수정 반영)
+  // 팝업 모달 함수 (정확한 시트 헤더명 적용)
   // -------------------------------------------------------------
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
@@ -581,21 +581,24 @@ document.addEventListener("DOMContentLoaded", function() {
     const capRankEl = document.getElementById('modal-cap-rank');
     if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
 
-    // 7행: 세율과 국가예산 (M열 국가예산: 10억 단위 x10 반영)
+    // 7행: 세율과 국가예산 ('국가예산(10억달러)' 헤더 매핑 + 10배 처리)
     const taxEl = document.getElementById('modal-tax');
     if (taxEl) taxEl.innerText = item['세율'] !== undefined && item['세율'] !== '' ? `${item['세율']}%` : '-';
     
-    const rawBudget = (parseFloat(item['국가예산']) || 0) * 10;
+    const rawBudgetVal = item['국가예산(10억달러)'] !== undefined ? item['국가예산(10억달러)'] : item['국가예산'];
+    const rawBudget = (parseFloat(rawBudgetVal) || 0) * 10;
     const budgetEl = document.getElementById('modal-budget');
     if (budgetEl) budgetEl.innerText = rawBudget > 0 ? formatMoney(rawBudget) : '-';
 
-    // 8행: 경제체제와 주업 (O열 주업 매핑)
+    // 8행: 경제체제와 주업 ('주업(기준표에 써있는걸로만 해주세요)' 헤더 매핑)
     const systemEl = document.getElementById('modal-system');
     if (systemEl) systemEl.innerText = item['경제체제'] || '-';
+    
+    const mainIndustry = item['주업(기준표에 써있는걸로만 해주세요)'] || item['주업'] || '-';
     const industryEl = document.getElementById('modal-industry');
-    if (industryEl) industryEl.innerText = item['주업'] || '-';
+    if (industryEl) industryEl.innerText = mainIndustry;
 
-    // 9행: 복지수준 (Q열 복지수준 매핑)
+    // 9행: 복지수준
     const welfareEl = document.getElementById('modal-welfare');
     if (welfareEl) welfareEl.innerText = item['복지수준'] || '-';
 
