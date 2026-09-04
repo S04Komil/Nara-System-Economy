@@ -129,6 +129,80 @@
         </div>
       </div>
 
+      <!-- 국가 상세정보 모달 팝업 -->
+<div id="country-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeCountryModal()">&times;</button>
+    <div class="modal-body">
+      
+      <!-- 1행: 국기(크게)(왼쪽), 국가명(오른쪽) -->
+      <div class="modal-row row-1">
+        <img id="modal-flag" src="" alt="국기" class="modal-flag-img">
+        <h2 id="modal-country-name" class="modal-country-title">국가명</h2>
+      </div>
+
+      <!-- 2행: 대륙과 소속연합 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">대륙</span><span id="modal-continent" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">소속연합</span><span id="modal-alliance" class="info-val">-</span></div>
+      </div>
+
+      <!-- 3행: GDP와 GDP순위 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">GDP</span><span id="modal-gdp" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">GDP 순위</span><span id="modal-gdp-rank" class="info-val">-</span></div>
+      </div>
+
+      <!-- 4행: GDP대비국방비, 국방비와 국방비순위 -->
+      <div class="modal-row row-grid-3">
+        <div class="info-box"><span class="info-label">GDP 대비 국방비</span><span id="modal-def-ratio" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">국방비</span><span id="modal-def" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">국방비 순위</span><span id="modal-def-rank" class="info-val">-</span></div>
+      </div>
+
+      <!-- 5행: 인구수와 인구순위 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">인구수</span><span id="modal-pop" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">인구 순위</span><span id="modal-pop-rank" class="info-val">-</span></div>
+      </div>
+
+      <!-- 6행: 1인당GDP와 1인당GDP순위 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">1인당 GDP</span><span id="modal-cap" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="modal-cap-rank" class="info-val">-</span></div>
+      </div>
+
+      <!-- 7행: 세율과 국가예산 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">세율</span><span id="modal-tax" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">국가예산</span><span id="modal-budget" class="info-val">-</span></div>
+      </div>
+
+      <!-- 8행: 경제체제와 주업 -->
+      <div class="modal-row row-grid-2">
+        <div class="info-box"><span class="info-label">경제체제</span><span id="modal-system" class="info-val">-</span></div>
+        <div class="info-box"><span class="info-label">주업</span><span id="modal-industry" class="info-val">-</span></div>
+      </div>
+
+      <!-- 9행: 복지수준 -->
+      <div class="modal-row row-grid-1">
+        <div class="info-box"><span class="info-label">복지수준</span><span id="modal-welfare" class="info-val">-</span></div>
+      </div>
+
+      <!-- 10행: 국고 -->
+      <div class="modal-row row-grid-1">
+        <div class="info-box"><span class="info-label">국고</span><span id="modal-treasury" class="info-val">-</span></div>
+      </div>
+
+      <!-- 11행: 경제성장률 -->
+      <div class="modal-row row-grid-1">
+        <div class="info-box"><span class="info-label">경제성장률</span><span id="modal-growth" class="info-val">-</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
     </div>
   </div>
 
