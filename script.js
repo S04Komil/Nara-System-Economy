@@ -53,19 +53,6 @@ document.addEventListener("DOMContentLoaded", function() {
     globalDefData = defRes ? (defRes.data || defRes) : [];
     globalCapData = capRes ? (capRes.data || capRes) : [];
 
-    // 🔥 [디버깅 추가] 국방비 시계열 API 응답 원본 콘솔 출력
-    console.group("🔍 [국방비 시계열 API 원본 데이터 검사]");
-    console.log("1. Raw Response (defRes):", defRes);
-    console.log("2. Processed globalDefData:", globalDefData);
-    if (Array.isArray(globalDefData) && globalDefData.length > 0) {
-      console.log("3. 첫 번째 행(Row) 샘플 객체:", globalDefData[0]);
-      console.log("4. 첫 번째 행의 키(Key) 목록:", Object.keys(globalDefData[0]));
-    } else if (defRes && defRes.data && defRes.data.length > 0) {
-      console.log("3. defRes.data 첫 번째 행 샘플:", defRes.data[0]);
-      console.log("4. defRes.data 키 목록:", Object.keys(defRes.data[0]));
-    }
-    console.groupEnd();
-
     // 국방비 시계열 데이터에서 국기 이미지 URL 추출
     extractFlags(globalDefData, defRes);
 
@@ -137,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
       else if (row['flag']) flagUrl = String(row['flag']).trim();
       else if (row['Flag']) flagUrl = String(row['Flag']).trim();
 
-      // 2. 헤더 키 이름 정규화 검색 (공백/대소문자/특수문자 제거 후 비교)
+      // 2. 헤더 키 이름 정규화 검색
       if (!flagUrl) {
         for (let k of Object.keys(row)) {
           let cleanKey = k.replace(/[\s_]/g, '').toLowerCase();
@@ -148,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 3. 객체 값 중 http:// 또는 https:// 로 시작하는 URL 탐색
+      // 3. 객체 값 중 URL 형식 탐색
       if (!flagUrl) {
         for (let k of Object.keys(row)) {
           let val = String(row[k]).trim();
@@ -164,10 +151,9 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
 
-    console.log(`🚩 [국방비 시계열 Apps Script 기준 국기 매핑 완료] 총 ${flagMap.size}개 국가 국기 정보 저장됨`);
+    console.log(`🚩 [국명 매핑 완료] 총 ${flagMap.size}개 국기 저장됨`);
   }
 
-  // 세계 성장률 데이터 가져오기 함수
   function fetchWorldGrowthData() {
     if (!API_URL_GROWTH) return;
 
@@ -388,8 +374,6 @@ document.addEventListener("DOMContentLoaded", function() {
         let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
         let prevYearKey = validYearKeys[targetIndex];
 
-        console.log(`📅 이전 비교 연도 컬럼 키: [${prevYearKey}]`);
-
         let prevList = targetSeriesData
           .map(item => {
             let rawCountry = extractCountryFromRow(item);
@@ -422,8 +406,6 @@ document.addEventListener("DOMContentLoaded", function() {
             if (b.val !== a.val) return b.val - a.val;
             return a.cleanKey.localeCompare(b.cleanKey);
           });
-
-        console.log(`✅ [${prevYearKey}] 유효 데이터 국가 수 (전세계 제외): ${prevList.length}개`);
 
         prevList.forEach((item, idx) => {
           prevRankMap.set(item.cleanKey, idx + 1);
@@ -458,8 +440,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const maxValInList = listData.length > 0 ? listData[0].val : 1;
-
-    console.log("📈 [최종 순위 집계 국가 수]:", currentList.length);
 
     let rankCounter = 1;
 
@@ -516,13 +496,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
       const li = document.createElement('li');
       li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
+      
+      // 클릭 시 국기/국가명 모달 출력 처리
+      const countryClickableAttr = item.isWorld ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
+
       li.innerHTML = `
         <div class="rank-bar" style="width: ${percent}%;"></div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="rank-num">${rankDisplay}</span>
           ${rankDiffHtml}
-          ${flagHtml}
-          <span class="rank-country">${item.country}</span>
+          <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px;">
+            ${flagHtml}
+            <span class="rank-country">${item.country}</span>
+          </span>
         </div>
         <span class="rank-val">${formattedVal}</span>
       `;
@@ -531,4 +517,123 @@ document.addEventListener("DOMContentLoaded", function() {
 
     console.groupEnd();
   };
+
+  // -------------------------------------------------------------
+  // 팝업 모달 함수 (1행~11행 레이아웃 연동)
+  // -------------------------------------------------------------
+  window.openCountryModal = function(cleanKey) {
+    if (cleanKey === '전세계') return;
+
+    const item = mainData.find(d => cleanName(extractCountryFromRow(d)) === cleanKey);
+    if (!item) {
+      alert("국가 상세 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const countryName = extractCountryFromRow(item);
+    const flagUrl = flagMap.get(cleanKey) || "";
+
+    // 1행: 국기 및 국가명
+    const flagImg = document.getElementById('modal-flag');
+    if (flagImg) {
+      if (flagUrl) {
+        flagImg.src = flagUrl;
+        flagImg.style.display = 'block';
+      } else {
+        flagImg.style.display = 'none';
+      }
+    }
+    const nameEl = document.getElementById('modal-country-name');
+    if (nameEl) nameEl.innerText = countryName;
+
+    // 2행: 대륙과 소속연합
+    const continentEl = document.getElementById('modal-continent');
+    if (continentEl) continentEl.innerText = item['대륙'] || item['소속대륙'] || '-';
+    const allianceEl = document.getElementById('modal-alliance');
+    if (allianceEl) allianceEl.innerText = item['소속연합'] || item['연합'] || '-';
+
+    // 3행: GDP와 GDP순위
+    const rawGdp = (parseFloat(item['GDP(10억달러)']) || 0) * 10;
+    const gdpEl = document.getElementById('modal-gdp');
+    if (gdpEl) gdpEl.innerText = formatMoney(rawGdp);
+    const gdpRankEl = document.getElementById('modal-gdp-rank');
+    if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP(10억달러)', cleanKey);
+
+    // 4행: GDP대비국방비, 국방비, 국방비순위
+    const rawDef = (parseFloat(item['국방비(10억달러)']) || 0) * 10;
+    const defRatioCalculated = rawGdp > 0 ? ((rawDef / rawGdp) * 100).toFixed(2) + "%" : "-";
+    const defRatioEl = document.getElementById('modal-def-ratio');
+    if (defRatioEl) defRatioEl.innerText = item['GDP대비국방비'] || defRatioCalculated;
+    const defEl = document.getElementById('modal-def');
+    if (defEl) defEl.innerText = formatMoney(rawDef);
+    const defRankEl = document.getElementById('modal-def-rank');
+    if (defRankEl) defRankEl.innerText = getCountryRank('국방비(10억달러)', cleanKey);
+
+    // 5행: 인구수와 인구순위
+    const popEl = document.getElementById('modal-pop');
+    if (popEl) popEl.innerText = formatPopulation(item['인구(만명)']);
+    const popRankEl = document.getElementById('modal-pop-rank');
+    if (popRankEl) popRankEl.innerText = getCountryRank('인구(만명)', cleanKey);
+
+    // 6행: 1인당GDP와 1인당GDP순위
+    const capVal = parseFloat(item['1인당GDP']) || 0;
+    const capEl = document.getElementById('modal-cap');
+    if (capEl) capEl.innerText = `${Math.round(capVal).toLocaleString()} 달러`;
+    const capRankEl = document.getElementById('modal-cap-rank');
+    if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
+
+    // 7행: 세율과 국가예산
+    const taxEl = document.getElementById('modal-tax');
+    if (taxEl) taxEl.innerText = item['세율'] !== undefined && item['세율'] !== '' ? `${item['세율']}%` : '-';
+    const budgetEl = document.getElementById('modal-budget');
+    if (budgetEl) budgetEl.innerText = item['국가예산'] ? formatMoney(item['국가예산']) : '-';
+
+    // 8행: 경제체제와 주업
+    const systemEl = document.getElementById('modal-system');
+    if (systemEl) systemEl.innerText = item['경제체제'] || '-';
+    const industryEl = document.getElementById('modal-industry');
+    if (industryEl) industryEl.innerText = item['주업'] || '-';
+
+    // 9행: 복지수준
+    const welfareEl = document.getElementById('modal-welfare');
+    if (welfareEl) welfareEl.innerText = item['복지수준'] || '-';
+
+    // 10행: 국고
+    const treasuryEl = document.getElementById('modal-treasury');
+    if (treasuryEl) treasuryEl.innerText = item['국고'] ? formatMoney(item['국고']) : '-';
+
+    // 11행: 경제성장률 (스프레드시트 내 '최종경제성장률' 열 우선 참조)
+    const growthVal = item['최종경제성장률'] !== undefined && item['최종경제성장률'] !== '' ? item['최종경제성장률'] : item['경제성장률'];
+    const growthEl = document.getElementById('modal-growth');
+    if (growthEl) growthEl.innerText = growthVal !== undefined && growthVal !== '' ? `${growthVal}%` : '-';
+
+    // 모달 출력
+    const modal = document.getElementById('country-modal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeCountryModal = function() {
+    const modal = document.getElementById('country-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('country-modal');
+    if (modal && e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  function getCountryRank(key, cleanKey) {
+    const sorted = mainData
+      .map(item => ({
+        keyName: cleanName(extractCountryFromRow(item)),
+        val: parseFloat(item[key]) || 0
+      }))
+      .filter(item => item.keyName !== '전세계' && item.val > 0)
+      .sort((a, b) => b.val - a.val);
+
+    const index = sorted.findIndex(item => item.keyName === cleanKey);
+    return index !== -1 ? `${index + 1}위` : '-';
+  }
 });
