@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let sheetName = mainRes ? mainRes.sheetName : null;
     if (sheetName) {
-      document.getElementById('data-year').innerText = `${sheetName}년 기준`;
+      document.getElementById('data-year').innerText = `${sheetName} 기준`;
       currentSheetYear = parseInt(sheetName, 10) || 1970;
     } else {
       document.getElementById('data-year').innerText = `최신 데이터 기준`;
