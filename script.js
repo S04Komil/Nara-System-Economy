@@ -1165,7 +1165,7 @@ function openInvestmentModal() {
     const myCountry = window.myCountryName || "";
     
     window.allCountryData.forEach(item => {
-      const countryName = item.국가명 || item.국명 || item[1];
+      const countryName = item.국가 || item.국명 || item[1];
       if (countryName && countryName !== myCountry) {
         const opt = document.createElement("option");
         opt.value = countryName;
