@@ -28,18 +28,18 @@
         <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
       </li>
       
-      <!-- 로그인 전용: 자국 경제 탭 (초기 숨김) -->
-      <li class="nav-item" id="nav-my-country-item" style="display: none;">
+      <!-- 로그인 전용: 자국 경제 탭 (margin-left: auto; 추가) -->
+      <li class="nav-item" id="nav-my-country-item" style="display: none; margin-left: auto;">
         <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button>
       </li>
 
-      <!-- 로그인 버튼 구역 -->
+      <!-- 로그인 버튼 구역 (로그인 전 오른쪽 정렬용 margin-left: auto 추가) -->
       <li class="nav-item" id="auth-nav-area" style="margin-left: auto;">
         <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
       </li>
 
       <!-- 로그인 완료 후 유저 프로필 구역 -->
-      <li class="nav-item" id="user-profile-area" style="display: none; margin-left: auto;">
+      <li class="nav-item" id="user-profile-area" style="display: none;">
         <div class="user-profile-badge">
           <img id="user-flag" src="" alt="국기" class="user-flag-img">
           <span id="user-country-name">국가명</span>
