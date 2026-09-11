@@ -1001,7 +1001,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   try {
     // 메인 API URL로 요청 전송
-    const response = await fetch(GAS_WEB_APP_URL, { 
+    const response = await fetch(API_URL, { 
       method: 'POST',
       body: JSON.stringify(payload)
     });
