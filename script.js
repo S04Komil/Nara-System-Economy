@@ -990,7 +990,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   const payload = {
     action: 'updateMyEconomy',
-    country: currentUser.country,
+    country: cleanName(currentUser.country),
     defRate: defRate,
     taxRate: taxRate,
     investRate: investRate,
