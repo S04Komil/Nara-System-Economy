@@ -1025,7 +1025,7 @@ document.addEventListener("DOMContentLoaded", function() {
 };
 
   // =========== 해외 경제 투자 목록 불러오기 ===========
-  // 1. Apps Script에서 자국의 해외 투자 내역 불러오기
+// 1. Apps Script 메인 API(API_URL)에서 자국의 해외 투자 내역 불러오기
 async function loadMyInvestments() {
   if (!currentUser || !currentUser.country) return;
 
@@ -1035,8 +1035,8 @@ async function loadMyInvestments() {
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중...</td></tr>';
 
   try {
-    // Apps Script doGet (?target=investments&country=국가명)으로 조회
-    const url = `${GAS_WEB_APP_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
+    // ⚠️ GAS_WEB_APP_URL 대신 메인 백엔드인 API_URL로 요청 주소 변경
+    const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
     const response = await fetch(url);
     const result = await response.json();
 
