@@ -157,46 +157,46 @@
             
             <!-- 1행: 국기와 국명 -->
             <div class="edit-row row-grid-1 flex-align-center">
-              <img id="my-edit-flag" src="" alt="국기" class="modal-flag-img" style="width: 60px; height: auto; margin-right: 15px;">
-              <h2 id="my-edit-country-name" style="margin: 0;">국가명</h2>
+              <img id="my-country-flag" src="" alt="국기" class="modal-flag-img" style="width: 60px; height: auto; margin-right: 15px;">
+              <h2 id="my-country-title" style="margin: 0;">국가명</h2>
             </div>
 
             <!-- 2행: 대륙과 소속연합 -->
             <div class="edit-row row-grid-2">
-              <div class="info-box"><span class="info-label">대륙</span><span id="my-edit-continent" class="info-val">-</span></div>
-              <div class="info-box"><span class="info-label">소속연합</span><span id="my-edit-alliance" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">대륙</span><span id="my-continent" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">소속연합</span><span id="my-union" class="info-val">-</span></div>
             </div>
 
             <!-- 3행: GDP와 GDP순위 -->
             <div class="edit-row row-grid-2">
-              <div class="info-box"><span class="info-label">GDP</span><span id="my-edit-gdp" class="info-val">-</span></div>
-              <div class="info-box"><span class="info-label">GDP 순위</span><span id="my-edit-gdp-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">GDP</span><span id="my-gdp-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">GDP 순위</span><span id="my-gdp-rank" class="info-val">-</span></div>
             </div>
 
             <!-- 4행: GDP대비국방비(입력/조절), 국방비, 국방비순위 -->
             <div class="edit-row row-grid-3">
               <div class="info-box edit-input-box">
-                <label class="info-label" for="edit-def-ratio">GDP 대비 국방비 (%)</label>
+                <label class="info-label" for="edit-def-rate">GDP 대비 국방비 (%)</label>
                 <div class="number-control-group">
-                  <button type="button" onclick="adjustValue('edit-def-ratio', -0.01, 2)">▼</button>
-                  <input type="number" id="edit-def-ratio" step="0.01" min="0" placeholder="0.00">
-                  <button type="button" onclick="adjustValue('edit-def-ratio', 0.01, 2)">▲</button>
+                  <button type="button" onclick="adjustValue('edit-def-rate', -0.01, 2)">▼</button>
+                  <input type="number" id="edit-def-rate" step="0.01" min="0" placeholder="0.00">
+                  <button type="button" onclick="adjustValue('edit-def-rate', 0.01, 2)">▲</button>
                 </div>
               </div>
-              <div class="info-box"><span class="info-label">국방비</span><span id="my-edit-def" class="info-val">-</span></div>
-              <div class="info-box"><span class="info-label">국방비 순위</span><span id="my-edit-def-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">국방비</span><span id="my-def-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">국방비 순위</span><span id="my-def-rank" class="info-val">-</span></div>
             </div>
 
             <!-- 5행: 인구수와 인구순위 -->
             <div class="edit-row row-grid-2">
-              <div class="info-box"><span class="info-label">인구수</span><span id="my-edit-pop" class="info-val">-</span></div>
-              <div class="info-box"><span class="info-label">인구 순위</span><span id="my-edit-pop-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">인구수</span><span id="my-pop-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">인구 순위</span><span id="my-pop-rank" class="info-val">-</span></div>
             </div>
 
             <!-- 6행: 1인당 GDP와 1인당 GDP 순위 -->
             <div class="edit-row row-grid-2">
-              <div class="info-box"><span class="info-label">1인당 GDP</span><span id="my-edit-cap" class="info-val">-</span></div>
-              <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="my-edit-cap-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">1인당 GDP</span><span id="my-per-gdp-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="my-per-gdp-rank" class="info-val">-</span></div>
             </div>
 
             <!-- 7행: 세율(입력/조절)과 국가예산 -->
@@ -215,8 +215,8 @@
             <!-- 8행: 경제체제(선택형)와 주업(선택형 최대 4개) -->
             <div class="edit-row row-grid-2">
               <div class="info-box edit-input-box">
-                <label class="info-label" for="edit-system">경제체제</label>
-                <select id="edit-system">
+                <label class="info-label" for="edit-economic-system">경제체제</label>
+                <select id="edit-economic-system">
                   <option value="시장경제">시장경제</option>
                   <option value="혼합경제">혼합경제</option>
                   <option value="계획경제">계획경제</option>
@@ -263,12 +263,12 @@
 
             <!-- 10행: 국고 -->
             <div class="edit-row row-grid-1">
-              <div class="info-box"><span class="info-label">국고</span><span id="my-edit-treasury" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">국고</span><span id="my-treasury-display" class="info-val">-</span></div>
             </div>
 
             <!-- 11행: 경제성장률 -->
             <div class="edit-row row-grid-1">
-              <div class="info-box"><span class="info-label">경제성장률</span><span id="my-edit-growth" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">경제성장률</span><span id="my-growth-rate-display" class="info-val">-</span></div>
             </div>
 
             <div style="margin-top: 20px; text-align: right;">
