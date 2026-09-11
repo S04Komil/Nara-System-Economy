@@ -1065,12 +1065,12 @@ function renderMyInvestments(investments) {
   tbody.innerHTML = investments.map(item => `
     <tr>
       <td>${item.targetCountry || '-'}</td>
-      <td>-</td>
-      <td>${Number(item.amount || 0).toLocaleString()}억</td>
+      <td>${item.targetCountryrate || '-'}</td>
+      <td>${Number(item.amount*10 || 0).toLocaleString()}억달러</td>
       <td>${item.profitStatus || '-'}</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
+      <td>${item.ReturnRate || '-'}%</td>
+      <td${item.growthRate || '-'}%p</td>
+      <td>${Number(item.Profitgain*10 || 0).toLocaleString()}억달러</td>
     </tr>
   `).join('');
 }
