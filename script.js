@@ -1,659 +1,880 @@
-// 1. 현재 연도 메인 통합 API
-const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+document.addEventListener("DOMContentLoaded", function() {
+  // 1. 현재 연도 메인 통합 API
+  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec"; 
 
-// 2. 항목별 전체 연도 시계열 API
-const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
-const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
+  // 2. 항목별 전체 연도 시계열 API
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
+  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
+  const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
-// 3. 세계 통계 성장률 API
-const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec";
+  // 3. 세계 통계 성장률 API
+  const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
 
-// 4. 회원가입/로그인 전용 Apps Script 웹 앱 URL
-const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec";
+  // 4. 회원가입/로그인 전용 Apps Script 웹 앱 URL
+  const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; 
 
-let currentUser = JSON.parse(localStorage.getItem('nara_user')) || null;
+  let currentUser = JSON.parse(localStorage.getItem('nara_user') || 'null');
 
-let mainData = [];
-let globalGdpData = [];
-let globalDefData = [];
-let globalCapData = [];
-let flagMap = new Map(); // 국방비 시계열 국기링크 URL 저장용
-let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
-let currentSheetYear = 1970;
+  let mainData = [];
+  let globalGdpData = [];
+  let globalDefData = [];
+  let globalCapData = [];
+  let flagMap = new Map(); // 국방비 시계열 국기링크 URL 저장용
+  let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
+  let currentSheetYear = 1970;
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const fetchWithSmartRetry = async (url, name) => {
-  let attempt = 1;
-  let waitTime = 1000;
-  while (true) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
-      const data = await res.json();
-      if (!data) throw new Error("수신된 데이터가 비어 있습니다.");
-      return data;
-    } catch (err) {
-      console.warn(`[${name}] 불러오기 실패 (시도 ${attempt}): ${err.message}`);
-      await delay(waitTime);
-      waitTime = Math.min(waitTime * 2, 8000);
-      attempt++;
+  const fetchWithSmartRetry = async (url, name) => {
+    let attempt = 1;
+    let waitTime = 1000;
+    while (true) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
+        const data = await res.json();
+        if (!data) throw new Error("수신된 데이터가 비어 있습니다.");
+        return data;
+      } catch (err) {
+        console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
+        await delay(waitTime);
+        attempt++;
+        waitTime = Math.min(waitTime + 500, 3000); 
+      }
     }
-  }
-};
+  };
 
-document.addEventListener('DOMContentLoaded', () => {
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.style.display = 'flex';
+  const apiRequests = [
+    { url: API_URL, name: "메인 API" },
+    { url: API_URL_GDP, name: "GDP 시계열 API" },
+    { url: API_URL_DEF, name: "국방비 시계열 API" },
+    { url: API_URL_CAP, name: "1인당 GDP 시계열 API" }
+  ];
 
-  updateAuthUI();
+  Promise.all(apiRequests.map(req => fetchWithSmartRetry(req.url, req.name)))
+  .then(([mainRes, gdpRes, defRes, capRes]) => {
+    mainData = mainRes ? (mainRes.data || mainRes) : [];
+    globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
+    globalDefData = defRes ? (defRes.data || defRes) : [];
+    globalCapData = capRes ? (capRes.data || capRes) : [];
 
-  Promise.all([
-    fetchWithSmartRetry(API_URL, "메인 API"),
-    fetchWithSmartRetry(API_URL_GDP, "GDP 시계열"),
-    fetchWithSmartRetry(API_URL_DEF, "국방비 시계열"),
-    fetchWithSmartRetry(API_URL_CAP, "자본 시계열"),
-    fetchWithSmartRetry(API_URL_GROWTH, "성장률 API")
-  ]).then(([mainRes, gdpData, defData, capData, growthData]) => {
-    
-    // 메인 API 데이터 추출
-    if (Array.isArray(mainRes)) {
-      mainData = mainRes;
-    } else if (mainRes && Array.isArray(mainRes.data)) {
-      mainData = mainRes.data;
+    extractFlags(globalDefData, defRes);
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (!mainData || mainData.length === 0) {
+      document.getElementById('loading').innerText = '불러올 데이터가 없습니다.';
+      document.getElementById('loading').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('dashboard').style.display = 'block';
+
+    let sheetName = mainRes ? mainRes.sheetName : null;
+    if (sheetName) {
+      document.getElementById('data-year').innerText = `${sheetName} 기준`;
+      currentSheetYear = parseInt(sheetName, 10) || 1970;
     } else {
-      mainData = [];
-    }
-
-    // 시계열 데이터 가공
-    globalGdpData = Array.isArray(gdpData) ? gdpData : (gdpData.data || []);
-    globalDefData = Array.isArray(defData) ? defData : (defData.data || []);
-    globalCapData = Array.isArray(capData) ? capData : (capData.data || []);
-
-    // 시계열 국기 저장 (국방비 시계열 기준)
-    globalDefData.forEach(row => {
-      const cName = cleanName(row['국가명'] || row['국가']);
-      const fUrl = row['국기'] || row['국기링크'];
-      if (cName && fUrl) flagMap.set(cName, fUrl);
-    });
-
-    // 성장률 데이터 추출 및 연도 설정
-    let gList = Array.isArray(growthData) ? growthData : (growthData.data || []);
-    if (gList.length > 0) {
-      const gObj = gList[0];
-      if (gObj['연도']) currentSheetYear = parseInt(gObj['연도']);
-      renderWorldGrowth(gObj);
+      document.getElementById('data-year').innerText = `최신 데이터 기준`;
+      currentSheetYear = 1970;
     }
 
     calculateWorldTotals(mainData);
     renderMainCards(mainData);
     renderWorldStats();
     
-    // 해외 경제 투자 목록 렌더링 호출
-    renderMyInvestments(mainRes);
-
-    if (overlay) overlay.style.display = 'none';
-  }).catch(err => {
-    console.error("초기 데이터 로딩 중 치명적 오류:", err);
-    alert("데이터를 로드하는 데 실패했습니다.");
-    if (overlay) overlay.style.display = 'none';
+    updateAuthUI();
+    fetchWorldGrowthData();
+  })
+  .catch(error => {
+    console.error('Data Fetch Error:', error);
+    document.getElementById('loading').innerText = '데이터를 불러오는 데 실패했습니다.';
   });
 
-  setupEventListeners();
-});
-
-function setupEventListeners() {
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      filterAndRenderCards(e.target.value);
-    });
-  }
-
-  const sortSelect = document.getElementById('sort-select');
-  if (sortSelect) {
-    sortSelect.addEventListener('change', () => {
-      const keyword = searchInput ? searchInput.value : '';
-      filterAndRenderCards(keyword);
-    });
-  }
-
-  // 모달 닫기 이벤트들
-  document.querySelectorAll('.close-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-      closeAllModals();
-    });
-  });
-
-  window.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal')) {
-      closeAllModals();
+  function extractFlags(defData, rawRes) {
+    let list = [];
+    if (Array.isArray(defData) && defData.length > 0) {
+      list = defData;
+    } else if (defData && Array.isArray(defData.data)) {
+      list = defData.data;
+    } else if (rawRes && Array.isArray(rawRes.data)) {
+      list = rawRes.data;
+    } else if (Array.isArray(rawRes)) {
+      list = rawRes;
     }
-  });
 
-  // 폼 제출 이벤트
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLoginSubmit);
-  }
+    if (!list || list.length === 0) return;
 
-  const signupForm = document.getElementById('signup-form');
-  if (signupForm) {
-    signupForm.addEventListener('submit', handleSignupSubmit);
-  }
+    list.forEach(row => {
+      if (!row || typeof row !== 'object') return;
 
-  const myForm = document.getElementById('my-economy-form');
-  if (myForm) {
-    myForm.addEventListener('submit', handleMyEconomySubmit);
-  }
-}
+      let country = extractCountryFromRow(row);
+      let keyName = cleanName(country);
 
-function closeAllModals() {
-  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-}
+      if (!keyName) return;
 
-function cleanName(name) {
-  if (!name) return '';
-  return String(name).replace(/\s+/g, '').toLowerCase();
-}
+      let flagUrl = "";
+      if (row['국기링크']) flagUrl = String(row['국기링크']).trim();
+      else if (row['국기']) flagUrl = String(row['국기']).trim();
+      else if (row['flag']) flagUrl = String(row['flag']).trim();
+      else if (row['Flag']) flagUrl = String(row['Flag']).trim();
 
-function parseNumber(val) {
-  if (typeof val === 'number') return val;
-  if (!val) return 0;
-  const cleaned = String(val).replace(/,/g, '').trim();
-  const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? 0 : parsed;
-}
-
-function formatMoney(num) {
-  return Math.round(num).toLocaleString('ko-KR');
-}
-
-// ---------------- 메인 카드리스트 & 통계 ----------------
-
-function calculateWorldTotals(data) {
-  worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
-  data.forEach(item => {
-    worldTotals.gdp += parseNumber(item['GDP'] || item['gdp']);
-    worldTotals.pop += parseNumber(item['인구'] || item['pop']);
-    worldTotals.def += parseNumber(item['국방비'] || item['def']);
-    worldTotals.cap += parseNumber(item['자본'] || item['cap']);
-  });
-}
-
-function renderWorldGrowth(gObj) {
-  const elYear = document.getElementById('growth-year');
-  const elRate = document.getElementById('growth-rate');
-  if (elYear && gObj['연도']) elYear.innerText = gObj['연도'] + '년';
-  if (elRate && gObj['성장률'] !== undefined) {
-    const val = parseFloat(gObj['성장률']);
-    elRate.innerText = (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
-  }
-}
-
-function renderWorldStats() {
-  const elGdp = document.getElementById('total-world-gdp');
-  const elPop = document.getElementById('total-world-pop');
-  const elDef = document.getElementById('total-world-def');
-  const elCap = document.getElementById('total-world-cap');
-
-  if (elGdp) elGdp.innerText = formatMoney(worldTotals.gdp);
-  if (elPop) elPop.innerText = formatMoney(worldTotals.pop);
-  if (elDef) elDef.innerText = formatMoney(worldTotals.def);
-  if (elCap) elCap.innerText = formatMoney(worldTotals.cap);
-}
-
-function renderMainCards(data) {
-  const container = document.getElementById('cards-container');
-  if (!container) return;
-  container.innerHTML = '';
-
-  data.forEach((item, index) => {
-    const countryName = item['국가명'] || item['국가'] || '알 수 없음';
-    const flagUrl = item['국기'] || item['국기링크'] || '';
-    const gdp = parseNumber(item['GDP'] || item['gdp']);
-    const pop = parseNumber(item['인구'] || item['pop']);
-    const def = parseNumber(item['국방비'] || item['def']);
-    const cap = parseNumber(item['자본'] || item['cap']);
-
-    const gdpShare = worldTotals.gdp > 0 ? ((gdp / worldTotals.gdp) * 100).toFixed(2) : '0.00';
-    const popShare = worldTotals.pop > 0 ? ((pop / worldTotals.pop) * 100).toFixed(2) : '0.00';
-
-    const card = document.createElement('div');
-    card.className = 'country-card';
-    card.style.animationDelay = `${(index % 12) * 0.05}s`;
-    
-    card.innerHTML = `
-      <div class="card-header">
-        <div class="country-info">
-          ${flagUrl ? `<img src="${flagUrl}" class="card-flag" alt="${countryName} 국기" loading="lazy">` : `<div class="card-flag-placeholder"></div>`}
-          <h3 class="country-title">${countryName}</h3>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="stat-row">
-          <span class="stat-label">GDP</span>
-          <span class="stat-value">${formatMoney(gdp)}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">인구</span>
-          <span class="stat-value">${formatMoney(pop)}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">국방비</span>
-          <span class="stat-value">${formatMoney(def)}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">자본</span>
-          <span class="stat-value">${formatMoney(cap)}</span>
-        </div>
-        <div class="share-badge-container">
-          <span class="share-badge">GDP 점유율: ${gdpShare}%</span>
-          <span class="share-badge alt">인구 점유율: ${popShare}%</span>
-        </div>
-      </div>
-      <div class="card-footer">
-        <button class="detail-btn" onclick="openCountryDetail('${countryName}')">상세 보기</button>
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
-}
-
-function filterAndRenderCards(keyword = '') {
-  const cleanKeyword = cleanName(keyword);
-  const sortSelect = document.getElementById('sort-select');
-  const sortType = sortSelect ? sortSelect.value : 'gdp-desc';
-
-  let filtered = mainData.filter(item => {
-    const name = cleanName(item['국가명'] || item['국가']);
-    return name.includes(cleanKeyword);
-  });
-
-  filtered.sort((a, b) => {
-    const getVal = (item, key) => parseNumber(item[key] || item[key.toLowerCase()]);
-    switch (sortType) {
-      case 'gdp-desc': return getVal(b, 'GDP') - getVal(a, 'GDP');
-      case 'gdp-asc': return getVal(a, 'GDP') - getVal(b, 'GDP');
-      case 'pop-desc': return getVal(b, '인구') - getVal(a, '인구');
-      case 'pop-asc': return getVal(a, '인구') - getVal(b, '인구');
-      case 'def-desc': return getVal(b, '국방비') - getVal(a, '국방비');
-      case 'def-asc': return getVal(a, '국방비') - getVal(b, '국방비');
-      case 'cap-desc': return getVal(b, '자본') - getVal(a, '자본');
-      case 'cap-asc': return getVal(a, '자본') - getVal(b, '자본');
-      case 'name-asc': 
-        return (a['국가명'] || a['국가'] || '').localeCompare(b['국가명'] || b['국가'] || '', 'ko-KR');
-      default: return 0;
-    }
-  });
-
-  renderMainCards(filtered);
-}
-
-// ---------------- 국가 상세 모달 및 차트 ----------------
-
-let detailChart = null;
-
-function openCountryDetail(countryName) {
-  const modal = document.getElementById('detail-modal');
-  if (!modal) return;
-
-  const targetClean = cleanName(countryName);
-  
-  // 국기 및 기본 정보 설정
-  const flagUrl = flagMap.get(targetClean) || '';
-  const flagImg = document.getElementById('modal-flag');
-  const titleEl = document.getElementById('modal-country-name');
-  
-  if (flagImg) {
-    if (flagUrl) {
-      flagImg.src = flagUrl;
-      flagImg.style.display = 'block';
-    } else {
-      flagImg.style.display = 'none';
-    }
-  }
-  if (titleEl) titleEl.innerText = countryName;
-
-  // 메인 데이터에서 해당 국가 정보 추출
-  const mainObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === targetClean) || {};
-  
-  const gdp = parseNumber(mainObj['GDP'] || mainObj['gdp']);
-  const pop = parseNumber(mainObj['인구'] || mainObj['pop']);
-  const def = parseNumber(mainObj['국방비'] || mainObj['def']);
-  const cap = parseNumber(mainObj['자본'] || mainObj['cap']);
-
-  document.getElementById('modal-gdp').innerText = formatMoney(gdp);
-  document.getElementById('modal-pop').innerText = formatMoney(pop);
-  document.getElementById('modal-def').innerText = formatMoney(def);
-  document.getElementById('modal-cap').innerText = formatMoney(cap);
-
-  document.getElementById('modal-gdp-share').innerText = worldTotals.gdp > 0 ? ((gdp / worldTotals.gdp) * 100).toFixed(2) + '%' : '0.00%';
-  document.getElementById('modal-pop-share').innerText = worldTotals.pop > 0 ? ((pop / worldTotals.pop) * 100).toFixed(2) + '%' : '0.00%';
-
-  // 시계열 차트 생성
-  renderCountryChart(targetClean);
-
-  modal.style.display = 'flex';
-}
-
-function renderCountryChart(targetClean) {
-  const ctx = document.getElementById('detail-chart');
-  if (!ctx) return;
-
-  const gdpRow = globalGdpData.find(r => cleanName(r['국가명'] || r['국가']) === targetClean) || {};
-  const defRow = globalDefData.find(r => cleanName(r['국가명'] || r['국가']) === targetClean) || {};
-  const capRow = globalCapData.find(r => cleanName(r['국가명'] || r['국가']) === targetClean) || {};
-
-  // 연도 라벨 및 데이터 파싱
-  const years = [];
-  const gdpSeries = [];
-  const defSeries = [];
-  const capSeries = [];
-
-  for (let y = 1970; y <= currentSheetYear; y++) {
-    const yearKey = y + '년';
-    years.push(yearKey);
-    gdpSeries.push(parseNumber(gdpRow[yearKey] || gdpRow[y]));
-    defSeries.push(parseNumber(defRow[yearKey] || defRow[y]));
-    capSeries.push(parseNumber(capRow[yearKey] || capRow[y]));
-  }
-
-  if (detailChart) detailChart.destroy();
-
-  detailChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: years,
-      datasets: [
-        {
-          label: 'GDP',
-          data: gdpSeries,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          tension: 0.3,
-          fill: true
-        },
-        {
-          label: '국방비',
-          data: defSeries,
-          borderColor: '#ef4444',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          tension: 0.3,
-          fill: true
-        },
-        {
-          label: '자본',
-          data: capSeries,
-          borderColor: '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          tension: 0.3,
-          fill: true
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: 'index',
-        intersect: false,
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `${context.dataset.label}: ${formatMoney(context.parsed.y)}`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          ticks: {
-            callback: function(value) {
-              return formatMoney(value);
-            }
+      if (!flagUrl) {
+        for (let k of Object.keys(row)) {
+          let cleanKey = k.replace(/[\s_]/g, '').toLowerCase();
+          if (cleanKey === '국기링크' || cleanKey === '국기' || cleanKey === '국기url' || cleanKey === 'flag' || cleanKey === 'flagurl') {
+            flagUrl = String(row[k]).trim();
+            break;
           }
         }
       }
-    }
-  });
-}
 
-// ---------------- 로그인 / 회원가입 / 인증 ----------------
+      if (!flagUrl) {
+        for (let k of Object.keys(row)) {
+          let val = String(row[k]).trim();
+          if (val.startsWith('http://') || val.startsWith('https://')) {
+            flagUrl = val;
+            break;
+          }
+        }
+      }
 
-function updateAuthUI() {
-  const authNav = document.getElementById('auth-nav-items');
-  const userNav = document.getElementById('user-nav-items');
-  const myEcoBtn = document.getElementById('my-economy-btn');
-
-  if (currentUser) {
-    if (authNav) authNav.style.display = 'none';
-    if (userNav) userNav.style.display = 'flex';
-    if (myEcoBtn) myEcoBtn.style.display = 'inline-block';
-    
-    const nameEl = document.getElementById('user-display-name');
-    if (nameEl) nameEl.innerText = `${currentUser.country} (${currentUser.username})`;
-  } else {
-    if (authNav) authNav.style.display = 'flex';
-    if (userNav) userNav.style.display = 'none';
-    if (myEcoBtn) myEcoBtn.style.display = 'none';
-  }
-}
-
-function windowShowLoginModal() {
-  closeAllModals();
-  const modal = document.getElementById('login-modal');
-  if (modal) modal.style.display = 'flex';
-}
-
-function windowShowSignupModal() {
-  closeAllModals();
-  const modal = document.getElementById('signup-modal');
-  if (modal) modal.style.display = 'flex';
-}
-
-function handleLogout() {
-  currentUser = null;
-  localStorage.removeItem('nara_user');
-  updateAuthUI();
-  alert('로그아웃 되었습니다.');
-  window.location.reload();
-}
-
-async function handleLoginSubmit(e) {
-  e.preventDefault();
-  const idVal = document.getElementById('login-id').value.trim();
-  const pwVal = document.getElementById('login-pw').value.trim();
-
-  if (!idVal || !pwVal) {
-    alert('아이디와 비밀번호를 입력해주세요.');
-    return;
+      if (flagUrl && flagUrl !== 'N/A' && flagUrl !== '-') {
+        flagMap.set(keyName, flagUrl);
+      }
+    });
   }
 
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.style.display = 'flex';
+  function fetchWorldGrowthData() {
+    if (!API_URL_GROWTH) return;
 
-  try {
-    const res = await fetch(`${LOGIN_GAS_URL}?action=login&id=${encodeURIComponent(idVal)}&pw=${encodeURIComponent(pwVal)}`);
-    const data = await res.json();
+    fetch(API_URL_GROWTH)
+      .then(res => res.json())
+      .then(data => {
+        if (!data) return;
+        
+        const formatGrowth = (val) => {
+          if (val === null || val === undefined || isNaN(val)) return "-";
+          const num = parseFloat(val);
+          const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
+          return `${prefix}${Math.abs(num).toFixed(2)}%`;
+        };
 
-    if (data.result === 'success') {
-      currentUser = {
-        username: data.username || idVal,
-        country: data.country
-      };
-      localStorage.setItem('nara_user', JSON.stringify(currentUser));
-      updateAuthUI();
-      closeAllModals();
-      alert(`${currentUser.country} 계정으로 로그인되었습니다.`);
-    } else {
-      alert(data.message || '로그인에 실패했습니다.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('로그인 요청 중 오류가 발생했습니다.');
-  } finally {
-    if (overlay) overlay.style.display = 'none';
-  }
-}
+        const gdpEl = document.getElementById('world-gdp-growth');
+        const popEl = document.getElementById('world-pop-growth');
+        const capEl = document.getElementById('world-cap-growth');
 
-async function handleSignupSubmit(e) {
-  e.preventDefault();
-  const idVal = document.getElementById('signup-id').value.trim();
-  const pwVal = document.getElementById('signup-pw').value.trim();
-  const countryVal = document.getElementById('signup-country').value.trim();
-
-  if (!idVal || !pwVal || !countryVal) {
-    alert('모든 필드를 입력해주세요.');
-    return;
+        if (gdpEl) gdpEl.innerText = formatGrowth(data.gdpGrowthRate);
+        if (popEl) popEl.innerText = formatGrowth(data.popGrowthRate);
+        if (capEl) capEl.innerText = formatGrowth(data.capGrowthRate);
+      })
+      .catch(err => console.error("성장률 데이터 로드 실패:", err));
   }
 
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.style.display = 'flex';
+  function calculateWorldTotals(data) {
+    let gdp = 0, pop = 0, def = 0;
+    data.forEach(item => {
+      let cName = extractCountryFromRow(item);
+      if (cleanName(cName) === '전세계') return;
 
-  try {
-    const res = await fetch(`${LOGIN_GAS_URL}?action=signup&id=${encodeURIComponent(idVal)}&pw=${encodeURIComponent(pwVal)}&country=${encodeURIComponent(countryVal)}`);
-    const data = await res.json();
-
-    if (data.result === 'success') {
-      alert('회원가입이 완료되었습니다. 로그인해주세요.');
-      closeAllModals();
-      windowShowLoginModal();
-    } else {
-      alert(data.message || '회원가입에 실패했습니다.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('회원가입 요청 중 오류가 발생했습니다.');
-  } finally {
-    if (overlay) overlay.style.display = 'none';
-  }
-}
-
-// ---------------- 자국 경제 수정 뷰 ----------------
-
-window.showMyEconomyView = function() {
-  if (!currentUser) {
-    alert('로그인이 필요한 기능입니다.');
-    windowShowLoginModal();
-    return;
-  }
-
-  const mainView = document.getElementById('main-dashboard-view');
-  const myView = document.getElementById('my-economy-view');
-
-  if (mainView) mainView.style.display = 'none';
-  if (myView) myView.style.display = 'block';
-
-  const titleEl = document.getElementById('my-country-title');
-  if (titleEl) titleEl.innerText = `${currentUser.country} 경제 정보 수정`;
-
-  const myObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === cleanName(currentUser.country)) || {};
-
-  document.getElementById('edit-gdp').value = myObj['GDP'] || myObj['gdp'] || 0;
-  document.getElementById('edit-pop').value = myObj['인구'] || myObj['pop'] || 0;
-  document.getElementById('edit-def').value = myObj['국방비'] || myObj['def'] || 0;
-  document.getElementById('edit-cap').value = myObj['자본'] || myObj['cap'] || 0;
-
-  // 해외 경제 투자 목록 추가 렌더링
-  renderMyInvestments(mainData);
-};
-
-window.hideMyEconomyView = function() {
-  const mainView = document.getElementById('main-dashboard-view');
-  const myView = document.getElementById('my-economy-view');
-
-  if (mainView) mainView.style.display = 'block';
-  if (myView) myView.style.display = 'none';
-};
-
-async function handleMyEconomySubmit(e) {
-  e.preventDefault();
-  if (!currentUser) return;
-
-  const gdp = document.getElementById('edit-gdp').value;
-  const pop = document.getElementById('edit-pop').value;
-  const def = document.getElementById('edit-def').value;
-  const cap = document.getElementById('edit-cap').value;
-
-  const overlay = document.getElementById('loading-overlay');
-  if (overlay) overlay.style.display = 'flex';
-
-  try {
-    const params = new URLSearchParams({
-      action: 'updateEconomy',
-      country: currentUser.country,
-      gdp: gdp,
-      pop: pop,
-      def: def,
-      cap: cap
+      gdp += ((parseFloat(item['GDP(10억달러)']) || 0) * 10);
+      pop += (parseFloat(item['인구(만명)']) || 0);
+      def += ((parseFloat(item['국방비(10억달러)']) || 0) * 10);
     });
 
-    const res = await fetch(`${LOGIN_GAS_URL}?${params.toString()}`);
-    const data = await res.json();
+    let cap = pop > 0 ? (gdp / pop) * 10000 : 0;
+    worldTotals = { gdp, pop, def, cap };
+  }
 
-    if (data.result === 'success') {
-      alert('경제 정보가 성공적으로 수정되었습니다.');
-      window.location.reload();
+  function formatMoney(billionVal) {
+    let rawNum = parseFloat(billionVal) || 0;
+    if (rawNum === 0) return "0달러";
+
+    const isNegative = rawNum < 0;
+    let val = Math.round(Math.abs(rawNum) * 100000000);
+
+    let result = "";
+    const jo = Math.floor(val / 1000000000000);
+    val %= 1000000000000;
+    const eok = Math.floor(val / 100000000);
+    val %= 100000000;
+    const man = Math.floor(val / 10000);
+
+    if (jo > 0) result += `${jo}조 `;
+    if (eok > 0) result += `${eok.toLocaleString()}억 `;
+    if (man > 0) result += `${man.toLocaleString()}만`;
+
+    const formattedText = result.trim() ? `${result.trim()}달러` : "0달러";
+    return isNegative ? `-${formattedText}` : formattedText;
+  }
+
+  function formatPopulation(tenThousandVal) {
+    let val = Math.round((parseFloat(tenThousandVal) || 0) * 10000);
+    if (val >= 100000000) {
+      const eok = (val / 100000000).toFixed(2);
+      return `${eok}억 명`;
     } else {
-      alert(data.message || '정보 수정에 실패했습니다.');
+      return `${(val / 10000).toLocaleString()}만 명`;
     }
-  } catch (err) {
-    console.error(err);
-    alert('수정 요청 중 오류가 발생했습니다.');
-  } finally {
-    if (overlay) overlay.style.display = 'none';
-  }
-}
-
-// ---------------- 해외 경제 투자 목록 렌더링 함수 ----------------
-
-function renderMyInvestments(mainRes) {
-  const tbody = document.getElementById('my-investment-list');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-
-  const investments = mainRes.investments || mainRes.foreignInvestments || [];
-  
-  if (!currentUser || !currentUser.country || investments.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #777; padding: 20px;">투자 내역이 없습니다.</td></tr>`;
-    return;
   }
 
-  // 로그인한 국가가 '투자국'인 항목만 필터링
-  const myInvestments = investments.filter(inv => {
-    const investor = inv['투자국'] || inv['investor'] || '';
-    return cleanName(investor) === cleanName(currentUser.country);
+  function renderMainCards(data) {
+    const validCountries = data.filter(item => cleanName(extractCountryFromRow(item)) !== '전세계');
+
+    const getTop = (key) => validCountries.reduce((max, item) => (parseFloat(item[key]) || 0) > (parseFloat(max[key]) || 0) ? item : max, validCountries[0]);
+
+    const topGdp = getTop('GDP(10억달러)');
+    const topDef = getTop('국방비(10억달러)');
+    const topPop = getTop('인구(만명)');
+    const topCap = getTop('1인당GDP');
+
+    document.getElementById('top-gdp-country').innerText = topGdp['국가'] || topGdp['카테고리'] || '-';
+    document.getElementById('top-gdp-val').innerText = formatMoney((parseFloat(topGdp['GDP(10억달러)']) || 0) * 10);
+
+    document.getElementById('top-def-country').innerText = topDef['국가'] || topDef['카테고리'] || '-';
+    document.getElementById('top-def-val').innerText = formatMoney((parseFloat(topDef['국방비(10억달러)']) || 0) * 10);
+
+    document.getElementById('top-pop-country').innerText = topPop['top-pop-country'] || topPop['국가'] || topPop['카테고리'] || '-';
+    document.getElementById('top-pop-val').innerText = formatPopulation(topPop['인구(만명)']);
+
+    document.getElementById('top-cap-country').innerText = topCap['국가'] || topCap['카테고리'] || '-';
+    document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
+  }
+
+  function renderWorldStats() {
+    document.getElementById('world-gdp').innerText = formatMoney(worldTotals.gdp);
+    document.getElementById('world-pop').innerText = formatPopulation(worldTotals.pop);
+    document.getElementById('world-def').innerText = formatMoney(worldTotals.def);
+    document.getElementById('world-cap').innerText = `${Math.round(worldTotals.cap).toLocaleString()} 달러`;
+  }
+
+  window.showMainView = function() {
+    document.getElementById('main-view').style.display = 'block';
+    document.getElementById('rank-view').style.display = 'none';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'none';
+
+    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+  };
+
+  function cleanName(str) {
+    if (!str) return '';
+    return String(str)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s\u200B-\u200D\uFEFF_\-\(\)]/g, '');
+  }
+
+  function extractCountryFromRow(row) {
+    if (!row || typeof row !== 'object') return '';
+    if (row['국가']) return row['국가'];
+    if (row['카테고리']) return row['카테고리'];
+    if (row['country']) return row['country'];
+    if (row['Category']) return row['Category'];
+
+    for (let k of Object.keys(row)) {
+      let val = String(row[k]).trim();
+      if (isNaN(Number(val)) && val.length > 0 && !k.includes('Year') && !k.includes('연도')) {
+        return val;
+      }
+    }
+    return '';
+  }
+
+  function getPropByCleanKey(row, targetKeyName) {
+    if (!row || typeof row !== 'object') return undefined;
+    
+    if (row[targetKeyName] !== undefined) return row[targetKeyName];
+
+    const targetClean = cleanName(targetKeyName);
+    for (let k of Object.keys(row)) {
+      if (cleanName(k) === targetClean) {
+        return row[k];
+      }
+    }
+    return undefined;
+  }
+
+  function getSortedYearKeys(seriesData) {
+    if (!seriesData || seriesData.length === 0) return [];
+    
+    const sample = seriesData.find(item => item && typeof item === 'object') || {};
+    const keys = Object.keys(sample);
+
+    const yearKeys = keys.filter(k => {
+      const cleanedKey = k.replace(/[^\d]/g, '');
+      return cleanedKey.length >= 2 && cleanedKey.length <= 4;
+    });
+
+    return yearKeys.sort((a, b) => {
+      const yearA = parseInt(a.replace(/[^\d]/g, ''), 10);
+      const yearB = parseInt(b.replace(/[^\d]/g, ''), 10);
+      return yearA - yearB;
+    });
+  }
+
+  window.switchCategory = function(key, title, unitType, navBtnId) {
+    document.getElementById('main-view').style.display = 'none';
+    document.getElementById('rank-view').style.display = 'block';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'none';
+
+    document.getElementById('rank-title').innerText = title;
+
+    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+    if (navBtnId) {
+      document.getElementById(navBtnId).classList.add('active');
+    }
+
+    const listEl = document.getElementById('rank-list');
+    listEl.innerHTML = '';
+
+    let totalBaseVal = 0;
+    if (key === 'GDP(10억달러)') totalBaseVal = worldTotals.gdp;
+    else if (key === '인구(만명)') totalBaseVal = worldTotals.pop;
+    else if (key === '국방비(10억달러)') totalBaseVal = worldTotals.def;
+
+    let currentList = mainData.map(item => {
+      let rawCountry = extractCountryFromRow(item);
+      let cleanedName = cleanName(rawCountry);
+
+      if (cleanedName === '전세계') return null;
+
+      let rawVal = item[key];
+      if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+        return null;
+      }
+
+      let numVal = parseFloat(rawVal);
+      if (isNaN(numVal) || numVal <= 0) return null;
+
+      if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+        numVal *= 10;
+      }
+
+      return { country: rawCountry, cleanKey: cleanedName, val: numVal };
+    })
+    .filter(item => item !== null && item.country !== '')
+    .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+
+    let targetSeriesData = [];
+    if (key === 'GDP(10억달러)') targetSeriesData = globalGdpData;
+    else if (key === '국방비(10억달러)') targetSeriesData = globalDefData;
+    else if (key === '1인당GDP') targetSeriesData = globalCapData;
+
+    const prevRankMap = new Map();
+
+    if (key !== '인구(만명)' && targetSeriesData && targetSeriesData.length > 0) {
+      const yearKeys = getSortedYearKeys(targetSeriesData);
+
+      const validYearKeys = yearKeys.filter(k => {
+        const y = parseInt(k.replace(/[^\d]/g, ''), 10);
+        return y <= currentSheetYear;
+      });
+
+      if (validYearKeys.length > 0) {
+        let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
+        let prevYearKey = validYearKeys[targetIndex];
+
+        let prevList = targetSeriesData
+          .map(item => {
+            let rawCountry = extractCountryFromRow(item);
+            let cleanedName = cleanName(rawCountry);
+
+            if (cleanedName === '전세계') return null;
+
+            let rawVal = item[prevYearKey];
+            if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+              return null;
+            }
+
+            let numVal = parseFloat(rawVal);
+            if (isNaN(numVal) || numVal <= 0) return null;
+
+            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+              numVal *= 10;
+            }
+
+            return { rawCountry: String(rawCountry).trim(), cleanKey: cleanedName, val: numVal };
+          })
+          .filter(item => item !== null && item.cleanKey !== '')
+          .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+
+        prevList.forEach((item, idx) => {
+          prevRankMap.set(item.cleanKey, idx + 1);
+        });
+      }
+    }
+
+    let listData = currentList.map((item, idx) => {
+      const currentRank = idx + 1;
+      const prevRank = prevRankMap.get(item.cleanKey);
+
+      return {
+        country: item.country,
+        cleanKey: item.cleanKey,
+        val: item.val,
+        currentRank: currentRank,
+        prevRank: prevRank || null,
+        isWorld: false
+      };
+    });
+
+    if (key === '1인당GDP') {
+      listData.push({
+        country: '전세계',
+        cleanKey: '전세계',
+        val: worldTotals.cap,
+        currentRank: null,
+        prevRank: null,
+        isWorld: true
+      });
+      listData.sort((a, b) => b.val - a.val);
+    }
+
+    const maxValInList = listData.length > 0 ? listData[0].val : 1;
+    let rankCounter = 1;
+
+    listData.forEach((item) => {
+      let formattedVal = "";
+      if (unitType === '달러') {
+        formattedVal = formatMoney(item.val);
+      } else if (unitType === '명') {
+        formattedVal = formatPopulation(item.val);
+      } else if (unitType === '달러_직접') {
+        formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
+      }
+
+      let rankDiffHtml = "";
+      let rankDisplay = "";
+
+      if (item.isWorld) {
+        rankDisplay = "-";
+      } else {
+        rankDisplay = `${rankCounter}.`;
+        rankCounter++;
+
+        if (key === '인구(만명)') {
+          rankDiffHtml = "";
+        } else if (!item.prevRank) {
+          rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
+        } else {
+          const diff = item.prevRank - item.currentRank;
+          if (diff > 0) rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
+          else if (diff < 0) rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
+          else rankDiffHtml = `<span class="rank-diff same">-</span>`;
+        }
+      }
+
+      let flagHtml = "";
+      const flagUrl = flagMap.get(item.cleanKey);
+      if (flagUrl && !item.isWorld) {
+        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
+      }
+
+      let percent = 0;
+      if (key === '1인당GDP') {
+        percent = (item.val / maxValInList) * 100;
+      } else {
+        percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
+      }
+      percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
+
+      const li = document.createElement('li');
+      li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
+      
+      const countryClickableAttr = item.isWorld ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
+
+      li.innerHTML = `
+        <div class="rank-bar" style="width: ${percent}%;"></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="rank-num">${rankDisplay}</span>
+          ${rankDiffHtml}
+          <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px;">
+            ${flagHtml}
+            <span class="rank-country">${item.country}</span>
+          </span>
+        </div>
+        <span class="rank-val">${formattedVal}</span>
+      `;
+      listEl.appendChild(li);
+    });
+  };
+
+  // 모달 함수
+  window.openCountryModal = function(cleanKey) {
+    if (cleanKey === '전세계') return;
+
+    const item = mainData.find(d => cleanName(extractCountryFromRow(d)) === cleanKey);
+    if (!item) {
+      alert("국가 상세 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const countryName = extractCountryFromRow(item);
+    const flagUrl = flagMap.get(cleanKey) || "";
+
+    const flagImg = document.getElementById('modal-flag');
+    if (flagImg) {
+      if (flagUrl) {
+        flagImg.src = flagUrl;
+        flagImg.style.display = 'block';
+      } else {
+        flagImg.style.display = 'none';
+      }
+    }
+    const nameEl = document.getElementById('modal-country-name');
+    if (nameEl) nameEl.innerText = countryName;
+
+    const continentEl = document.getElementById('modal-continent');
+    if (continentEl) continentEl.innerText = getPropByCleanKey(item, '대륙') || getPropByCleanKey(item, '소속대륙') || '-';
+    const allianceEl = document.getElementById('modal-alliance');
+    if (allianceEl) allianceEl.innerText = getPropByCleanKey(item, '소속연합') || getPropByCleanKey(item, '연합') || '-';
+
+    const rawGdp = (parseFloat(getPropByCleanKey(item, 'GDP(10억달러)')) || 0) * 10;
+    const gdpEl = document.getElementById('modal-gdp');
+    if (gdpEl) gdpEl.innerText = formatMoney(rawGdp);
+    const gdpRankEl = document.getElementById('modal-gdp-rank');
+    if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP(10억달러)', cleanKey);
+
+    const rawDef = (parseFloat(getPropByCleanKey(item, '국방비(10억달러)')) || 0) * 10;
+    const rawDefRatio = getPropByCleanKey(item, 'GDP대비국방비');
+    
+    let defRatioDisplay = "-";
+    if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
+      let numRatio = parseFloat(rawDefRatio);
+      if (numRatio > 0 && numRatio < 1 && String(rawDefRatio).includes(".")) {
+        numRatio = numRatio * 100;
+      }
+      defRatioDisplay = `${numRatio.toFixed(2)}%`;
+    } else if (rawGdp > 0) {
+      defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
+    }
+
+    const defRatioEl = document.getElementById('modal-def-ratio');
+    if (defRatioEl) defRatioEl.innerText = defRatioDisplay;
+
+    const defEl = document.getElementById('modal-def');
+    if (defEl) defEl.innerText = formatMoney(rawDef);
+    const defRankEl = document.getElementById('modal-def-rank');
+    if (defRankEl) defRankEl.innerText = getCountryRank('국방비(10억달러)', cleanKey);
+
+    const popEl = document.getElementById('modal-pop');
+    if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)'));
+    const popRankEl = document.getElementById('modal-pop-rank');
+    if (popRankEl) popRankEl.innerText = getCountryRank('인구(만명)', cleanKey);
+
+    const capVal = parseFloat(getPropByCleanKey(item, '1인당GDP')) || 0;
+    const capEl = document.getElementById('modal-cap');
+    if (capEl) capEl.innerText = `${Math.round(capVal).toLocaleString()} 달러`;
+    const capRankEl = document.getElementById('modal-cap-rank');
+    if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
+
+    const taxVal = getPropByCleanKey(item, '세율');
+    const taxEl = document.getElementById('modal-tax');
+    if (taxEl) taxEl.innerText = taxVal !== undefined && taxVal !== '' ? `${taxVal}%` : '-';
+    
+    const rawBudgetVal = getPropByCleanKey(item, '국가예산');
+    const rawBudget = (parseFloat(rawBudgetVal) || 0) * 10;
+    const budgetEl = document.getElementById('modal-budget');
+    if (budgetEl) budgetEl.innerText = rawBudget !== 0 ? formatMoney(rawBudget) : '-';
+
+    const systemEl = document.getElementById('modal-system');
+    if (systemEl) systemEl.innerText = getPropByCleanKey(item, '경제체제') || '-';
+    
+    const mainIndustry = getPropByCleanKey(item, '주업') || '-';
+    const industryEl = document.getElementById('modal-industry');
+    if (industryEl) industryEl.innerText = mainIndustry;
+
+    const welfareEl = document.getElementById('modal-welfare');
+    if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
+
+    const rawTreasuryVal = getPropByCleanKey(item, '국고');
+    const treasuryEl = document.getElementById('modal-treasury');
+    if (treasuryEl) {
+      if (rawTreasuryVal !== undefined && rawTreasuryVal !== '' && !isNaN(parseFloat(rawTreasuryVal))) {
+        treasuryEl.innerText = formatMoney(rawTreasuryVal);
+      } else {
+        treasuryEl.innerText = '-';
+      }
+    }
+
+    const rawGrowth = getPropByCleanKey(item, '최종경제성장률') !== undefined && getPropByCleanKey(item, '최종경제성장률') !== '' 
+      ? getPropByCleanKey(item, '최종경제성장률') 
+      : getPropByCleanKey(item, '경제성장률');
+      
+    const growthEl = document.getElementById('modal-growth');
+    if (growthEl) {
+      if (rawGrowth !== undefined && rawGrowth !== '' && !isNaN(parseFloat(rawGrowth))) {
+        growthEl.innerText = `${parseFloat(rawGrowth).toFixed(2)}%`;
+      } else {
+        growthEl.innerText = '-';
+      }
+    }
+
+    const modal = document.getElementById('country-modal');
+    if (modal) modal.style.display = 'flex';
+  };
+
+  window.closeCountryModal = function() {
+    const modal = document.getElementById('country-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('country-modal');
+    if (modal && e.target === modal) {
+      modal.style.display = 'none';
+    }
   });
 
-  if (myInvestments.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #777; padding: 20px;">등록된 해외 경제 투자 내역이 없습니다.</td></tr>`;
-    return;
+  function getCountryRank(key, cleanKey) {
+    const sorted = mainData
+      .map(item => ({
+        keyName: cleanName(extractCountryFromRow(item)),
+        val: parseFloat(getPropByCleanKey(item, key)) || 0
+      }))
+      .filter(item => item.keyName !== '전세계' && item.val > 0)
+      .sort((a, b) => b.val - a.val);
+
+    const index = sorted.findIndex(item => item.keyName === cleanKey);
+    return index !== -1 ? `${index + 1}위` : '-';
   }
 
-  myInvestments.forEach(inv => {
-    const targetCountry = inv['피투자국'] || inv['targetCountry'] || '-';
-    const targetGrade = inv['피투자국등급'] || inv['targetGrade'] || '-';
-    const investAmount = parseFloat(inv['투자금'] || inv['amount'] || 0);
-    const isProfitable = inv['수익여부'] || inv['isProfitable'] || '-';
-    const redemptionRate = parseFloat(inv['환수율'] || inv['redemptionRate'] || 0);
-    const growthInc = parseFloat(inv['성장률증가'] || inv['growthIncrease'] || 0);
-    const netProfit = parseFloat(inv['차익금'] || inv['netProfit'] || 0);
+  // 회원가입 / 로그인 모드 전환 함수 (상단 탭 및 하단 링크 통합 제어)
+  window.switchAuthTab = function(mode) {
+    const modal = document.getElementById('auth-modal');
+    const title = document.getElementById('auth-modal-title');
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const countryGroup = document.getElementById('auth-country-group');
+    const switchText = document.getElementById('auth-switch-text');
+    const switchLink = document.getElementById('auth-switch-link');
+    
+    const tabLogin = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${targetCountry}</td>
-      <td>${targetGrade}</td>
-      <td>${formatMoney(investAmount)}</td>
-      <td>${isProfitable}</td>
-      <td>${redemptionRate.toFixed(2)}%</td>
-      <td>${growthInc > 0 ? `+${growthInc.toFixed(2)}%p` : `${growthInc.toFixed(2)}%p`}</td>
-      <td>${formatMoney(netProfit)}</td>
+    if (mode === 'signup' || mode === 'register') {
+      // 1. 상단 탭 active 상태 변경
+      if (tabLogin) tabLogin.classList.remove('active');
+      if (tabSignup) tabSignup.classList.add('active');
+
+      // 2. 폼 요소 및 텍스트 변경
+      if (title) title.innerText = '회원가입';
+      if (submitBtn) {
+        submitBtn.innerText = '가입하기';
+        submitBtn.onclick = handleRegister;
+      }
+      if (countryGroup) countryGroup.style.display = 'block';
+
+      // 3. 하단 링크 텍스트 및 클릭 이벤트 변경
+      if (switchText) switchText.innerText = '이미 계정이 있으신가요?';
+      if (switchLink) {
+        switchLink.innerText = '로그인하기';
+        switchLink.setAttribute('onclick', "event.preventDefault(); switchAuthTab('login');");
+      }
+    } else {
+      // 1. 상단 탭 active 상태 변경
+      if (tabSignup) tabSignup.classList.remove('active');
+      if (tabLogin) tabLogin.classList.add('active');
+
+      // 2. 폼 요소 및 텍스트 변경
+      if (title) title.innerText = '로그인';
+      if (submitBtn) {
+        submitBtn.innerText = '로그인하기';
+        submitBtn.onclick = handleLogin;
+      }
+      if (countryGroup) countryGroup.style.display = 'none';
+
+      // 3. 하단 링크 텍스트 및 클릭 이벤트 변경
+      if (switchText) switchText.innerText = '계정이 없으신가요?';
+      if (switchLink) {
+        switchLink.innerText = '회원가입하기';
+        switchLink.setAttribute('onclick', "event.preventDefault(); switchAuthTab('signup');");
+      }
+    }
+  };
+
+  // 모달창 열기 함수 (내부에서 switchAuthTab 호출)
+  window.openAuthModal = function(mode) {
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return;
+    
+    // 요청된 모드로 탭 및 폼 전환
+    window.switchAuthTab(mode || 'login');
+    
+    // 모달 표시
+    modal.style.display = 'flex';
+  };
+
+  // 기존 toggleAuthMode가 호출되더라도 switchAuthTab과 연동되도록 유지
+  window.toggleAuthMode = function(event) {
+    if (event) event.preventDefault();
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const isLoginMode = submitBtn && submitBtn.innerText.includes('로그인');
+    window.switchAuthTab(isLoginMode ? 'signup' : 'login');
+  };
+
+  function updateAuthUI() {
+    const navMyCountry = document.getElementById('nav-my-country-item');
+    const authNavArea = document.getElementById('auth-nav-area');
+    const userProfileArea = document.getElementById('user-profile-area');
+    const userCountryName = document.getElementById('user-country-name');
+    const userFlag = document.getElementById('user-flag');
+
+    if (currentUser && currentUser.country) {
+      if (navMyCountry) navMyCountry.style.display = 'block';
+      if (authNavArea) authNavArea.style.display = 'none';
+      if (userProfileArea) userProfileArea.style.display = 'block';
+
+      if (userCountryName) userCountryName.innerText = `${currentUser.country} (${currentUser.username})`;
+      
+      const cleanUserCountry = cleanName(currentUser.country);
+      const flagUrl = flagMap.get(cleanUserCountry);
+      if (userFlag) {
+        if (flagUrl) {
+          userFlag.src = flagUrl;
+          userFlag.style.display = 'inline-block';
+        } else {
+          userFlag.style.display = 'none';
+        }
+      }
+    } else {
+      if (navMyCountry) navMyCountry.style.display = 'none';
+      if (authNavArea) authNavArea.style.display = 'block';
+      if (userProfileArea) userProfileArea.style.display = 'none';
+    }
+  }
+
+  window.openMyCountryModal = function() {
+    showMyEconomyView();
+  };
+
+  window.closeAuthModal = function() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = "none";
+  };
+
+  async function handleRegister() {
+    const id = document.getElementById('auth-id').value.trim();
+    const pw = document.getElementById('auth-pw').value.trim();
+    const country = document.getElementById('auth-country').value.trim();
+
+    if (!id || !pw || !country) {
+      alert("모든 항목을 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'register', id, pw, country })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        alert("회원가입이 완료되었습니다. 로그인해 주세요.");
+        closeAuthModal();
+      } else {
+        alert(result.message || "회원가입 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("회원가입 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function handleLogin() {
+    const id = document.getElementById('auth-id').value.trim();
+    const pw = document.getElementById('auth-pw').value.trim();
+
+    if (!id || !pw) {
+      alert("아이디와 비밀번호를 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', id, pw })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        currentUser = { username: result.username, country: result.country };
+        localStorage.setItem('nara_user', JSON.stringify(currentUser));
+        alert(`${result.country} 계정으로 로그인되었습니다.`);
+        closeAuthModal();
+        updateAuthUI();
+      } else {
+        alert(result.message || "로그인 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  window.handleLogout = function() {
+    currentUser = null;
+    localStorage.removeItem('nara_user');
+    alert("로그아웃 되었습니다.");
+    updateAuthUI();
+    showMainView();
+  };
+
+  window.showMyEconomyView = function() {
+    if (!currentUser || !currentUser.country) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    document.getElementById('main-view').style.display = 'none';
+    document.getElementById('rank-view').style.display = 'none';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'block';
+
+    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+    const navBtn = document.getElementById('btn-nav-my-economy');
+    if (navBtn) navBtn.classList.add('active');
+
+    const cleanUserCountry = cleanName(currentUser.country);
+    const countryData = mainData.find(d => cleanName(extractCountryFromRow(d)) === cleanUserCountry);
+
+    const container = document.getElementById('my-economy-content');
+    if (!container) return;
+
+    if (!countryData) {
+      container.innerHTML = `<p style="padding: 20px; text-align: center;">'${currentUser.country}'에 대한 경제 데이터를 찾을 수 없습니다.</p>`;
+      return;
+    }
+
+    const flagUrl = flagMap.get(cleanUserCountry) || "";
+    const rawGdp = (parseFloat(getPropByCleanKey(countryData, 'GDP(10억달러)')) || 0) * 10;
+    const rawDef = (parseFloat(getPropByCleanKey(countryData, '국방비(10억달러)')) || 0) * 10;
+    const capVal = parseFloat(getPropByCleanKey(countryData, '1인당GDP')) || 0;
+    const taxVal = getPropByCleanKey(countryData, '세율');
+    const rawBudget = (parseFloat(getPropByCleanKey(countryData, '국가예산')) || 0) * 10;
+    const rawTreasury = getPropByCleanKey(countryData, '국고');
+    const rawGrowth = getPropByCleanKey(countryData, '최종경제성장률') || getPropByCleanKey(countryData, '경제성장률');
+
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        ${flagUrl ? `<img src="${flagUrl}" style="width: 50px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">` : ''}
+        <h2 style="margin: 0;">${currentUser.country} 경제 현황</h2>
+      </div>
+      <div class="my-economy-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="card"><h4>GDP</h4><p>${formatMoney(rawGdp)} (${getCountryRank('GDP(10억달러)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>1인당 GDP</h4><p>${Math.round(capVal).toLocaleString()} 달러 (${getCountryRank('1인당GDP', cleanUserCountry)})</p></div>
+        <div class="card"><h4>인구</h4><p>${formatPopulation(getPropByCleanKey(countryData, '인구(만명)'))} (${getCountryRank('인구(만명)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>국방비</h4><p>${formatMoney(rawDef)} (${getCountryRank('국방비(10억달러)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>세율</h4><p>${taxVal !== undefined && taxVal !== '' ? `${taxVal}%` : '-'}</p></div>
+        <div class="card"><h4>국가예산</h4><p>${rawBudget !== 0 ? formatMoney(rawBudget) : '-'}</p></div>
+        <div class="card"><h4>국고</h4><p>${rawTreasury !== undefined && rawTreasury !== '' ? formatMoney(rawTreasury) : '-'}</p></div>
+        <div class="card"><h4>경제성장률</h4><p>${rawGrowth !== undefined && rawGrowth !== '' ? `${parseFloat(rawGrowth).toFixed(2)}%` : '-'}</p></div>
+      </div>
     `;
-    tbody.appendChild(tr);
-  });
-}
+  };
+});
