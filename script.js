@@ -1100,14 +1100,26 @@ function renderMyInvestments(investments) {
     <tr>
       <td>${item.targetCountry || '-'}</td>
       <td>${item.targetCountryrate || '-'}</td>
-      <td>${Number(item.amount*10 || 0).toLocaleString()}억달러</td>
+      <td>${formatInvestmentAmount((item.amount || 0) * 10)}</td>
       <td>${item.profitStatus || '-'}</td>
       <td>${item.ReturnRate || '-'}%</td>
       <td>${item.growthRate || '-'}%p</td>
-      <td>${Number(item.Profitgain*10 || 0).toLocaleString()}억달러</td>
+      <td>${formatInvestmentAmount((item.Profitgain || 0) * 10)}</td>
       <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
     </tr>
   `).join('');
+}
+  function formatInvestmentAmount(valIn100M) {
+  const num = Number(valIn100M) || 0;
+  
+  if (num >= 10000) {
+    // 10,000억 달러 = 1조 달러 (소수점 1~2자리 처리)
+    const trillionVal = (num / 10000).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return `${trillionVal}조 달러`;
+  }
+  
+  // 1만 미만일 경우 기존대로 억달러 표시
+  return `${num.toLocaleString()}억달러`;
 }
 
   //=========== 해외 경제 투자 정보 등록/수정 전송 =============
