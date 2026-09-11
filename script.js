@@ -1250,6 +1250,7 @@ async function submitInvestment() {
     if (res.result === "success") {
       alert("성공적으로 해외투자가 등록되었습니다.");
       closeInvestmentModal();
+      loadMyInvestments();
       // 투자 내역 재조회 함수 호출 (예: loadInvestments())
     } else {
       alert("등록 실패: " + (res.message || "오류 발생"));
