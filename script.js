@@ -1151,4 +1151,104 @@ async function submitInvestment() {
     alert("저장 처리 중 오류가 발생했습니다.");
   }
 }
+  // ========= 투자 모달 열기 =============
+  // 1. 투자 모달 열기 (피투자국 목록 로딩 포함)
+function openInvestmentModal() {
+  const modal = document.getElementById("invest-modal");
+  const selectTarget = document.getElementById("invest-target-country");
+  
+  if (!modal || !selectTarget) return;
+
+  // 자국을 제외한 피투자국 목록 채우기
+  selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
+  
+  // globalCountryList 또는 데이터에서 국가 목록 추출 (자국 제외)
+  const currentMyCountry = window.myCountryName || ""; 
+  if (window.allCountryData) {
+    window.allCountryData.forEach(item => {
+      const countryName = item.국가 || item.국명 || item[1];
+      if (countryName && countryName !== currentMyCountry) {
+        const opt = document.createElement("option");
+        opt.value = countryName;
+        opt.textContent = countryName;
+        selectTarget.appendChild(opt);
+      }
+    });
+  }
+
+  modal.style.display = "flex";
+}
+
+// 2. 모달 닫기
+function closeInvestmentModal() {
+  const modal = document.getElementById("invest-modal");
+  if (modal) modal.style.display = "none";
+}
+
+// 3. 수치 조절 버튼 함수
+function adjustValue(inputId, step, precision) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  let val = parseFloat(input.value) || 0;
+  val += step;
+  if (val < 0) val = 0;
+  input.value = val.toFixed(precision);
+  
+  // 값 변경 시 실시간 수치 재계산 호출
+  calculateInvestmentPreview();
+}
+
+// 4. 피투자국 변경 시 이벤트
+function onInvestTargetChange(targetCountry) {
+  calculateInvestmentPreview();
+}
+
+// 5. 모달 내 실시간 연산/표시 로직
+function calculateInvestmentPreview() {
+  // 피투자국 등급, 환수율, 성장률, 차익금 실시간 계산 후 info-display-box들에 갱신
+}
+
+// 6. 폼 제출 함수 (GAS doPost 호출)
+async function submitInvestment() {
+  const targetCountry = document.getElementById("invest-target-country").value;
+  const amount = parseFloat(document.getElementById("invest-amount").value) || 0;
+  const profitStatus = document.getElementById("invest-return-option").value;
+  const myCountry = window.myCountryName;
+
+  if (!targetCountry) {
+    alert("피투자국을 선택해주세요.");
+    return;
+  }
+  if (amount <= 0) {
+    alert("투자금을 0보다 크게 입력해주세요.");
+    return;
+  }
+
+  const payload = {
+    action: "saveInvestData",
+    myCountry: myCountry,
+    targetCountry: targetCountry,
+    amount: amount,
+    profitStatus: profitStatus
+  };
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const res = await response.json();
+
+    if (res.result === "success") {
+      alert("성공적으로 해외투자가 등록되었습니다.");
+      closeInvestmentModal();
+      // 투자 내역 재조회 함수 호출 (예: loadInvestments())
+    } else {
+      alert("등록 실패: " + (res.message || "오류 발생"));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
 });
