@@ -351,11 +351,23 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  window.switchCategory = function(key, title, unitType, navBtnId) {
-    // 1. 실제 HTML에 존재하는 ID로 변수 매핑
-    const mainContainer = document.getElementById('main-container');
+ window.switchCategory = function(key, title, unitType, navBtnId) {
+    const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
+    if (mainView) mainView.style.display = 'none';
+
     const rankView = document.getElementById('rank-view');
-    const myEconomyView = document.getElementById('my-economy-view'); // HTML의 실제 ID
+    if (rankView) rankView.style.display = 'block';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'none';
+
+    document.getElementById('rank-title').innerText = title;
+
+    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+    if (navBtnId) {
+      const btn = document.getElementById(navBtnId);
+      if (btn) btn.classList.add('active');
+    }
 
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
@@ -530,7 +542,7 @@ document.addEventListener("DOMContentLoaded", function() {
       `;
       listEl.appendChild(li);
     });
-};
+  };
 
   // 모달 함수
   window.openCountryModal = function(cleanKey) {
