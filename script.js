@@ -972,47 +972,42 @@ document.addEventListener("DOMContentLoaded", function() {
   // ---------------- 저장 버튼 클릭 시 실시간 데이터 전송 및 화면 업데이트 ----------------
 
   window.saveMyEconomyData = async function() {
-  if (!currentUser) {
-    alert('로그인이 필요합니다.');
+  if (!currentUser || !currentUser.country) {
+    alert('로그인이 필요하거나 국가 정보가 없습니다.');
     return;
   }
 
-  // 1. 설정값 수집
   const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
   const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
   const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
   const economicSystem = document.getElementById('edit-economic-system')?.value || '';
   const welfare = document.getElementById('edit-welfare')?.value || '';
 
-  // 선택된 주업(industry) 수집
   const selectedJobs = [];
   document.querySelectorAll('input[name="industry"]:checked').forEach(cb => {
     selectedJobs.push(cb.value);
   });
 
-  // 백엔드로 전달할 페이로드 구성
   const payload = {
     action: 'updateMyEconomy',
-    id: currentUser.username || currentUser.email || currentUser.id,
-    userEmail: currentUser.username || currentUser.email || currentUser.id,
     country: currentUser.country,
     defRate: defRate,
     taxRate: taxRate,
     investRate: investRate,
     economicSystem: economicSystem,
     welfare: welfare,
-    mainJobs: selectedJobs.join(' ') // 띄어쓰기로 구분하여 저장
+    mainJobs: selectedJobs.join(' ')
   };
 
   try {
-    // 백엔드(Apps Script) 전송
-    const response = await fetch(GAS_WEB_APP_URL, {
+    // 메인 API URL로 요청 전송
+    const response = await fetch(GAS_WEB_APP_URL, { 
       method: 'POST',
       body: JSON.stringify(payload)
     });
     const result = await response.json();
 
-    if (result.success) {
+    if (result.success || result.result === 'success') {
       alert('자국 경제 설정이 정상적으로 저장되었습니다.');
       if (typeof loadMainData === 'function') {
         await loadMainData();
