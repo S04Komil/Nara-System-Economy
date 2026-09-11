@@ -29,7 +29,7 @@
       </li>
       <!-- 로그인 전용: 자국 경제 탭 (초기 숨김) -->
       <li class="nav-item" id="nav-my-country-item" style="display: none;">
-        <button id="nav-my-country-btn" onclick="openMyCountryModal()">자국 경제</button>
+        <button id="btn-nav-my-country" onclick="openMyCountryModal()">자국 경제</button>
       </li>
       <!-- 로그인 버튼 구역 -->
       <li class="nav-item" id="auth-nav-area" style="margin-left: auto;">
@@ -144,6 +144,11 @@
           <h3 id="rank-title" style="margin:0 0 16px 0;">순위 목록</h3>
           <ol class="rank-list" id="rank-list"></ol>
         </div>
+      </div>
+
+      <!-- 4. 자국 경제 화면 -->
+      <div id="my-economy-view" style="display: none;">
+        <div id="my-economy-content"></div>
       </div>
 
       <!-- 국가 상세정보 모달 팝업 -->
