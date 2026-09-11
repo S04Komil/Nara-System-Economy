@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", function() {
   // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
 
+  // 4. 회원가입/로그인 전용 Apps Script 웹 앱 URL
+  const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbwe-08Nqj9L-Y1lT-LqW9rXJ6Q9J_zXmO0Y/exec"; // 본인의 로그인 API URL로 교체하세요.
+
+  let currentUser = JSON.parse(localStorage.getItem('nara_user') || 'null');
+
   let mainData = [];
   let globalGdpData = [];
   let globalDefData = [];
@@ -82,6 +87,9 @@ document.addEventListener("DOMContentLoaded", function() {
     renderMainCards(mainData);
     renderWorldStats();
     
+    // 사용자 로그인 UI 상태 갱신
+    updateAuthUI();
+
     // 성장률 데이터 추가 로드
     fetchWorldGrowthData();
   })
@@ -259,6 +267,9 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('main-view').style.display = 'block';
     document.getElementById('rank-view').style.display = 'none';
 
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'none';
+
     document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
   };
 
@@ -323,6 +334,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById('main-view').style.display = 'none';
     document.getElementById('rank-view').style.display = 'block';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'none';
 
     document.getElementById('rank-title').innerText = title;
 
@@ -686,4 +700,178 @@ document.addEventListener("DOMContentLoaded", function() {
     const index = sorted.findIndex(item => item.keyName === cleanKey);
     return index !== -1 ? `${index + 1}위` : '-';
   }
+
+  // -------------------------------------------------------------
+  // 회원가입, 로그인 및 자국 경제 페이지 관리 기능
+  // -------------------------------------------------------------
+  function updateAuthUI() {
+    const navMyEconomy = document.getElementById('nav-my-economy');
+    const authBtnArea = document.getElementById('auth-button-area');
+
+    if (!authBtnArea) return;
+
+    if (currentUser && currentUser.country) {
+      if (navMyEconomy) navMyEconomy.style.display = 'inline-block';
+      authBtnArea.innerHTML = `
+        <span style="font-size: 14px; font-weight: bold; color: #333;">${currentUser.country} (${currentUser.username})</span>
+        <button onclick="handleLogout()" class="nav-btn" style="background-color: #e74c3c; color: white;">로그아웃</button>
+      `;
+    } else {
+      if (navMyEconomy) navMyEconomy.style.display = 'none';
+      authBtnArea.innerHTML = `
+        <button onclick="openAuthModal('login')" class="nav-btn">로그인</button>
+        <button onclick="openAuthModal('register')" class="nav-btn" style="background-color: #2ec4b6; color: white;">회원가입</button>
+      `;
+    }
+  }
+
+  window.openAuthModal = function(type) {
+    const modal = document.getElementById('auth-modal');
+    const titleEl = document.getElementById('auth-modal-title');
+    const countryGroup = document.getElementById('auth-country-group');
+    const submitBtn = document.getElementById('auth-submit-btn');
+
+    if (!modal) return;
+
+    if (type === 'register') {
+      titleEl.innerText = "회원가입";
+      countryGroup.style.display = "block";
+      submitBtn.innerText = "회원가입 완료";
+      submitBtn.onclick = handleRegister;
+    } else {
+      titleEl.innerText = "로그인";
+      countryGroup.style.display = "none";
+      submitBtn.innerText = "로그인";
+      submitBtn.onclick = handleLogin;
+    }
+
+    modal.style.display = "flex";
+  };
+
+  window.closeAuthModal = function() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) modal.style.display = "none";
+  };
+
+  async function handleRegister() {
+    const id = document.getElementById('auth-id').value.trim();
+    const pw = document.getElementById('auth-pw').value.trim();
+    const country = document.getElementById('auth-country').value.trim();
+
+    if (!id || !pw || !country) {
+      alert("모든 항목을 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'register', id, pw, country })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        alert("회원가입이 완료되었습니다. 로그인해 주세요.");
+        closeAuthModal();
+      } else {
+        alert(result.message || "회원가입 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("회원가입 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function handleLogin() {
+    const id = document.getElementById('auth-id').value.trim();
+    const pw = document.getElementById('auth-pw').value.trim();
+
+    if (!id || !pw) {
+      alert("아이디와 비밀번호를 모두 입력해 주세요.");
+      return;
+    }
+
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', id, pw })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        currentUser = { username: result.username, country: result.country };
+        localStorage.setItem('nara_user', JSON.stringify(currentUser));
+        alert(`${result.country} 계정으로 로그인되었습니다.`);
+        closeAuthModal();
+        updateAuthUI();
+      } else {
+        alert(result.message || "로그인 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  window.handleLogout = function() {
+    currentUser = null;
+    localStorage.removeItem('nara_user');
+    alert("로그아웃 되었습니다.");
+    updateAuthUI();
+    showMainView();
+  };
+
+  window.showMyEconomyView = function() {
+    if (!currentUser || !currentUser.country) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    document.getElementById('main-view').style.display = 'none';
+    document.getElementById('rank-view').style.display = 'none';
+
+    const myEconomyView = document.getElementById('my-economy-view');
+    if (myEconomyView) myEconomyView.style.display = 'block';
+
+    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+    const navBtn = document.getElementById('btn-nav-my-economy');
+    if (navBtn) navBtn.classList.add('active');
+
+    const cleanUserCountry = cleanName(currentUser.country);
+    const countryData = mainData.find(d => cleanName(extractCountryFromRow(d)) === cleanUserCountry);
+
+    const container = document.getElementById('my-economy-content');
+    if (!container) return;
+
+    if (!countryData) {
+      container.innerHTML = `<p style="padding: 20px; text-align: center;">'${currentUser.country}'에 대한 경제 데이터를 찾을 수 없습니다.</p>`;
+      return;
+    }
+
+    const flagUrl = flagMap.get(cleanUserCountry) || "";
+    const rawGdp = (parseFloat(getPropByCleanKey(countryData, 'GDP(10억달러)')) || 0) * 10;
+    const rawDef = (parseFloat(getPropByCleanKey(countryData, '국방비(10억달러)')) || 0) * 10;
+    const capVal = parseFloat(getPropByCleanKey(countryData, '1인당GDP')) || 0;
+    const taxVal = getPropByCleanKey(countryData, '세율');
+    const rawBudget = (parseFloat(getPropByCleanKey(countryData, '국가예산')) || 0) * 10;
+    const rawTreasury = getPropByCleanKey(countryData, '국고');
+    const rawGrowth = getPropByCleanKey(countryData, '최종경제성장률') || getPropByCleanKey(countryData, '경제성장률');
+
+    container.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        ${flagUrl ? `<img src="${flagUrl}" style="width: 50px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">` : ''}
+        <h2 style="margin: 0;">${currentUser.country} 경제 현황</h2>
+      </div>
+      <div class="my-economy-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="card"><h4>GDP</h4><p>${formatMoney(rawGdp)} (${getCountryRank('GDP(10억달러)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>1인당 GDP</h4><p>${Math.round(capVal).toLocaleString()} 달러 (${getCountryRank('1인당GDP', cleanUserCountry)})</p></div>
+        <div class="card"><h4>인구</h4><p>${formatPopulation(getPropByCleanKey(countryData, '인구(만명)'))} (${getCountryRank('인구(만명)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>국방비</h4><p>${formatMoney(rawDef)} (${getCountryRank('국방비(10억달러)', cleanUserCountry)})</p></div>
+        <div class="card"><h4>세율</h4><p>${taxVal !== undefined && taxVal !== '' ? `${taxVal}%` : '-'}</p></div>
+        <div class="card"><h4>국가예산</h4><p>${rawBudget !== 0 ? formatMoney(rawBudget) : '-'}</p></div>
+        <div class="card"><h4>국고</h4><p>${rawTreasury !== undefined && rawTreasury !== '' ? formatMoney(rawTreasury) : '-'}</p></div>
+        <div class="card"><h4>경제성장률</h4><p>${rawGrowth !== undefined && rawGrowth !== '' ? `${parseFloat(rawGrowth).toFixed(2)}%` : '-'}</p></div>
+      </div>
+    `;
+  };
 });
