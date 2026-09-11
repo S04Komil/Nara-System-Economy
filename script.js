@@ -979,7 +979,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const treasuryEl = document.getElementById('my-treasury-display');
     const growthRateEl = document.getElementById('my-growth-rate-display');
     if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고']));
-    if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률'])}%`;
+    if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률']).toFixed(2)}%`;
 
     // 해외 경제 투자 목록 불러오기 및 렌더링
     if (typeof loadMyInvestments === 'function') {
