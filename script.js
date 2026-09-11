@@ -1,16 +1,16 @@
 // 1. 현재 연도 메인 통합 API
-const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQCl3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeEwn_-dC6DW1zN9C1/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
 // 2. 항목별 전체 연도 시계열 API
-const API_URL_GDP = "https://script.google.com/macros/s/AKfycbyzCjtpPMsXf2OZ9my1f_h_58KR-9wc1FykO1zq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0sufJwPEnP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
-const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqVMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
+const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
+const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
+const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
 // 3. 세계 통계 성장률 API
-const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOye1kZ8Z3nWZ2Jvu6kzUIcsaJgm1FatCBn1ixfShzJyA/exec";
+const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec";
 
 // 4. 회원가입/로그인 전용 Apps Script 웹 앱 URL
-const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUP-3BLU7ULgqxeGZUrvGx_Xcf68imoJU9oFFCFk/exec";
+const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec";
 
 let currentUser = JSON.parse(localStorage.getItem('nara_user')) || null;
 
