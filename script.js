@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
   // 1. 현재 연도 메인 통합 API
-  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agtolish_FjAGjPeeWn_-dC6DW1zN9C1/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
   // 2. 항목별 전체 연도 시계열 API
-  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbyzcJtpPMsXf2OZMylf_h_58KR-9wc1FyKO1zq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
+  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
   const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0sufjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
   const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WFoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
 
