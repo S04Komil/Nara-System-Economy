@@ -49,7 +49,6 @@ nav {
 }
 
 /* 자국 경제, 로그인, 프로필 구역을 함께 오른쪽 끝으로 밀기 */
-#nav-my-country-item,
 #auth-nav-area,
 #user-profile-area {
   margin-left: auto;
