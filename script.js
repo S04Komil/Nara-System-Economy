@@ -1025,17 +1025,19 @@ document.addEventListener("DOMContentLoaded", function() {
 };
 
   // =========== 해외 경제 투자 목록 불러오기 ===========
-// 1. Apps Script 메인 API(API_URL)에서 자국의 해외 투자 내역 불러오기
-async function loadMyInvestments() {
+// 1. Apps Script 메인 API(API_URL)에서 // 자국 해외 투자 내역 불러오기 (실패 시 자동 재시도 적용)
+async function loadMyInvestments(retryCount = 0) {
   if (!currentUser || !currentUser.country) return;
 
   const tbody = document.getElementById('my-investment-list');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중...</td></tr>';
+  const maxRetries = 5; // 최대 재시도 횟수
+
+  // 재시도 중일 때도 "다시 불러오는 중..." 문구 표시
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
 
   try {
-    // ⚠️ GAS_WEB_APP_URL 대신 메인 백엔드인 API_URL로 요청 주소 변경
     const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
     const response = await fetch(url);
     const result = await response.json();
@@ -1043,11 +1045,27 @@ async function loadMyInvestments() {
     if (result.result === 'success' && Array.isArray(result.investments)) {
       renderMyInvestments(result.investments);
     } else {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역이 없습니다.</td></tr>';
+      // 결과 실패 시 바로 문구를 띄우지 않고 다시 호출
+      if (retryCount < maxRetries) {
+        console.warn(`[해외투자] 불러오기 응답 미완료/실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => {
+          loadMyInvestments(retryCount + 1);
+        }, 1500); // 1.5초 후 재시도
+      } else {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오지 못했습니다. (재시도 횟수 초과)</td></tr>';
+      }
     }
   } catch (err) {
-    console.error('해외투자 불러오기 실패:', err);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터 불러오기 오류가 발생했습니다.</td></tr>';
+    console.error('해외투자 불러오기 오류:', err);
+    
+    // 네트워크/파싱 오류 시에도 지정 횟수까지 재시도
+    if (retryCount < maxRetries) {
+      setTimeout(() => {
+        loadMyInvestments(retryCount + 1);
+      }, 1500);
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+    }
   }
 }
 
