@@ -950,8 +950,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // HTML element의 name="industry" 체크박스들을 탐색하여 일치 시 체크 처리
       document.querySelectorAll('input[name="industry"]').forEach(cb => {
         cb.checked = selectedJobs.includes(cb.value);
-      });
     });
+
 
     // [9행] 복지수준, 경제투자율(%)
     const welfareSelect = document.getElementById('edit-welfare');
