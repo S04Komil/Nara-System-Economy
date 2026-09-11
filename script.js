@@ -1092,4 +1092,63 @@ function renderMyInvestments(investments) {
     </tr>
   `).join('');
 }
+
+  //=========== 해외 경제 투자 정보 등록/수정 전송 =============
+  // 해외 경제 투자 정보 등록/수정 전송
+async function submitInvestment() {
+  if (!currentUser || !currentUser.country) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  // 모달 폼 요소 값 읽기
+  const targetCountry = document.getElementById("invest-target-country")?.value;
+  const amount = parseFloat(document.getElementById("invest-amount")?.value || 0);
+  const profitStatus = document.getElementById("invest-return-option")?.value || "X"; // O / X 값
+
+  if (!targetCountry) {
+    alert("피투자국을 선택해 주세요.");
+    return;
+  }
+  if (amount <= 0 || isNaN(amount)) {
+    alert("투자금을 0보다 큰 숫자로 입력해 주세요.");
+    return;
+  }
+
+  // 백엔드 요청 페이로드 (투자국: 자국, 피투자국, 투자금, 수익여부)
+  const payload = {
+    action: "saveInvestData",
+    myCountry: currentUser.country, // A열: 투자국 (자국)
+    targetCountry: targetCountry,   // C열: 피투자국
+    amount: amount,                 // E열: 투자금액
+    profitStatus: profitStatus     // J열: 수익여부 (O/X)
+  };
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+
+    if (result.result === "success" || result.success) {
+      alert("해외투자 정보가 저장되었습니다.");
+      
+      // 모달 닫기
+      if (typeof closeInvestmentModal === "function") {
+        closeInvestmentModal();
+      }
+      
+      // 내 해외투자 목록 다시 불러오기
+      if (typeof loadMyInvestments === "function") {
+        loadMyInvestments();
+      }
+    } else {
+      alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
+    }
+  } catch (err) {
+    console.error("해외투자 저장 오류:", err);
+    alert("저장 처리 중 오류가 발생했습니다.");
+  }
+}
 });
