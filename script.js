@@ -965,8 +965,10 @@ document.addEventListener("DOMContentLoaded", function() {
     if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고']));
     if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률'])}%`;
 
-    // 해외 경제 투자 목록 렌더링
-    if (typeof renderMyInvestments === 'function') renderMyInvestments(mainData);
+    // 해외 경제 투자 목록 불러오기 및 렌더링
+    if (typeof loadMyInvestments === 'function') {
+      loadMyInvestments();
+    }
   };
 
   // ---------------- 저장 버튼 클릭 시 실시간 데이터 전송 및 화면 업데이트 ----------------
@@ -1021,4 +1023,55 @@ document.addEventListener("DOMContentLoaded", function() {
     alert('저장 처리 도중 오류가 발생했습니다.');
   }
 };
+
+  // =========== 해외 경제 투자 목록 불러오기 ===========
+  // 1. Apps Script에서 자국의 해외 투자 내역 불러오기
+async function loadMyInvestments() {
+  if (!currentUser || !currentUser.country) return;
+
+  const tbody = document.getElementById('my-investment-list');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중...</td></tr>';
+
+  try {
+    // Apps Script doGet (?target=investments&country=국가명)으로 조회
+    const url = `${GAS_WEB_APP_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
+    const response = await fetch(url);
+    const result = await response.json();
+
+    if (result.result === 'success' && Array.isArray(result.investments)) {
+      renderMyInvestments(result.investments);
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역이 없습니다.</td></tr>';
+    }
+  } catch (err) {
+    console.error('해외투자 불러오기 실패:', err);
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터 불러오기 오류가 발생했습니다.</td></tr>';
+  }
+}
+
+// 2. 전달받은 투자 목록 데이터를 HTML 테이블에 출력하기
+function renderMyInvestments(investments) {
+  const tbody = document.getElementById('my-investment-list');
+  if (!tbody) return;
+
+  if (!investments || investments.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
+    return;
+  }
+
+  // index.html의 7개 컬럼(피투자국, 피투자국 등급, 투자금, 수익여부, 환수율, 성장률 증가, 차익금)에 맞추어 출력
+  tbody.innerHTML = investments.map(item => `
+    <tr>
+      <td>${item.targetCountry || '-'}</td>
+      <td>-</td>
+      <td>${Number(item.amount || 0).toLocaleString()}억</td>
+      <td>${item.profitStatus || '-'}</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+    </tr>
+  `).join('');
+}
 });
