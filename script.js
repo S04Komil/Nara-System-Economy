@@ -972,33 +972,61 @@ document.addEventListener("DOMContentLoaded", function() {
   // ---------------- 저장 버튼 클릭 시 실시간 데이터 전송 및 화면 업데이트 ----------------
 
   window.saveMyEconomyData = async function() {
-    if (!currentUser) return;
+  if (!currentUser) {
+    alert('로그인이 필요합니다.');
+    return;
+  }
 
-    // 1. 설정값 수집
-    const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
-    const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
-    const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
-    const economicSystem = document.getElementById('edit-economic-system')?.value || '';
-    const welfare = document.getElementById('edit-welfare')?.value || '';
+  // 1. 설정값 수집
+  const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
+  const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
+  const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
+  const economicSystem = document.getElementById('edit-economic-system')?.value || '';
+  const welfare = document.getElementById('edit-welfare')?.value || '';
 
-    // 선택된 주업(최대 선택 항목) 배열 수집
-    const selectedJobs = [];
-    document.querySelectorAll('input[name="my-job-checkbox"]:checked').forEach(cb => {
-      selectedJobs.push(cb.value);
+  // 선택된 주업(industry) 수집
+  const selectedJobs = [];
+  document.querySelectorAll('input[name="industry"]:checked').forEach(cb => {
+    selectedJobs.push(cb.value);
+  });
+
+  // 백엔드로 전달할 페이로드 구성 (currentUser.username 및 currentUser.id 참조)
+  const payload = {
+    action: 'updateMyEconomy',
+    id: currentUser.username || currentUser.email || currentUser.id,
+    userEmail: currentUser.username || currentUser.email || currentUser.id,
+    country: currentUser.country,
+    defRate: defRate,
+    taxRate: taxRate,
+    investRate: investRate,
+    economicSystem: economicSystem,
+    welfare: welfare,
+    mainJobs: selectedJobs.join(' ') // 띄어쓰기로 구분하여 저장
+  };
+
+  try {
+    // 백엔드(Apps Script) 전송
+    const response = await fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
     });
+    const result = await response.json();
 
-    const payload = {
-      action: 'updateMyEconomy',
-      userEmail: currentUser.email || currentUser.username,
-      country: currentUser.country,
-      defRate: defRate,
-      taxRate: taxRate,
-      investRate: investRate,
-      economicSystem: economicSystem,
-      welfare: welfare,
-      mainJobs: selectedJobs.join(', ')
-    };
-
+    if (result.success) {
+      alert('자국 경제 설정이 정상적으로 저장되었습니다.');
+      // 연관된 파생 데이터 업데이트를 위해 메인 데이터 재조회 후 뷰 갱신
+      if (typeof loadMainData === 'function') {
+        await loadMainData();
+        showMyEconomyView();
+      }
+    } else {
+      alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
+    }
+  } catch (err) {
+    console.error('저장 중 오류 발생:', err);
+    alert('저장 처리 도중 오류가 발생했습니다.');
+  }
+};
     try {
       // 백엔드(Apps Script) 전송
       const response = await fetch(GAS_WEB_APP_URL, {
