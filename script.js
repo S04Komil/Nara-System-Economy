@@ -1221,7 +1221,7 @@ async function submitInvestment() {
   const targetCountry = document.getElementById("invest-target-country").value;
   const amount = parseFloat(document.getElementById("invest-amount").value) || 0;
   const profitStatus = document.getElementById("invest-return-option").value;
-  const myCountry = clearnName(window.myCountryName);
+  const myCountry = cleanName(window.myCountryName);
 
   if (!targetCountry) {
     alert("피투자국을 선택해주세요.");
