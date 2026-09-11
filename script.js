@@ -1152,22 +1152,21 @@ async function submitInvestment() {
   }
 }
   // ========= 투자 모달 열기 =============
-  // 1. 투자 모달 열기 (피투자국 목록 로딩 포함)
+  // 해외투자 모달 열기
 function openInvestmentModal() {
   const modal = document.getElementById("invest-modal");
   const selectTarget = document.getElementById("invest-target-country");
   
-  if (!modal || !selectTarget) return;
+  if (!modal) return;
 
-  // 자국을 제외한 피투자국 목록 채우기
-  selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
-  
-  // globalCountryList 또는 데이터에서 국가 목록 추출 (자국 제외)
-  const currentMyCountry = window.myCountryName || ""; 
-  if (window.allCountryData) {
+  // 피투자국 드롭다운 목록 채우기 (자국 제외)
+  if (selectTarget && window.allCountryData) {
+    selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
+    const myCountry = window.myCountryName || "";
+    
     window.allCountryData.forEach(item => {
       const countryName = item.국가 || item.국명 || item[1];
-      if (countryName && countryName !== currentMyCountry) {
+      if (countryName && countryName !== myCountry) {
         const opt = document.createElement("option");
         opt.value = countryName;
         opt.textContent = countryName;
@@ -1179,7 +1178,7 @@ function openInvestmentModal() {
   modal.style.display = "flex";
 }
 
-// 2. 모달 닫기
+// 해외투자 모달 닫기
 function closeInvestmentModal() {
   const modal = document.getElementById("invest-modal");
   if (modal) modal.style.display = "none";
