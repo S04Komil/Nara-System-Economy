@@ -352,36 +352,28 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   window.switchCategory = function(key, title, unitType, navBtnId) {
-    const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
+    // 1. 실제 HTML에 존재하는 ID로 변수 매핑
+    const mainContainer = document.getElementById('main-container');
     const rankView = document.getElementById('rank-view');
-    const myEconomyView = document.getElementById('my-economy-view');
+    const myEconomyView = document.getElementById('my-country-section'); // HTML의 실제 ID
 
-    // 1. [자국 경제] 탭이 선택된 경우 독립적으로 렌더링
-    if (key === 'my-economy' || key === '자국경제') {
-      if (mainView) mainView.style.display = 'none';
-      if (rankView) rankView.style.display = 'none'; // 순위 화면 숨기기
-      if (myEconomyView) myEconomyView.style.display = 'block'; // 자국 경제 화면만 표시
-
-      // 상단 네비게이션 버튼 active 클래스 처리
+    // 2. [자국 경제] 선택 시
+    if (key === 'my-economy' || key === '자국경제' || key === 'my-country-section') {
+      if (rankView) rankView.style.display = 'none'; // 순위 목록 숨김
+      if (myEconomyView) myEconomyView.style.display = 'block'; // 자국 경제 표출
+      
+      // 네비게이션 버튼 active 클래스 처리
       document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
       if (navBtnId) {
         const btn = document.getElementById(navBtnId);
         if (btn) btn.classList.add('active');
       }
-
-      // 자국 경제 데이터 로딩/렌더링 함수 실행 (기존 프로젝트에 정의된 함수 호출)
-      if (typeof renderMyEconomy === 'function') {
-        renderMyEconomy();
-      } else if (typeof showMyEconomyView === 'function') {
-        showMyEconomyView();
-      }
-      return;
+      return; // 순위 생성 로직 중단
     }
 
-    // 2. 일반 순위 탭(GDP, 인구, 국방비 등)이 선택된 경우
-    if (mainView) mainView.style.display = 'none';
-    if (myEconomyView) myEconomyView.style.display = 'none'; // 자국 경제 화면 숨기기
-    if (rankView) rankView.style.display = 'block'; // 순위 화면 표시
+    // 3. [일반 순위] 선택 시 (GDP, 인구, 국방비 등)
+    if (myEconomyView) myEconomyView.style.display = 'none'; // 자국 경제 숨김
+    if (rankView) rankView.style.display = 'block'; // 순위 목록 표출
 
     document.getElementById('rank-title').innerText = title;
 
@@ -390,6 +382,8 @@ document.addEventListener("DOMContentLoaded", function() {
       const btn = document.getElementById(navBtnId);
       if (btn) btn.classList.add('active');
     }
+
+    // --- 이하 기존 순위 렌더링(listEl, currentList 계산) 로직 동일 ---
 
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
