@@ -217,7 +217,7 @@
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-system">경제체제</label>
                 <select id="edit-system">
-                  <option value="자유시장경쟁">자유시장경쟁</option>
+                  <option value="시장경">시장경제</option>
                   <option value="혼합경제">혼합경제</option>
                   <option value="계획경제">계획경제</option>
                 </select>
@@ -225,12 +225,12 @@
               <div class="info-box edit-input-box" style="grid-column: span 1;">
                 <label class="info-label">주업 (최대 4개 선택)</label>
                 <div class="industry-checkbox-group" id="edit-industry-group">
-                  <label><input type="checkbox" name="industry" value="농업" onchange="limitIndustryCheckboxes(this)"> 농업</label>
-                  <label><input type="checkbox" name="industry" value="공업" onchange="limitIndustryCheckboxes(this)"> 공업</label>
+                  <label><input type="checkbox" name="industry" value="농수산업" onchange="limitIndustryCheckboxes(this)"> 농수산업</label>
+                  <label><input type="checkbox" name="industry" value="경공업" onchange="limitIndustryCheckboxes(this)"> 경공업</label>
+                  <label><input type="checkbox" name="industry" value="중공업" onchange="limitIndustryCheckboxes(this)"> 중공업</label>
                   <label><input type="checkbox" name="industry" value="서비스업" onchange="limitIndustryCheckboxes(this)"> 서비스업</label>
-                  <label><input type="checkbox" name="industry" value="IT/첨단산업" onchange="limitIndustryCheckboxes(this)"> IT/첨단산업</label>
-                  <label><input type="checkbox" name="industry" value="금융업" onchange="limitIndustryCheckboxes(this)"> 금융업</label>
-                  <label><input type="checkbox" name="industry" value="자원/광업" onchange="limitIndustryCheckboxes(this)"> 자원/광업</label>
+                  <label><input type="checkbox" name="industry" value="첨단산업" onchange="limitIndustryCheckboxes(this)"> 첨단산업</label>
+                  <label><input type="checkbox" name="industry" value="에너지산업" onchange="limitIndustryCheckboxes(this)"> 에너지산업</label>
                 </div>
               </div>
             </div>
@@ -240,9 +240,15 @@
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-welfare">복지수준</label>
                 <select id="edit-welfare">
-                  <option value="상">상</option>
-                  <option value="중">중</option>
-                  <option value="하">하</option>
+                  <option value="복지없음">복지없음</option>
+                  <option value="매우낮은복지">매우낮은복지</option>
+                  <option value="낮은복지">낮은복지</option>
+                  <option value="중간복지">중간복지</option>
+                  <option value="높은복지">높은복지</option>
+                  <option value="매우높은복지">매우높은복지</option>
+                  <option value="낮은복지국가">낮은복지국가</option>
+                  <option value="중간복지국가">중간복지국가</option>
+                  <option value="높은복지국가">높은복지국가</option>
                 </select>
               </div>
               <div class="info-box edit-input-box">
