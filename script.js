@@ -944,9 +944,13 @@ document.addEventListener("DOMContentLoaded", function() {
     const systemSelect = document.getElementById('edit-economic-system');
     if (systemSelect) systemSelect.value = myObj['경제체제'] || '시장경제';
 
-    const selectedJobs = (myObj['주업'] || '').split(',').map(s => s.trim());
-    document.querySelectorAll('input[name="my-job-checkbox"]').forEach(cb => {
-      cb.checked = selectedJobs.includes(cb.value);
+    // 공백(띄어쓰기)을 기준으로 주업 목록을 분할하고 공백 제거
+    const selectedJobs = (myObj['주업'] || '').split(/\s+/).filter(Boolean);
+
+    // HTML element의 name="industry" 체크박스들을 탐색하여 일치 시 체크 처리
+      document.querySelectorAll('input[name="industry"]').forEach(cb => {
+        cb.checked = selectedJobs.includes(cb.value);
+      });
     });
 
     // [9행] 복지수준, 경제투자율(%)
