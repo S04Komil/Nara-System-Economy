@@ -178,9 +178,7 @@
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-def-rate">GDP 대비 국방비 (%)</label>
                 <div class="number-control-group">
-                  <button type="button" onclick="adjustValue('edit-def-rate', -0.01, 2)">▼</button>
                   <input type="number" id="edit-def-rate" step="0.01" min="0" placeholder="0.00">
-                  <button type="button" onclick="adjustValue('edit-def-rate', 0.01, 2)">▲</button>
                 </div>
               </div>
               <div class="info-box"><span class="info-label">국방비</span><span id="my-def-display" class="info-val">-</span></div>
@@ -204,12 +202,10 @@
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-tax-rate">세율 (%)</label>
                 <div class="number-control-group">
-                  <button type="button" onclick="adjustValue('edit-tax-rate', -0.01, 2)">▼</button>
                   <input type="number" id="edit-tax-rate" step="0.01" min="0" placeholder="0.00">
-                  <button type="button" onclick="adjustValue('edit-tax-rate', 0.01, 2)">▲</button>
                 </div>
               </div>
-              <div class="info-box"><span class="info-label">국가예산</span><span id="my-edit-budget" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">국가예산</span><span id="my-budget-display" class="info-val">-</span></div>
             </div>
 
             <!-- 8행: 경제체제(선택형)와 주업(선택형 최대 4개) -->
@@ -254,9 +250,7 @@
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-invest-rate">경제투자율 (%)</label>
                 <div class="number-control-group">
-                  <button type="button" onclick="adjustValue('edit-invest-rate', -0.1, 1)">▼</button>
-                  <input type="number" id="edit-invest-rate" step="0.1" min="0" placeholder="0.0">
-                  <button type="button" onclick="adjustValue('edit-invest-rate', 0.1, 1)">▲</button>
+                  <input type="number" id="edit-invest-rate" step="0.01" min="0" placeholder="0.00">
                 </div>
               </div>
             </div>
