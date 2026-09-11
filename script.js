@@ -704,26 +704,45 @@ document.addEventListener("DOMContentLoaded", function() {
   // -------------------------------------------------------------
   // 회원가입, 로그인 및 자국 경제 페이지 관리 기능
   // -------------------------------------------------------------
-  function updateAuthUI() {
-    const navMyEconomy = document.getElementById('nav-my-economy');
-    const authBtnArea = document.getElementById('auth-button-area');
+ // HTML 구조에 맞게 수정된 updateAuthUI 함수
+function updateAuthUI() {
+  const navMyCountry = document.getElementById('nav-my-country-item');
+  const authNavArea = document.getElementById('auth-nav-area');
+  const userProfileArea = document.getElementById('user-profile-area');
+  const userCountryName = document.getElementById('user-country-name');
+  const userFlag = document.getElementById('user-flag');
 
-    if (!authBtnArea) return;
+  if (currentUser && currentUser.country) {
+    // 로그인 상태
+    if (navMyCountry) navMyCountry.style.display = 'block';
+    if (authNavArea) authNavArea.style.display = 'none';
+    if (userProfileArea) userProfileArea.style.display = 'block';
 
-    if (currentUser && currentUser.country) {
-      if (navMyEconomy) navMyEconomy.style.display = 'inline-block';
-      authBtnArea.innerHTML = `
-        <span style="font-size: 14px; font-weight: bold; color: #333;">${currentUser.country} (${currentUser.username})</span>
-        <button onclick="handleLogout()" class="nav-btn" style="background-color: #e74c3c; color: white;">로그아웃</button>
-      `;
-    } else {
-      if (navMyEconomy) navMyEconomy.style.display = 'none';
-      authBtnArea.innerHTML = `
-        <button onclick="openAuthModal('login')" class="nav-btn">로그인</button>
-        <button onclick="openAuthModal('register')" class="nav-btn" style="background-color: #2ec4b6; color: white;">회원가입</button>
-      `;
+    if (userCountryName) userCountryName.innerText = `${currentUser.country} (${currentUser.username})`;
+    
+    // 국기 이미지 설정 (flagMap에 저장된 URL이 있을 경우)
+    const cleanUserCountry = cleanName(currentUser.country);
+    const flagUrl = flagMap.get(cleanUserCountry);
+    if (userFlag) {
+      if (flagUrl) {
+        userFlag.src = flagUrl;
+        userFlag.style.display = 'inline-block';
+      } else {
+        userFlag.style.display = 'none';
+      }
     }
+  } else {
+    // 비로그인 상태
+    if (navMyCountry) navMyCountry.style.display = 'none';
+    if (authNavArea) authNavArea.style.display = 'block';
+    if (userProfileArea) userProfileArea.style.display = 'none';
   }
+}
+
+// HTML의 openMyCountryModal() 호출을 처리하는 연결 함수 추가
+window.openMyCountryModal = function() {
+  showMyEconomyView();
+};
 
   window.openAuthModal = function(type) {
     const modal = document.getElementById('auth-modal');
