@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
 
   // 4. 회원가입/로그인 전용 Apps Script 웹 앱 URL
-  const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbwe-08Nqj9L-Y1lT-LqW9rXJ6Q9J_zXmO0Y/exec"; // 본인의 로그인 API URL로 교체하세요.
+  const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; // 본인의 로그인 API URL로 교체하세요.
 
   let currentUser = JSON.parse(localStorage.getItem('nara_user') || 'null');
 
