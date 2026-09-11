@@ -643,41 +643,77 @@ document.addEventListener("DOMContentLoaded", function() {
     return index !== -1 ? `${index + 1}위` : '-';
   }
 
-  // 로그인/회원가입/UI 관리
-  window.toggleAuthMode = function(event) {
-    if (event) event.preventDefault();
-    const submitBtn = document.getElementById('auth-submit-btn');
-    const isLoginMode = submitBtn.innerText.includes('로그인');
-    window.openAuthModal(isLoginMode ? 'signup' : 'login');
-  };
-
-  window.openAuthModal = function(mode) {
+  // 회원가입 / 로그인 모드 전환 함수 (상단 탭 및 하단 링크 통합 제어)
+  window.switchAuthTab = function(mode) {
     const modal = document.getElementById('auth-modal');
     const title = document.getElementById('auth-modal-title');
     const submitBtn = document.getElementById('auth-submit-btn');
     const countryGroup = document.getElementById('auth-country-group');
     const switchText = document.getElementById('auth-switch-text');
     const switchLink = document.getElementById('auth-switch-link');
-
-    if (!modal) return;
+    
+    const tabLogin = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
 
     if (mode === 'signup' || mode === 'register') {
-      title.innerText = '회원가입';
-      submitBtn.innerText = '가입하기';
-      countryGroup.style.display = 'block';
-      if (switchText) switchText.innerText = '이미 계정이 있으신가요?';
-      if (switchLink) switchLink.innerText = '로그인하기';
-      submitBtn.onclick = handleRegister;
-    } else {
-      title.innerText = '로그인';
-      submitBtn.innerText = '로그인하기';
-      countryGroup.style.display = 'none';
-      if (switchText) switchText.innerText = '계정이 없으신가요?';
-      if (switchLink) switchLink.innerText = '회원가입하기';
-      submitBtn.onclick = handleLogin;
-    }
+      // 1. 상단 탭 active 상태 변경
+      if (tabLogin) tabLogin.classList.remove('active');
+      if (tabSignup) tabSignup.classList.add('active');
 
+      // 2. 폼 요소 및 텍스트 변경
+      if (title) title.innerText = '회원가입';
+      if (submitBtn) {
+        submitBtn.innerText = '가입하기';
+        submitBtn.onclick = handleRegister;
+      }
+      if (countryGroup) countryGroup.style.display = 'block';
+
+      // 3. 하단 링크 텍스트 및 클릭 이벤트 변경
+      if (switchText) switchText.innerText = '이미 계정이 있으신가요?';
+      if (switchLink) {
+        switchLink.innerText = '로그인하기';
+        switchLink.setAttribute('onclick', "event.preventDefault(); switchAuthTab('login');");
+      }
+    } else {
+      // 1. 상단 탭 active 상태 변경
+      if (tabSignup) tabSignup.classList.remove('active');
+      if (tabLogin) tabLogin.classList.add('active');
+
+      // 2. 폼 요소 및 텍스트 변경
+      if (title) title.innerText = '로그인';
+      if (submitBtn) {
+        submitBtn.innerText = '로그인하기';
+        submitBtn.onclick = handleLogin;
+      }
+      if (countryGroup) countryGroup.style.display = 'none';
+
+      // 3. 하단 링크 텍스트 및 클릭 이벤트 변경
+      if (switchText) switchText.innerText = '계정이 없으신가요?';
+      if (switchLink) {
+        switchLink.innerText = '회원가입하기';
+        switchLink.setAttribute('onclick', "event.preventDefault(); switchAuthTab('signup');");
+      }
+    }
+  };
+
+  // 모달창 열기 함수 (내부에서 switchAuthTab 호출)
+  window.openAuthModal = function(mode) {
+    const modal = document.getElementById('auth-modal');
+    if (!modal) return;
+    
+    // 요청된 모드로 탭 및 폼 전환
+    window.switchAuthTab(mode || 'login');
+    
+    // 모달 표시
     modal.style.display = 'flex';
+  };
+
+  // 기존 toggleAuthMode가 호출되더라도 switchAuthTab과 연동되도록 유지
+  window.toggleAuthMode = function(event) {
+    if (event) event.preventDefault();
+    const submitBtn = document.getElementById('auth-submit-btn');
+    const isLoginMode = submitBtn && submitBtn.innerText.includes('로그인');
+    window.switchAuthTab(isLoginMode ? 'signup' : 'login');
   };
 
   function updateAuthUI() {
