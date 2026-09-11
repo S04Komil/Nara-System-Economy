@@ -1159,20 +1159,29 @@ function openInvestmentModal() {
   
   if (!modal) return;
 
-  // 피투자국 드롭다운 목록 채우기 (자국 제외)
-  if (selectTarget && window.allCountryData) {
+  if (selectTarget) {
     selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
-    const myCountry = window.myCountryName || "";
     
-    window.allCountryData.forEach(item => {
-      const countryName = item.국가 || item.국명 || item[1];
-      if (countryName && countryName !== myCountry) {
-        const opt = document.createElement("option");
-        opt.value = countryName;
-        opt.textContent = countryName;
-        selectTarget.appendChild(opt);
-      }
-    });
+    // 현재 로그인된 유저의 자국명 가져오기
+    const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+    const cleanMyCountry = cleanName(myCountry);
+
+    // mainData(스프레드시트에서 가져온 전체 데이터) 배열 순회
+    if (Array.isArray(mainData) && mainData.length > 0) {
+      mainData.forEach(item => {
+        // B열 헤더 '국가' 값 또는 안전한 추출 함수 사용
+        const rawCountryName = item.국가 || extractCountryFromRow(item);
+        const cleanCName = cleanName(rawCountryName);
+
+        // 국가명이 존재하고, '전세계' 및 '자국'이 아닌 경우만 옵션 추가
+        if (rawCountryName && cleanCName !== '전세계' && cleanCName !== cleanMyCountry) {
+          const opt = document.createElement("option");
+          opt.value = rawCountryName;
+          opt.textContent = rawCountryName;
+          selectTarget.appendChild(opt);
+        }
+      });
+    }
   }
 
   modal.style.display = "flex";
