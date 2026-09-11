@@ -411,3 +411,107 @@ nav {
   opacity: 0.7;
   text-decoration: underline;
 }
+
+/* 상단 인증 관련 버튼 및 프로필 */
+.btn-auth {
+  background-color: var(--primary-color, #2b56f5);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f3f5;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.user-flag-img {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid #ddd;
+}
+
+.btn-logout {
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+/* Auth 모달 스타일 */
+.auth-modal-content {
+  max-width: 380px;
+  width: 90%;
+  padding: 24px;
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+}
+
+.auth-tab-btn.active {
+  color: var(--primary-color, #2b56f5);
+  border-bottom: 2px solid var(--primary-color, #2b56f5);
+  margin-bottom: -2px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-submit-auth {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--primary-color, #2b56f5);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+}
