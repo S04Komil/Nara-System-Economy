@@ -1087,7 +1087,7 @@ function renderMyInvestments(investments) {
       <td>${Number(item.amount*10 || 0).toLocaleString()}억달러</td>
       <td>${item.profitStatus || '-'}</td>
       <td>${item.ReturnRate || '-'}%</td>
-      <td${item.growthRate || '-'}%p</td>
+      <td>${item.growthRate || '-'}%p</td>
       <td>${Number(item.Profitgain*10 || 0).toLocaleString()}억달러</td>
     </tr>
   `).join('');
