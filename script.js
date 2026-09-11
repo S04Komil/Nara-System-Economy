@@ -1250,4 +1250,7 @@ async function submitInvestment() {
     alert("서버 통신 중 오류가 발생했습니다.");
   }
 }
+  // script.js 최하단
+window.openInvestmentModal = openInvestmentModal;
+window.closeInvestmentModal = closeInvestmentModal;
 });
