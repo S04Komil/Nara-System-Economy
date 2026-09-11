@@ -353,13 +353,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
  window.switchCategory = function(key, title, unitType, navBtnId) {
     const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
-    if (mainView) mainView.style.display = 'none';
-
     const rankView = document.getElementById('rank-view');
-    if (rankView) rankView.style.display = 'block';
-
     const myEconomyView = document.getElementById('my-economy-view');
+
+    // 1. [자국 경제] 선택 시 분기 처리
+    if (key === 'my-economy-view' || key === 'my-economy' || key === '자국경제') {
+      if (mainView) mainView.style.display = 'none';
+      if (rankView) rankView.style.display = 'none';
+      if (myEconomyView) myEconomyView.style.display = 'block';
+
+      // 네비게이션 버튼 active 클래스 전환
+      document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+      if (navBtnId) {
+        const btn = document.getElementById(navBtnId);
+        if (btn) btn.classList.add('active');
+      }
+
+      // 전역 자국경제 활성화 함수 실행
+      if (typeof window.showMyEconomyView === 'function') {
+        window.showMyEconomyView();
+      } else if (typeof showMyEconomyView === 'function') {
+        showMyEconomyView();
+      }
+      return; // 순위 목록 생성 로직 실행 방지
+    }
+
+    // 2. [일반 순위] 선택 시 (GDP, 인구, 국방비 등)
+    if (mainView) mainView.style.display = 'none';
     if (myEconomyView) myEconomyView.style.display = 'none';
+    if (rankView) rankView.style.display = 'block';
 
     document.getElementById('rank-title').innerText = title;
 
