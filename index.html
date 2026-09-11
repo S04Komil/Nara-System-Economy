@@ -31,17 +31,19 @@
   	<li class="nav-item" id="nav-my-country-item" style="display: none;">
     	<button id="nav-my-country-btn" onclick="openMyCountryModal()">자국 경제</button>
   	</li>
-  	<!-- 로그인 / 유저 프로필 상태 구역 -->
-  	<li class="nav-item" id="auth-nav-area">
-    	<button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
-  	</li>
-  	<li class="nav-item" id="user-profile-area" style="display: none;">
-    	<div class="user-profile-badge">
-      		<img id="user-flag" src="" alt="국기" class="user-flag-img">
-      		<span id="user-country-name">국가명</span>
-      		<button class="btn-logout" onclick="handleLogout()">로그아웃</button>
-    	</div>
-  	</li>
+  	<!-- 로그인 버튼 구역: margin-left: auto; 추가 -->
+	<li class="nav-item" id="auth-nav-area" style="margin-left: auto;">
+  		<button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
+	</li>
+
+	<!-- 로그인 완료 후 유저 프로필 구역: margin-left: auto; 추가 -->
+	<li class="nav-item" id="user-profile-area" style="display: none; margin-left: auto;">
+  		<div class="user-profile-badge">
+    		<img id="user-flag" src="" alt="국기" class="user-flag-img">
+    		<span id="user-country-name">국가명</span>
+    		<button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+  		</div>
+	</li>
 	</ul>
   </nav>
 
