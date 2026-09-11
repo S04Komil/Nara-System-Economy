@@ -1262,4 +1262,6 @@ async function submitInvestment() {
   // script.js 최하단
 window.openInvestmentModal = openInvestmentModal;
 window.closeInvestmentModal = closeInvestmentModal;
+window.onInvestTargetChange = onInvestTargetChange;
+window.submitInvestment = submitInvestment;
 });
