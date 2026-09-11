@@ -363,74 +363,42 @@
   </div>
 
   <!-- 해외 투자 추가 모달 팝업 -->
-  <div id="invest-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeInvestmentModal()">&times;</button>
-      <h2 style="margin-bottom: 20px; text-align: center;">신규 해외경제투자 등록</h2>
-      
-      <form id="invest-form" onsubmit="event.preventDefault(); submitInvestment();">
-        <!-- 1행: 피투자국 국명 (자신 제외 선택) -->
-        <div class="form-group">
-          <label for="invest-target-country">1행: 피투자국 국명</label>
-          <select id="invest-target-country" required onchange="onInvestTargetChange(this.value)">
-            <option value="">국가를 선택하세요</option>
-            <!-- JS로 자신 제외한 국가 목록 로딩 -->
-          </select>
-        </div>
+<div id="invest-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeInvestmentModal()">&times;</button>
+    <h2 style="margin-bottom: 20px; text-align: center;">신규 해외경제투자 등록</h2>
+    
+    <form id="invest-form" onsubmit="event.preventDefault(); submitInvestment();">
+      <!-- 1. 피투자국 국명 -->
+      <div class="form-group">
+        <label for="invest-target-country">피투자국 국명</label>
+        <select id="invest-target-country" required onchange="onInvestTargetChange(this.value)">
+          <option value="">국가를 선택하세요</option>
+          <!-- JS로 자신 제외한 국가 목록 로딩 -->
+        </select>
+      </div>
 
-        <!-- 2행: 피투자국 등급(정보표시) -->
-        <div class="form-group">
-          <label>2행: 피투자국 등급</label>
-          <div id="invest-target-grade" class="info-display-box">-</div>
-        </div>
+      <!-- 2. 수익여부 -->
+      <div class="form-group">
+        <label for="invest-return-option">수익여부</label>
+        <select id="invest-return-option">
+          <option value="X" selected>X</option>
+          <option value="O">O</option>
+        </select>
+      </div>
 
-        <!-- 3행: 투자국 자금(순이익부분, 정보표시)와 수익여부(O/X 선택, 기본값 X) -->
-        <div class="form-row-2">
-          <div class="form-group">
-            <label>3행: 투자국 자금 (순이익)</label>
-            <div id="invest-owner-funds" class="info-display-box">-</div>
-          </div>
-          <div class="form-group">
-            <label for="invest-return-option">3행: 수익여부</label>
-            <select id="invest-return-option">
-              <option value="X" selected>X</option>
-              <option value="O">O</option>
-            </select>
-          </div>
+      <!-- 3. 투자금 입력 -->
+      <div class="form-group">
+        <label for="invest-amount">투자금 입력</label>
+        <div class="number-control-group">
+          <input type="number" id="invest-amount" step="0.1" min="0" placeholder="0.0" required>
         </div>
+      </div>
 
-        <!-- 4행: 투자금입력 (직접입력, 0.1단위 조절 버튼) -->
-        <div class="form-group">
-          <label for="invest-amount">4행: 투자금 입력</label>
-          <div class="number-control-group">
-            <button type="button" onclick="adjustValue('invest-amount', -0.1, 1)">▼</button>
-            <input type="number" id="invest-amount" step="0.1" min="0" placeholder="0.0" required>
-            <button type="button" onclick="adjustValue('invest-amount', 0.1, 1)">▲</button>
-          </div>
-        </div>
-
-        <!-- 5행: 등급에 따른 환수율(정보표시) -->
-        <div class="form-group">
-          <label>5행: 등급에 따른 환수율</label>
-          <div id="invest-return-rate" class="info-display-box">-</div>
-        </div>
-
-        <!-- 6행: 피투자국 성장률 증가(%p) -->
-        <div class="form-group">
-          <label>6행: 피투자국 성장률 증가(%p)</label>
-          <div id="invest-target-growth-inc" class="info-display-box">-</div>
-        </div>
-
-        <!-- 7행: 투자국의 차익금 -->
-        <div class="form-group">
-          <label>7행: 투자국의 차익금</label>
-          <div id="invest-owner-profit" class="info-display-box">-</div>
-        </div>
-
-        <button type="submit" class="btn-submit-auth" style="margin-top: 15px;">투자하기</button>
-      </form>
-    </div>
+      <button type="submit" class="btn-submit-auth" style="margin-top: 15px;">투자하기</button>
+    </form>
   </div>
+</div>
 
   <!-- 로그인 / 회원가입 겸용 모달 팝업 -->
   <div id="auth-modal" class="modal-overlay" style="display: none;">
