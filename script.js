@@ -1111,7 +1111,12 @@ function renderMyInvestments(investments) {
 }
   function formatInvestmentAmount(valIn100M) {
   const num = Number(valIn100M) || 0;
-  
+
+  if(num < 1 && num > 0)
+  {
+    const trillionval = (num*10000).toLocaleString(undefined, {maximumFractionDigits: 2});
+    return `${trillionval}만 달러`;
+  }
   if (num >= 10000) {
     // 10,000억 달러 = 1조 달러 (소수점 1~2자리 처리)
     const trillionVal = (num / 10000).toLocaleString(undefined, { maximumFractionDigits: 2 });
