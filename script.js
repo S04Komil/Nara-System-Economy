@@ -933,6 +933,6 @@ window.openMyCountryModal = function() {
         <div class="card"><h4>국고</h4><p>${rawTreasury !== undefined && rawTreasury !== '' ? formatMoney(rawTreasury) : '-'}</p></div>
         <div class="card"><h4>경제성장률</h4><p>${rawGrowth !== undefined && rawGrowth !== '' ? `${parseFloat(rawGrowth).toFixed(2)}%` : '-'}</p></div>
       </div>
-    };
+    `;
   };
 });
