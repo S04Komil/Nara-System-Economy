@@ -540,7 +540,7 @@ nav {
   background: #fff;
 }
 
-.number-control-group button {
+/*.number-control-group button {
   background: #f1f1f1;
   border: none;
   padding: 8px 12px;
@@ -552,7 +552,7 @@ nav {
 
 .number-control-group button:hover {
   background: #e0e0e0;
-}
+}*/
 
 .number-control-group input[type="number"] {
   flex: 1;
