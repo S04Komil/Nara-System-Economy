@@ -1089,6 +1089,7 @@ function renderMyInvestments(investments) {
       <td>${item.ReturnRate || '-'}%</td>
       <td>${item.growthRate || '-'}%p</td>
       <td>${Number(item.Profitgain*10 || 0).toLocaleString()}억달러</td>
+      <td><button type="button" class="btn-delete" onclick="deleteInvestment('${targetName}')">삭제</button></td>
     </tr>
   `).join('');
 }
@@ -1265,4 +1266,48 @@ window.openInvestmentModal = openInvestmentModal;
 window.closeInvestmentModal = closeInvestmentModal;
 window.onInvestTargetChange = onInvestTargetChange;
 window.submitInvestment = submitInvestment;
+
+async function deleteInvestment(targetCountry) {
+  const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+  
+  if (!myCountry) {
+    alert("로그인 정보(자국명)를 찾을 수 없습니다.");
+    return;
+  }
+
+  if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  try {
+    const payload = {
+      action: "deleteInvestment",
+      ownerCountry: myCountry,
+      targetCountry: targetCountry
+    };
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.result === "success") {
+      alert("성공적으로 삭제되었습니다.");
+      if (typeof loadMyInvestments === "function") {
+        loadMyInvestments(); // 내 해외투자 목록 새로고침
+      }
+    } else {
+      alert("삭제 실패: " + result.message);
+    }
+  } catch (error) {
+    console.error("해외투자 삭제 중 오류 발생:", error);
+    alert("삭제 처리 중 오류가 발생했습니다.");
+  }
+}
+
+// 전역 스코프 등록
+window.deleteInvestment = deleteInvestment;
 });
