@@ -355,10 +355,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1. 실제 HTML에 존재하는 ID로 변수 매핑
     const mainContainer = document.getElementById('main-container');
     const rankView = document.getElementById('rank-view');
-    const myEconomyView = document.getElementById('my-country-section'); // HTML의 실제 ID
+    const myEconomyView = document.getElementById('my-economy-view'); // HTML의 실제 ID
+
+    if (mainView) mainView.style.display = 'none';
+    if (myView) myView.style.display = 'block';
 
     // 2. [자국 경제] 선택 시
-    if (key === 'my-economy' || key === '자국경제' || key === 'my-country-section') {
+    if (key === 'my-economy-view') {
       if (rankView) rankView.style.display = 'none'; // 순위 목록 숨김
       if (myEconomyView) myEconomyView.style.display = 'block'; // 자국 경제 표출
       
@@ -368,6 +371,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const btn = document.getElementById(navBtnId);
         if (btn) btn.classList.add('active');
       }
+      showMyEconomyView();
       return; // 순위 생성 로직 중단
     }
 
@@ -881,12 +885,6 @@ document.addEventListener("DOMContentLoaded", function() {
       window.windowShowLoginModal && window.windowShowLoginModal();
       return;
     }
-
-    const mainView = document.getElementById('main-dashboard-view') || document.getElementById('main-view');
-    const myView = document.getElementById('my-economy-view');
-
-    if (mainView) mainView.style.display = 'none';
-    if (myView) myView.style.display = 'block';
 
     // 로그인 사용자의 국가명(C열) 추출
     const myCountryName = currentUser.country || '';
