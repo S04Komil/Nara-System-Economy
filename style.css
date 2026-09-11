@@ -44,6 +44,15 @@ nav {
   margin: 0;
   padding: 0;
   gap: 8px;
+  width: 100%;
+  align-items: center;
+}
+
+/* 로그인, 프로필, 자국 경제 항목 오른쪽 정렬 */
+#auth-nav-area,
+#user-profile-area,
+#nav-my-country-item {
+  margin-left: auto;
 }
 
 .nav-item button {
@@ -209,40 +218,47 @@ nav {
   font-size: 1.1rem;
   color: #718096;
 }
+
 /* 세계 통계 카드 전용 스타일 */
-    .world-stats-section {
-      margin-top: 36px;
-      margin-bottom: 24px;
-    }
-    .section-title {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #1a202c;
-      margin-bottom: 16px;
-    }
-    .world-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .world-card {
-      background: var(--card-bg, #ffffff);
-      padding: 18px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color, #e2e8f0);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .world-card-title {
-      font-size: 0.85rem;
-      color: #718096;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-    .world-card-val {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #2b6cb0;
-    }
+.world-stats-section {
+  margin-top: 36px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #1a202c;
+  margin-bottom: 16px;
+}
+
+.world-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.world-card {
+  background: var(--card-bg, #ffffff);
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.world-card-title {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.world-card-val {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2b6cb0;
+}
+
 /* 바 배경 레이어 */
 .rank-bar {
   position: absolute;
@@ -261,9 +277,11 @@ nav {
   border: 1px solid #90cdf4;
   font-weight: bold;
 }
+
 .rank-item.world-item .rank-bar {
   background: #bee3f8;
 }
+
 /* 순위 변동 배지 기본 스타일 */
 .rank-diff {
   font-size: 11px;
@@ -284,11 +302,6 @@ nav {
 .rank-diff.down {
   color: #3182ce;
   background-color: #ebf8ff;
-}
-
-/* 유지 */
-.rank-diff.same {
-  color: #a0aec0;
 }
 
 /* 신규 진입 */
@@ -317,7 +330,7 @@ nav {
   height: 15px;
   object-fit: cover;
   border-radius: 2px;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2); /* 국기 테두리 시각화 */
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
 }
 
@@ -364,6 +377,7 @@ nav {
   padding-bottom: 12px;
   border-bottom: 2px solid #f0f0f0;
 }
+
 .modal-flag-img {
   width: 64px;
   height: 42px;
@@ -371,6 +385,7 @@ nav {
   border-radius: 4px;
   box-shadow: 0 0 4px rgba(0,0,0,0.2);
 }
+
 .modal-country-title {
   margin: 0;
   font-size: 1.4rem;
@@ -391,11 +406,13 @@ nav {
   display: flex;
   flex-direction: column;
 }
+
 .info-label {
   font-size: 0.75rem;
   color: #6c757d;
   margin-bottom: 2px;
 }
+
 .info-val {
   font-size: 0.95rem;
   font-weight: 600;
@@ -407,6 +424,7 @@ nav {
   cursor: pointer;
   transition: opacity 0.2s;
 }
+
 .clickable-country:hover {
   opacity: 0.7;
   text-decoration: underline;
@@ -539,20 +557,6 @@ nav {
   overflow: hidden;
   background: #fff;
 }
-
-/*.number-control-group button {
-  background: #f1f1f1;
-  border: none;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-weight: bold;
-  color: #333;
-  transition: background 0.2s;
-}
-
-.number-control-group button:hover {
-  background: #e0e0e0;
-}*/
 
 .number-control-group input[type="number"] {
   flex: 1;
