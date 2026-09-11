@@ -48,7 +48,8 @@ nav {
   align-items: center;
 }
 
-/* 프로필 및 로그인 영역만 오른쪽 끝으로 밀기 (자국경제 버튼은 바로 옆에 밀착) */
+/* 자국 경제, 로그인, 프로필 구역을 함께 오른쪽 끝으로 밀기 */
+#nav-my-country-item,
 #auth-nav-area,
 #user-profile-area {
   margin-left: auto;
