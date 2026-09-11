@@ -1089,7 +1089,7 @@ function renderMyInvestments(investments) {
       <td>${item.ReturnRate || '-'}%</td>
       <td>${item.growthRate || '-'}%p</td>
       <td>${Number(item.Profitgain*10 || 0).toLocaleString()}억달러</td>
-      <td><button type="button" class="btn-delete" onclick="deleteInvestment('${targetName}')">삭제</button></td>
+      <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
     </tr>
   `).join('');
 }
