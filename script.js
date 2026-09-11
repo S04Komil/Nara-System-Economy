@@ -357,35 +357,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const rankView = document.getElementById('rank-view');
     const myEconomyView = document.getElementById('my-economy-view'); // HTML의 실제 ID
 
-    // 2. [자국 경제] 선택 시
-    if (key === 'my-economy-view') {
-      if (rankView) rankView.style.display = 'none'; // 순위 목록 숨김
-      if (myEconomyView) myEconomyView.style.display = 'block'; // 자국 경제 표출
-      
-      // 네비게이션 버튼 active 클래스 처리
-      /*document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-      if (navBtnId) {
-        const btn = document.getElementById(navBtnId);
-        if (btn) btn.classList.add('active');
-      }*/
-      showMyEconomyView();
-      //return; // 순위 생성 로직 중단
-    }
-    else{
-    // 3. [일반 순위] 선택 시 (GDP, 인구, 국방비 등)
-    if (myEconomyView) myEconomyView.style.display = 'none'; // 자국 경제 숨김
-    if (rankView) rankView.style.display = 'block'; // 순위 목록 표출
-    }
-    /*document.getElementById('rank-title').innerText = title;
-
-    document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-    if (navBtnId) {
-      const btn = document.getElementById(navBtnId);
-      if (btn) btn.classList.add('active');
-    }*/
-
-    // --- 이하 기존 순위 렌더링(listEl, currentList 계산) 로직 동일 ---
-
     const listEl = document.getElementById('rank-list');
     listEl.innerHTML = '';
 
