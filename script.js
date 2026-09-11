@@ -704,6 +704,48 @@ document.addEventListener("DOMContentLoaded", function() {
   // -------------------------------------------------------------
   // 회원가입, 로그인 및 자국 경제 페이지 관리 기능
   // -------------------------------------------------------------
+
+// 모달 내 하단 링크 클릭 시 로그인 <-> 회원가입 모드 전환
+function toggleAuthMode(event) {
+  if (event) event.preventDefault();
+  
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const isLoginMode = submitBtn.innerText.includes('로그인');
+  
+  if (isLoginMode) {
+    // 회원가입 모드로 전환
+    openAuthModal('signup');
+  } else {
+    // 로그인 모드로 전환
+    openAuthModal('login');
+  }
+}
+
+// openAuthModal 함수 내부에서 하단 안내 문구를 함께 변경하도록 처리
+function openAuthModal(mode) {
+  const modal = document.getElementById('auth-modal');
+  const title = document.getElementById('auth-modal-title');
+  const submitBtn = document.getElementById('auth-submit-btn');
+  const countryGroup = document.getElementById('auth-country-group');
+  const switchText = document.getElementById('auth-switch-text');
+  const switchLink = document.getElementById('auth-switch-link');
+
+  if (mode === 'signup') {
+    title.innerText = '회원가입';
+    submitBtn.innerText = '가입하기';
+    countryGroup.style.display = 'block';
+    if (switchText) switchText.innerText = '이미 계정이 있으신가요?';
+    if (switchLink) switchLink.innerText = '로그인하기';
+  } else {
+    title.innerText = '로그인';
+    submitBtn.innerText = '로그인하기';
+    countryGroup.style.display = 'none';
+    if (switchText) switchText.innerText = '계정이 없으신가요?';
+    if (switchLink) switchLink.innerText = '회원가입하기';
+  }
+
+  modal.style.display = 'flex';
+}
  // HTML 구조에 맞게 수정된 updateAuthUI 함수
 function updateAuthUI() {
   const navMyCountry = document.getElementById('nav-my-country-item');
@@ -891,6 +933,6 @@ window.openMyCountryModal = function() {
         <div class="card"><h4>국고</h4><p>${rawTreasury !== undefined && rawTreasury !== '' ? formatMoney(rawTreasury) : '-'}</p></div>
         <div class="card"><h4>경제성장률</h4><p>${rawGrowth !== undefined && rawGrowth !== '' ? `${parseFloat(rawGrowth).toFixed(2)}%` : '-'}</p></div>
       </div>
-    `;
+    };
   };
 });
