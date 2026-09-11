@@ -353,13 +353,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
   window.switchCategory = function(key, title, unitType, navBtnId) {
     const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
-    if (mainView) mainView.style.display = 'none';
-
     const rankView = document.getElementById('rank-view');
-    if (rankView) rankView.style.display = 'block';
-
     const myEconomyView = document.getElementById('my-economy-view');
-    if (myEconomyView) myEconomyView.style.display = 'none';
+
+    // 1. [자국 경제] 탭이 선택된 경우 독립적으로 렌더링
+    if (key === 'my-economy' || key === '자국경제') {
+      if (mainView) mainView.style.display = 'none';
+      if (rankView) rankView.style.display = 'none'; // 순위 화면 숨기기
+      if (myEconomyView) myEconomyView.style.display = 'block'; // 자국 경제 화면만 표시
+
+      // 상단 네비게이션 버튼 active 클래스 처리
+      document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+      if (navBtnId) {
+        const btn = document.getElementById(navBtnId);
+        if (btn) btn.classList.add('active');
+      }
+
+      // 자국 경제 데이터 로딩/렌더링 함수 실행 (기존 프로젝트에 정의된 함수 호출)
+      if (typeof renderMyEconomy === 'function') {
+        renderMyEconomy();
+      } else if (typeof showMyEconomyView === 'function') {
+        showMyEconomyView();
+      }
+      return;
+    }
+
+    // 2. 일반 순위 탭(GDP, 인구, 국방비 등)이 선택된 경우
+    if (mainView) mainView.style.display = 'none';
+    if (myEconomyView) myEconomyView.style.display = 'none'; // 자국 경제 화면 숨기기
+    if (rankView) rankView.style.display = 'block'; // 순위 화면 표시
 
     document.getElementById('rank-title').innerText = title;
 
@@ -542,7 +564,7 @@ document.addEventListener("DOMContentLoaded", function() {
       `;
       listEl.appendChild(li);
     });
-  };
+};
 
   // 모달 함수
   window.openCountryModal = function(cleanKey) {
