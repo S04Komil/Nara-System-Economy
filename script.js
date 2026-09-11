@@ -357,9 +357,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const rankView = document.getElementById('rank-view');
     const myEconomyView = document.getElementById('my-economy-view'); // HTML의 실제 ID
 
-    if (mainView) mainView.style.display = 'none';
-    if (myView) myView.style.display = 'block';
-
     // 2. [자국 경제] 선택 시
     if (key === 'my-economy-view') {
       if (rankView) rankView.style.display = 'none'; // 순위 목록 숨김
