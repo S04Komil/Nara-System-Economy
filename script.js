@@ -990,7 +990,7 @@ document.addEventListener("DOMContentLoaded", function() {
     selectedJobs.push(cb.value);
   });
 
-  // 백엔드로 전달할 페이로드 구성 (currentUser.username 및 currentUser.id 참조)
+  // 백엔드로 전달할 페이로드 구성
   const payload = {
     action: 'updateMyEconomy',
     id: currentUser.username || currentUser.email || currentUser.id,
@@ -1014,7 +1014,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (result.success) {
       alert('자국 경제 설정이 정상적으로 저장되었습니다.');
-      // 연관된 파생 데이터 업데이트를 위해 메인 데이터 재조회 후 뷰 갱신
       if (typeof loadMainData === 'function') {
         await loadMainData();
         showMyEconomyView();
@@ -1027,27 +1026,4 @@ document.addEventListener("DOMContentLoaded", function() {
     alert('저장 처리 도중 오류가 발생했습니다.');
   }
 };
-    try {
-      // 백엔드(Apps Script) 전송
-      const response = await fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-
-      if (result.success) {
-        alert('자국 경제 설정이 정상적으로 저장되었습니다.');
-        // 연관된 파생 데이터 업데이트를 위해 메인 데이터 재조회 후 뷰 갱신
-        if (typeof loadMainData === 'function') {
-          await loadMainData();
-          window.showMyEconomyView();
-        }
-      } else {
-        alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
-      }
-    } catch (err) {
-      console.error('저장 중 오류 발생:', err);
-      alert('저장 처리 도중 오류가 발생했습니다.');
-    }
-  };
 });
