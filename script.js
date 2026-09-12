@@ -964,7 +964,7 @@ window.handleGoogleLogin = function(response) {
 function initGoogleAuth() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
-      client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
+      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
       callback: window.handleGoogleLogin
     });
 
