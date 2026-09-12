@@ -869,8 +869,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // Google OAuth 토큰 디코딩
-  function parseJwt(token) {
+  // Google OAuth 토큰 디코딩 함수
+function parseJwt(token) {
+  try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
@@ -880,54 +881,58 @@ document.addEventListener("DOMContentLoaded", function() {
         .join('')
     );
     return JSON.parse(jsonPayload);
+  } catch (err) {
+    console.error("JWT Parsing Error:", err);
+    return {};
   }
+}
 
-  // 구글 로그인 콜백
-  window.handleGoogleLogin = function(response) {
-    try {
-      const responsePayload = parseJwt(response.credential);
-      const googleUser = {
-        email: responsePayload.email,
-        name: responsePayload.name,
-        picture: responsePayload.picture,
-        authProvider: 'GOOGLE'
-      };
-      processGoogleLogin(googleUser);
-    } catch (err) {
-      console.error("Google Token Parsing Error:", err);
-      alert("구글 로그인 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 백엔드와 연동하여 구글 계정 로그인/데이터 매핑 처리
-// 구글 로그인 성공 후 데이터베이스(Apps Script) 저장 처리 함수
-async function processGoogleLogin(userData) {
+// 구글 로그인 인증 성공 콜백
+window.handleGoogleLogin = function(response) {
   try {
-    // 1. JWT 토큰을 전달받은 경우 안전하게 디코딩
-    let userEmail = userData.email;
-    let userName = userData.name;
-
-    if (!userEmail && userData.credential) {
-      const decoded = parseJwt(userData.credential);
-      userEmail = decoded.email;
-      userName = decoded.name;
-    }
-
-    if (!userEmail) {
+    const responsePayload = parseJwt(response.credential);
+    
+    if (!responsePayload.email) {
       alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
       return;
     }
 
-    // 2. Apps Script DB로 구글 로그인/자동 회원가입 요청 전송
+    const googleUser = {
+      email: responsePayload.email,
+      name: responsePayload.name || "",
+      picture: responsePayload.picture || "",
+      authProvider: 'GOOGLE'
+    };
+
+    // 백엔드 DB 검증 요청 실행
+    processGoogleLogin(googleUser);
+  } catch (err) {
+    console.error("Google Token Processing Error:", err);
+    alert("구글 로그인 처리 중 오류가 발생했습니다.");
+  }
+};
+
+// 백엔드 Apps Script와 연동하여 구글 계정 검증 및 데이터 매핑
+async function processGoogleLogin(userData) {
+  try {
+    const userEmail = userData.email;
+    const userName = userData.name;
+
+    if (!userEmail) {
+      alert("유효한 구글 이메일이 아닙니다.");
+      return;
+    }
+
+    // Apps Script DB로 구글 계정 조회 및 자동 가입 요청
     const response = await fetch(LOGIN_GAS_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8" // CORS 에러 방지용
+        "Content-Type": "text/plain;charset=utf-8" // CORS 제한 방지
       },
       body: JSON.stringify({
         action: "googleLogin",
         email: userEmail,
-        name: userName || "",
+        name: userName,
         country: ""
       })
     });
@@ -935,38 +940,26 @@ async function processGoogleLogin(userData) {
     const result = await response.json();
 
     if (result.success || result.result === "success") {
+      // DB에서 확인된 실제 아이디(이메일) 및 부여된 국가 정보 저장
       currentUser = {
         username: result.username || userEmail,
         email: userEmail,
-        country: result.country || "",
+        country: result.country || "미정",
         authProvider: "GOOGLE"
       };
 
+      // 세션 저장 및 UI 업데이트
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
-      alert(`[${currentUser.username}] 구글 로그인에 성공했습니다.`);
+      alert(`[${currentUser.username}] 구글 로그인 성공!`);
       
       closeAuthModal();
       updateAuthUI();
     } else {
-      alert(result.message || "구글 로그인 처리 중 오류가 발생했습니다.");
+      alert(result.message || "구글 계정 확인 실패했습니다.");
     }
   } catch (err) {
     console.error("Google Login DB Error:", err);
-    alert("로그인 데이터베이스 연결에 실패했습니다. 콘솔 로그를 확인하세요.");
-  }
-}
-
-// JWT 토큰 디코딩 보조 함수
-function parseJwt(token) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return {};
+    alert("로그인 데이터베이스 연결에 실패했습니다.");
   }
 }
 
