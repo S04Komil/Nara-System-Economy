@@ -1076,7 +1076,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     const growthRateEl = document.getElementById('my-growth-rate-display');
     const profitE1 = document.getElementById('my-profit-display');
     if(profitE1) profitE1.innerText = formatMoney(parseNumber(myObj['최종순이익'] || myObj['순이익'])*10);
-    if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고']));
+    if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고'])*10);
     if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률']).toFixed(2)}%`;
 
     if (typeof loadMyInvestments === 'function') {
