@@ -653,7 +653,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const rawTreasuryVal = getPropByCleanKey(item, '국고');
     const treasuryEl = document.getElementById('modal-treasury');
     if (treasuryEl) {
-      if (rawTreasuryVal !== undefined && rawTreasuryVal !== '' && !isNaN(parseFloat(rawTreasuryVal))) {
+      if (rawTreasuryVal !== undefined && rawTreasuryVal !== '' && !isNaN(parseFloat(rawTreasuryVal)*10)) {
         treasuryEl.innerText = formatMoney(rawTreasuryVal);
       } else {
         treasuryEl.innerText = '-';
