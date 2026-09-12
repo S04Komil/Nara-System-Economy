@@ -1336,4 +1336,22 @@ async function processGoogleLogin(userData) {
   window.submitInvestment = submitInvestment;
   window.deleteInvestment = deleteInvestment;
   window.adjustValue = adjustValue;
+
+  // 로그아웃 처리 함수
+window.handleLogout = function() {
+  if (confirm("로그아웃 하시겠습니까?")) {
+    // 1. 저장된 사용자 정보 제거
+    localStorage.removeItem('nara_user');
+    currentUser = null;
+
+    // 2. 알림창 및 UI 갱신
+    alert("로그아웃 되었습니다.");
+    updateAuthUI();
+
+    // 3. 메인 화면으로 이동
+    if (typeof window.showMainView === 'function') {
+      window.showMainView();
+    }
+  }
+};
 });
