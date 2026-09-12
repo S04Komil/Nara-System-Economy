@@ -900,49 +900,42 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   // 백엔드와 연동하여 구글 계정 로그인/데이터 매핑 처리
-  async function processGoogleLogin(userData) {
-    try {
-      const res = await fetch(LOGIN_GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'googleLogin',
-          email: userData.email,
-          name: userData.name
-        })
-      });
-      const result = await res.json();
-
-      if (result.success) {
-        currentUser = {
-          username: userData.name || userData.email,
-          email: userData.email,
-          country: result.country,
-          picture: userData.picture,
-          authProvider: 'GOOGLE'
-        };
-        localStorage.setItem('nara_user', JSON.stringify(currentUser));
-        alert(`${result.country ? result.country + ' 계정으로 ' : ''}구글 로그인이 완료되었습니다.`);
-        closeAuthModal();
-        updateAuthUI();
-      } else {
-        alert(result.message || "등록되지 않은 구글 계정이거나 로그인 실패했습니다.");
-      }
-    } catch (err) {
-      console.error("Google backend authentication error:", err);
-      // 백엔드 미구현 시 프론트 단 세션 저장 임시 처리
-      currentUser = {
-        username: userData.name,
+async function processGoogleLogin(userData) {
+  try {
+    const res = await fetch(LOGIN_GAS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8' // CORS 에러 방지
+      },
+      body: JSON.stringify({
+        action: 'googleLogin',
         email: userData.email,
-        country: userData.country || '미지정',
+        name: userData.name
+      })
+    });
+    
+    const result = await res.json();
+
+    if (result.success || result.result === 'success') {
+      currentUser = {
+        username: result.username || userData.name || userData.email,
+        email: userData.email,
+        country: result.country,
         picture: userData.picture,
         authProvider: 'GOOGLE'
       };
       localStorage.setItem('nara_user', JSON.stringify(currentUser));
-      alert(`${userData.email} 계정으로 구글 로그인이 설정되었습니다.`);
+      alert(`${result.country ? result.country + ' 계정으로 ' : ''}구글 로그인이 완료되었습니다.`);
       closeAuthModal();
       updateAuthUI();
+    } else {
+      alert(result.message || "등록되지 않은 구글 계정이거나 로그인 실패했습니다.");
     }
+  } catch (err) {
+    console.error("Google backend authentication error:", err);
+    alert("구글 로그인 서버 인증 중 오류가 발생했습니다.");
   }
+}
 
   window.handleLogout = function() {
     currentUser = null;
