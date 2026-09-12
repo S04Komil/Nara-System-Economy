@@ -869,7 +869,7 @@ async function handleLogin() {
   }
 }
 
-// 1. JWT 디코딩 함수
+// 1. Google OAuth 토큰 디코딩 함수
 function parseJwt(token) {
   try {
     const base64Url = token.split('.')[1];
@@ -887,34 +887,7 @@ function parseJwt(token) {
   }
 }
 
-// 3. 구글 로그인 콜백 함수 (initGoogleAuth보다 반드시 위에 정의!)
-window.handleGoogleLogin = function(response) {
-  console.log("1. Google Login 버튼 응답 도착:", response);
-
-  try {
-    const responsePayload = parseJwt(response.credential);
-    console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
-    
-    if (!responsePayload.email) {
-      alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
-      return;
-    }
-
-    const googleUser = {
-      email: responsePayload.email,
-      name: responsePayload.name || "",
-      picture: responsePayload.picture || "",
-      authProvider: 'GOOGLE'
-    };
-
-    processGoogleLogin(googleUser);
-  } catch (err) {
-    console.error("❌ Google Token Processing Error:", err);
-    alert("구글 로그인 처리 중 오류가 발생했습니다.");
-  }
-};
-
-// 2. 백엔드 DB 연동 함수
+// 2. Apps Script 백엔드 연동 및 시트 DB 처리
 async function processGoogleLogin(userData) {
   try {
     const userEmail = userData.email;
@@ -959,12 +932,40 @@ async function processGoogleLogin(userData) {
     alert("로그인 데이터베이스 연결에 실패했습니다.");
   }
 }
-  // 4. 구글 로그인 초기화 및 버튼 렌더링 함수
+
+// 3. 구글 로그인 성공 콜백 함수 (전역 window 객체에 직접 할당)
+window.handleGoogleLogin = function(response) {
+  console.log("1. Google Login 버튼 응답 도착:", response);
+
+  try {
+    const responsePayload = parseJwt(response.credential);
+    console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
+    
+    if (!responsePayload.email) {
+      alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
+      return;
+    }
+
+    const googleUser = {
+      email: responsePayload.email,
+      name: responsePayload.name || "",
+      picture: responsePayload.picture || "",
+      authProvider: 'GOOGLE'
+    };
+
+    processGoogleLogin(googleUser);
+  } catch (err) {
+    console.error("❌ Google Token Processing Error:", err);
+    alert("구글 로그인 처리 중 오류가 발생했습니다.");
+  }
+};
+
+// 4. 구글 로그인 버튼 렌더링 및 초기화
 function initGoogleAuth() {
-  if (typeof google !== 'undefined' && google.accounts) {
+  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // 본인의 구글 클라이언트 ID
-      callback: window.handleGoogleLogin // 상단에 정의된 콜백 연동
+      client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
+      callback: window.handleGoogleLogin
     });
 
     const btnContainer = document.getElementById("google-login-btn");
@@ -975,10 +976,12 @@ function initGoogleAuth() {
       });
     }
   } else {
+    // SDK 미로드 시 재시도
     setTimeout(initGoogleAuth, 100);
   }
 }
-  // 5. 페이지 로드 시 실행
+
+// 5. 페이지 로드 시 구글 로그인 초기화 수행
 window.addEventListener('DOMContentLoaded', initGoogleAuth);
   // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
