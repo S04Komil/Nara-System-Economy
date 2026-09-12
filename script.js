@@ -1387,4 +1387,27 @@ window.handleLogout = function() {
     }
   }
 };
+  function initGoogleAuth() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com", // 본인의 구글 클라이언트 ID
+      callback: window.handleGoogleLogin // 콜백 함수 연결 확인
+    });
+
+    // 구글 로그인 버튼렌더링
+    const btnContainer = document.getElementById("google-login-btn"); // 버튼이 들어갈 div ID
+    if (btnContainer) {
+      google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large"
+      });
+    }
+  } else {
+    // SDK가 아직 안 불러와졌으면 재시도
+    setTimeout(initGoogleAuth, 100);
+  }
+}
+
+// 페이지 로드 시 구글 Auth 초기화 실행
+window.addEventListener('DOMContentLoaded', initGoogleAuth);
 });
