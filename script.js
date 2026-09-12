@@ -912,15 +912,23 @@ async function processGoogleLogin(userData) {
     const result = await response.json();
 
     if (result.success || result.result === "success") {
+      const userCountry = result.country || "미정";
+      
       currentUser = {
         username: result.username || userEmail,
         email: userEmail,
-        country: result.country || "미정",
+        country: userCountry,
         authProvider: "GOOGLE"
       };
 
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
-      alert(`[${currentUser.username}] 님, 로그인되었습니다. (국가: ${currentUser.country})`);
+      
+      // 신규 가입(국가: 미정) 여부에 따라 안내 문구 변경
+      if (userCountry === "미정" || result.isNewUser) {
+        alert(`[${currentUser.username}] 님, 회원가입이 완료되었습니다!\n국가를 지정하기 위해 관리자에게 이메일과 국가를 문의하십시오.`);
+      } else {
+        alert(`[${currentUser.username}] 님, 로그인되었습니다. (국가: ${currentUser.country})`);
+      }
       
       if (typeof closeAuthModal === 'function') closeAuthModal();
       if (typeof updateAuthUI === 'function') updateAuthUI();
@@ -933,7 +941,7 @@ async function processGoogleLogin(userData) {
   }
 }
 
-// 3. 구글 로그인 성공 콜백 함수 (전역 window 객체에 직접 할당)
+// 3. 구글 로그인 성공 콜백 함수
 window.handleGoogleLogin = function(response) {
   console.log("1. Google Login 버튼 응답 도착:", response);
 
@@ -964,7 +972,7 @@ window.handleGoogleLogin = function(response) {
 function initGoogleAuth() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
-      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
+      client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
       callback: window.handleGoogleLogin
     });
 
@@ -976,13 +984,13 @@ function initGoogleAuth() {
       });
     }
   } else {
-    // SDK 미로드 시 재시도
     setTimeout(initGoogleAuth, 100);
   }
 }
 
-// 5. 페이지 로드 시 구글 로그인 초기화 수행
+// 5. 페이지 로드 시 구글 로그인 초기화 실행
 window.addEventListener('DOMContentLoaded', initGoogleAuth);
+  
   // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
   window.showMyEconomyView = function() {
