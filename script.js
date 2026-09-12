@@ -838,38 +838,38 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // 일반 아이디/비밀번호 로그인
- async function handleLogin() {
-    const id = document.getElementById('auth-id').value.trim();
-    const pw = document.getElementById('auth-pw').value.trim();
+async function handleLogin() {
+  const id = document.getElementById('auth-id').value.trim();
+  const pw = document.getElementById('auth-pw').value.trim();
 
-    if (!id || !pw) {
-      alert("아이디와 비밀번호를 모두 입력해 주세요.");
-      return;
-    }
-
-    try {
-      const res = await fetch(LOGIN_GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'login', id, pw })
-      });
-      const result = await res.json();
-
-      if (result.success) {
-        currentUser = { username: result.username || id, email: id, country: result.country, authProvider: 'LOCAL' };
-        localStorage.setItem('nara_user', JSON.stringify(currentUser));
-        alert(`${result.country} 계정으로 로그인되었습니다.`);
-        closeAuthModal();
-        updateAuthUI();
-      } else {
-        alert(result.message || "로그인 실패");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("로그인 중 오류가 발생했습니다.");
-    }
+  if (!id || !pw) {
+    alert("아이디와 비밀번호를 모두 입력해 주세요.");
+    return;
   }
 
-  // Google OAuth 토큰 디코딩 함수
+  try {
+    const res = await fetch(LOGIN_GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', id, pw })
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      currentUser = { username: result.username || id, email: id, country: result.country, authProvider: 'LOCAL' };
+      localStorage.setItem('nara_user', JSON.stringify(currentUser));
+      alert(`${result.country} 계정으로 로그인되었습니다.`);
+      closeAuthModal();
+      updateAuthUI();
+    } else {
+      alert(result.message || "로그인 실패");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("로그인 중 오류가 발생했습니다.");
+  }
+}
+
+// Google OAuth 토큰 디코딩 함수
 function parseJwt(token) {
   try {
     const base64Url = token.split('.')[1];
@@ -886,7 +886,8 @@ function parseJwt(token) {
     return {};
   }
 }
-//구글 로그인 성공 롤백
+
+// 구글 로그인 성공 콜백 함수
 window.handleGoogleLogin = function(response) {
   console.log("1. Google Login 버튼 응답 도착:", response);
 
@@ -921,59 +922,46 @@ window.handleGoogleLogin = function(response) {
 async function processGoogleLogin(userData) {
   try {
     const userEmail = userData.email;
-    const userName = userData.name || userEmail.split('@')[0]; // 이름이 없을 경우 이메일 앞자리 사용
-
-    console.log("4. Apps Script 요청 시작 (userEmail):", userEmail, "| userName:", userName);
 
     if (!userEmail) {
-      console.warn("⚠️ 유효한 구글 이메일이 아닙니다.");
       alert("유효한 구글 이메일이 아닙니다.");
       return;
     }
 
-    // Apps Script DB로 구글 계정 조회 및 자동 가입 요청
+    // Apps Script 요청 데이터 준비
     const requestBody = {
       action: "googleLogin",
-      email: userEmail,
-      name: userName,
-      country: ""
+      email: userEmail
     };
 
-    console.log("5. LOGIN_GAS_URL로 전송되는 Payload:", requestBody);
-
+    // Apps Script DB로 구글 계정 조회 및 자동 가입 요청
     const response = await fetch(LOGIN_GAS_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8" // CORS 제한 방지
+        "Content-Type": "text/plain;charset=utf-8" // CORS 에러 방지
       },
       body: JSON.stringify(requestBody)
     });
 
-    console.log("6. Apps Script 응답 상태 코드:", response.status);
-
     const result = await response.json();
-    console.log("7. Apps Script 수신 결과 데이터 (result):", result);
 
     if (result.success || result.result === "success") {
-      // 시트 DB에 저장된 이메일과 국가 정보, 그리고 구글 프로필 이름을 조합하여 사용자 객체 생성
+      // 스프레드시트(A열 이메일, C열 국가명) 데이터를 바탕으로 유저 정보 세팅
       currentUser = {
-        username: result.username || userName || userEmail, // DB 응답값 -> 구글 이름 -> 이메일 순으로 적용
+        username: result.username || userEmail,
         email: userEmail,
         country: result.country || "미정",
         authProvider: "GOOGLE"
       };
 
-      console.log("8. 로그인 성공! 설정된 currentUser:", currentUser);
-
       // 세션 저장 및 UI 업데이트
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
-      alert(`[${currentUser.username}] 님, 구글 로그인 성공!`);
+      alert(`[${currentUser.username}] 님, 로그인되었습니다. (국가: ${currentUser.country})`);
       
       if (typeof closeAuthModal === 'function') closeAuthModal();
       if (typeof updateAuthUI === 'function') updateAuthUI();
     } else {
-      console.warn("⚠️ Apps Script 검증 실패:", result.message);
-      alert(result.message || "구글 계정 확인에 실패했습니다.");
+      alert(result.message || "구글 로그인 처리에 실패했습니다.");
     }
   } catch (err) {
     console.error("❌ Google Login DB Error:", err);
