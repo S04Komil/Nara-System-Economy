@@ -916,7 +916,7 @@ window.handleGoogleLogin = function(response) {
 async function processGoogleLogin(userData) {
   try {
     const userEmail = userData.email;
-    const userName = userData.name;
+    const userName = userData.name || userEmail.split('@')[0]; // 이름이 없을 경우 이메일 앞자리 사용
 
     if (!userEmail) {
       alert("유효한 구글 이메일이 아닙니다.");
@@ -940,9 +940,9 @@ async function processGoogleLogin(userData) {
     const result = await response.json();
 
     if (result.success || result.result === "success") {
-      // DB에서 확인된 실제 아이디(이메일) 및 부여된 국가 정보 저장
+      // 시트 DB에 저장된 이메일과 국가 정보, 그리고 구글 프로필 이름을 조합하여 사용자 객체 생성
       currentUser = {
-        username: result.username || userEmail,
+        username: result.username || userName || userEmail, // DB 응답값 -> 구글 이름 -> 이메일 순으로 적용
         email: userEmail,
         country: result.country || "미정",
         authProvider: "GOOGLE"
@@ -950,19 +950,18 @@ async function processGoogleLogin(userData) {
 
       // 세션 저장 및 UI 업데이트
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
-      alert(`[${currentUser.username}] 구글 로그인 성공!`);
+      alert(`[${currentUser.username}] 님, 구글 로그인 성공!`);
       
       closeAuthModal();
       updateAuthUI();
     } else {
-      alert(result.message || "구글 계정 확인 실패했습니다.");
+      alert(result.message || "구글 계정 확인에 실패했습니다.");
     }
   } catch (err) {
     console.error("Google Login DB Error:", err);
     alert("로그인 데이터베이스 연결에 실패했습니다.");
   }
 }
-
   // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
   window.showMyEconomyView = function() {
