@@ -900,50 +900,75 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   // 백엔드와 연동하여 구글 계정 로그인/데이터 매핑 처리
+// 구글 로그인 성공 후 데이터베이스(Apps Script) 저장 처리 함수
 async function processGoogleLogin(userData) {
   try {
-    const res = await fetch(LOGIN_GAS_URL, {
-      method: 'POST',
+    // 1. JWT 토큰을 전달받은 경우 안전하게 디코딩
+    let userEmail = userData.email;
+    let userName = userData.name;
+
+    if (!userEmail && userData.credential) {
+      const decoded = parseJwt(userData.credential);
+      userEmail = decoded.email;
+      userName = decoded.name;
+    }
+
+    if (!userEmail) {
+      alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
+      return;
+    }
+
+    // 2. Apps Script DB로 구글 로그인/자동 회원가입 요청 전송
+    const response = await fetch(LOGIN_GAS_URL, {
+      method: "POST",
       headers: {
-        'Content-Type': 'text/plain;charset=utf-8' // CORS 에러 방지
+        "Content-Type": "text/plain;charset=utf-8" // CORS 에러 방지용
       },
       body: JSON.stringify({
-        action: 'googleLogin',
-        email: userData.email,
-        name: userData.name
+        action: "googleLogin",
+        email: userEmail,
+        name: userName || "",
+        country: ""
       })
     });
-    
-    const result = await res.json();
 
-    if (result.success || result.result === 'success') {
+    const result = await response.json();
+
+    if (result.success || result.result === "success") {
       currentUser = {
-        username: result.username || userData.name || userData.email,
-        email: userData.email,
-        country: result.country,
-        picture: userData.picture,
-        authProvider: 'GOOGLE'
+        username: result.username || userEmail,
+        email: userEmail,
+        country: result.country || "",
+        authProvider: "GOOGLE"
       };
-      localStorage.setItem('nara_user', JSON.stringify(currentUser));
-      alert(`${result.country ? result.country + ' 계정으로 ' : ''}구글 로그인이 완료되었습니다.`);
+
+      localStorage.setItem("nara_user", JSON.stringify(currentUser));
+      alert(`[${currentUser.username}] 구글 로그인에 성공했습니다.`);
+      
       closeAuthModal();
       updateAuthUI();
     } else {
-      alert(result.message || "등록되지 않은 구글 계정이거나 로그인 실패했습니다.");
+      alert(result.message || "구글 로그인 처리 중 오류가 발생했습니다.");
     }
   } catch (err) {
-    console.error("Google backend authentication error:", err);
-    alert("구글 로그인 서버 인증 중 오류가 발생했습니다.");
+    console.error("Google Login DB Error:", err);
+    alert("로그인 데이터베이스 연결에 실패했습니다. 콘솔 로그를 확인하세요.");
   }
 }
 
-  window.handleLogout = function() {
-    currentUser = null;
-    localStorage.removeItem('nara_user');
-    alert("로그아웃 되었습니다.");
-    updateAuthUI();
-    showMainView();
-  };
+// JWT 토큰 디코딩 보조 함수
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return {};
+  }
+}
 
   // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
