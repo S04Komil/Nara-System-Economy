@@ -351,34 +351,30 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
- window.switchCategory = function(key, title, unitType, navBtnId) {
+  window.switchCategory = function(key, title, unitType, navBtnId) {
     const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
     const rankView = document.getElementById('rank-view');
     const myEconomyView = document.getElementById('my-economy-view');
 
-    // 1. [자국 경제] 선택 시 분기 처리
     if (key === 'my-economy-view' || key === 'my-economy' || key === '자국경제') {
       if (mainView) mainView.style.display = 'none';
       if (rankView) rankView.style.display = 'none';
       if (myEconomyView) myEconomyView.style.display = 'block';
 
-      // 네비게이션 버튼 active 클래스 전환
       document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
       if (navBtnId) {
         const btn = document.getElementById(navBtnId);
         if (btn) btn.classList.add('active');
       }
 
-      // 전역 자국경제 활성화 함수 실행
       if (typeof window.showMyEconomyView === 'function') {
         window.showMyEconomyView();
       } else if (typeof showMyEconomyView === 'function') {
         showMyEconomyView();
       }
-      return; // 순위 목록 생성 로직 실행 방지
+      return;
     }
 
-    // 2. [일반 순위] 선택 시 (GDP, 인구, 국방비 등)
     if (mainView) mainView.style.display = 'none';
     if (myEconomyView) myEconomyView.style.display = 'none';
     if (rankView) rankView.style.display = 'block';
@@ -811,6 +807,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (modal) modal.style.display = "none";
   };
 
+  // 일반 회원가입
   async function handleRegister() {
     const id = document.getElementById('auth-id').value.trim();
     const pw = document.getElementById('auth-pw').value.trim();
@@ -840,6 +837,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
+  // 일반 아이디/비밀번호 로그인
   async function handleLogin() {
     const id = document.getElementById('auth-id').value.trim();
     const pw = document.getElementById('auth-pw').value.trim();
@@ -857,7 +855,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const result = await res.json();
 
       if (result.success) {
-        currentUser = { username: result.username || id, email: id, country: result.country };
+        currentUser = { username: result.username || id, email: id, country: result.country, authProvider: 'LOCAL' };
         localStorage.setItem('nara_user', JSON.stringify(currentUser));
         alert(`${result.country} 계정으로 로그인되었습니다.`);
         closeAuthModal();
@@ -868,6 +866,81 @@ document.addEventListener("DOMContentLoaded", function() {
     } catch (err) {
       console.error(err);
       alert("로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  // Google OAuth 토큰 디코딩
+  function parseJwt(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  }
+
+  // 구글 로그인 콜백
+  window.handleGoogleLogin = function(response) {
+    try {
+      const responsePayload = parseJwt(response.credential);
+      const googleUser = {
+        email: responsePayload.email,
+        name: responsePayload.name,
+        picture: responsePayload.picture,
+        authProvider: 'GOOGLE'
+      };
+      processGoogleLogin(googleUser);
+    } catch (err) {
+      console.error("Google Token Parsing Error:", err);
+      alert("구글 로그인 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 백엔드와 연동하여 구글 계정 로그인/데이터 매핑 처리
+  async function processGoogleLogin(userData) {
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'googleLogin',
+          email: userData.email,
+          name: userData.name
+        })
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        currentUser = {
+          username: userData.name || userData.email,
+          email: userData.email,
+          country: result.country,
+          picture: userData.picture,
+          authProvider: 'GOOGLE'
+        };
+        localStorage.setItem('nara_user', JSON.stringify(currentUser));
+        alert(`${result.country ? result.country + ' 계정으로 ' : ''}구글 로그인이 완료되었습니다.`);
+        closeAuthModal();
+        updateAuthUI();
+      } else {
+        alert(result.message || "등록되지 않은 구글 계정이거나 로그인 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("Google backend authentication error:", err);
+      // 백엔드 미구현 시 프론트 단 세션 저장 임시 처리
+      currentUser = {
+        username: userData.name,
+        email: userData.email,
+        country: userData.country || '미지정',
+        picture: userData.picture,
+        authProvider: 'GOOGLE'
+      };
+      localStorage.setItem('nara_user', JSON.stringify(currentUser));
+      alert(`${userData.email} 계정으로 구글 로그인이 설정되었습니다.`);
+      closeAuthModal();
+      updateAuthUI();
     }
   }
 
@@ -888,14 +961,11 @@ document.addEventListener("DOMContentLoaded", function() {
       return;
     }
 
-    // 로그인 사용자의 국가명(C열) 추출
     const myCountryName = currentUser.country || '';
     const cleanMyCountry = cleanName(myCountryName);
 
-    // 전체 데이터 내에서 해당 국가 데이터 및 각종 순위 계산
     const myObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
 
-    // 순위 계산용 정렬 배열
     const gdpSorted = [...mainData].sort((a, b) => parseNumber(b['GDP'] || b['GDP(10억달러)']) - parseNumber(a['GDP'] || a['GDP(10억달러)']));
     const defSorted = [...mainData].sort((a, b) => parseNumber(b['국방비'] || b['국방비(10억달러)']) - parseNumber(a['국방비'] || a['국방비(10억달러)']));
     const popSorted = [...mainData].sort((a, b) => parseNumber(b['인구'] || b['인구(만명)']) - parseNumber(a['인구'] || a['인구(만명)']));
@@ -908,7 +978,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const flagUrl = flagMap.get(cleanMyCountry) || myObj['국기'] || myObj['국기링크'] || '';
 
-    // [1행] 국기와 국가명
     const flagImg = document.getElementById('my-country-flag');
     const titleEl = document.getElementById('my-country-title');
     if (flagImg) {
@@ -917,20 +986,17 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     if (titleEl) titleEl.innerText = myCountryName || '국가명 없음';
 
-    // [2행] 대륙과 소속연합
     const continentEl = document.getElementById('my-continent');
     const unionEl = document.getElementById('my-union');
     if (continentEl) continentEl.innerText = myObj['대륙'] || myObj['소속대륙'] || '-';
     if (unionEl) unionEl.innerText = myObj['소속연합'] || myObj['연합'] || '-';
 
-    // [3행] GDP와 GDP 순위
     const gdpVal = parseNumber(myObj['GDP'] || myObj['GDP(10억달러)']);
     const gdpEl = document.getElementById('my-gdp-display');
     const gdpRankEl = document.getElementById('my-gdp-rank');
     if (gdpEl) gdpEl.innerText = formatMoney(gdpVal * 10);
     if (gdpRankEl) gdpRankEl.innerText = getRankStr(gdpSorted);
 
-    // [4행] GDP대비 국방비(%), 국방비, 국방비 순위
     const defRateInput = document.getElementById('edit-def-rate');
     const defValEl = document.getElementById('my-def-display');
     const defRankEl = document.getElementById('my-def-rank');
@@ -938,455 +1004,326 @@ document.addEventListener("DOMContentLoaded", function() {
     if (defValEl) defValEl.innerText = formatMoney(parseNumber(myObj['국방비'] || myObj['국방비(10억달러)']) * 10);
     if (defRankEl) defRankEl.innerText = getRankStr(defSorted);
 
-    // [5행] 인구수와 인구 순위
     const popValEl = document.getElementById('my-pop-display');
     const popRankEl = document.getElementById('my-pop-rank');
     if (popValEl) popValEl.innerText = formatPopulation(parseNumber(myObj['인구'] || myObj['인구(만명)']));
     if (popRankEl) popRankEl.innerText = getRankStr(popSorted);
 
-    // [6행] 1인당 GDP와 1인당 GDP 순위
     const perGdpValEl = document.getElementById('my-per-gdp-display');
     const perGdpRankEl = document.getElementById('my-per-gdp-rank');
     if (perGdpValEl) perGdpValEl.innerText = `${Math.round(parseNumber(myObj['1인당GDP'])).toLocaleString()} 달러`;
     if (perGdpRankEl) perGdpRankEl.innerText = getRankStr(perGdpSorted);
 
-    // [7행] 세율(%), 국가예산
     const taxRateInput = document.getElementById('edit-tax-rate');
     const budgetEl = document.getElementById('my-budget-display');
     if (taxRateInput) taxRateInput.value = parseFloat(myObj['세율'] || 0).toFixed(2);
     if (budgetEl) budgetEl.innerText = formatMoney(parseNumber(myObj['국가예산']) * 10);
 
-    // [8행] 경제체제, 주업 (다수 선택형)
     const systemSelect = document.getElementById('edit-economic-system');
     if (systemSelect) systemSelect.value = myObj['경제체제'] || '시장경제';
 
-    // 공백(띄어쓰기)을 기준으로 주업 목록을 분할하고 공백 제거
     const selectedJobs = (myObj['주업'] || '').split(/\s+/).filter(Boolean);
 
-    // HTML element의 name="industry" 체크박스들을 탐색하여 일치 시 체크 처리
-      document.querySelectorAll('input[name="industry"]').forEach(cb => {
-        cb.checked = selectedJobs.includes(cb.value);
+    document.querySelectorAll('input[name="industry"]').forEach(cb => {
+      cb.checked = selectedJobs.includes(cb.value);
     });
 
-
-    // [9행] 복지수준, 경제투자율(%)
     const welfareSelect = document.getElementById('edit-welfare');
     const investRateInput = document.getElementById('edit-invest-rate');
     if (welfareSelect) welfareSelect.value = myObj['복지수준'] || '복지없음';
     if (investRateInput) investRateInput.value = parseFloat(myObj['경제투자율'] || 0).toFixed(2);
 
-    // [10행] 국고, 경제성장률
     const treasuryEl = document.getElementById('my-treasury-display');
     const growthRateEl = document.getElementById('my-growth-rate-display');
     if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고']));
     if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률']).toFixed(2)}%`;
 
-    // 해외 경제 투자 목록 불러오기 및 렌더링
     if (typeof loadMyInvestments === 'function') {
       loadMyInvestments();
     }
   };
 
-  // ---------------- 저장 버튼 클릭 시 실시간 데이터 전송 및 화면 업데이트 ----------------
-
+  // 자국 경제 설정 저장
   window.saveMyEconomyData = async function() {
-  if (!currentUser || !currentUser.country) {
-    alert('로그인이 필요하거나 국가 정보가 없습니다.');
-    return;
-  }
+    if (!currentUser || !currentUser.country) {
+      alert('로그인이 필요하거나 국가 정보가 없습니다.');
+      return;
+    }
 
-  const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
-  const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
-  const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
-  const economicSystem = document.getElementById('edit-economic-system')?.value || '';
-  const welfare = document.getElementById('edit-welfare')?.value || '';
+    const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
+    const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
+    const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
+    const economicSystem = document.getElementById('edit-economic-system')?.value || '';
+    const welfare = document.getElementById('edit-welfare')?.value || '';
 
-  const selectedJobs = [];
-  document.querySelectorAll('input[name="industry"]:checked').forEach(cb => {
-    selectedJobs.push(cb.value);
-  });
-
-  const payload = {
-    action: 'updateMyEconomy',
-    country: cleanName(currentUser.country),
-    defRate: defRate,
-    taxRate: taxRate,
-    investRate: investRate,
-    economicSystem: economicSystem,
-    welfare: welfare,
-    mainJobs: selectedJobs.join(' ')
-  };
-
-  try {
-    // 메인 API URL로 요청 전송
-    const response = await fetch(API_URL, { 
-      method: 'POST',
-      body: JSON.stringify(payload)
+    const selectedJobs = [];
+    document.querySelectorAll('input[name="industry"]:checked').forEach(cb => {
+      selectedJobs.push(cb.value);
     });
-    const result = await response.json();
 
-    if (result.success || result.result === 'success') {
-      alert('자국 경제 설정이 정상적으로 저장되었습니다.');
-      if (typeof loadMainData === 'function') {
-        await loadMainData();
-        showMyEconomyView();
-      }
-    } else {
-      alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
-    }
-  } catch (err) {
-    console.error('저장 중 오류 발생:', err);
-    alert('저장 처리 도중 오류가 발생했습니다.');
-  }
-};
-
-  // =========== 해외 경제 투자 목록 불러오기 ===========
-// 1. Apps Script 메인 API(API_URL)에서 // 자국 해외 투자 내역 불러오기 (실패 시 자동 재시도 적용)
-async function loadMyInvestments(retryCount = 0) {
-  if (!currentUser || !currentUser.country) return;
-
-  const tbody = document.getElementById('my-investment-list');
-  if (!tbody) return;
-
-  const maxRetries = 5; // 최대 재시도 횟수
-
-  // 재시도 중일 때도 "다시 불러오는 중..." 문구 표시
-  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
-
-  try {
-    const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
-    const response = await fetch(url);
-    const result = await response.json();
-
-    if (result.result === 'success' && Array.isArray(result.investments)) {
-      renderMyInvestments(result.investments);
-    } else {
-      // 결과 실패 시 바로 문구를 띄우지 않고 다시 호출
-      if (retryCount < maxRetries) {
-        console.warn(`[해외투자] 불러오기 응답 미완료/실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
-        setTimeout(() => {
-          loadMyInvestments(retryCount + 1);
-        }, 1500); // 1.5초 후 재시도
-      } else {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오지 못했습니다. (재시도 횟수 초과)</td></tr>';
-      }
-    }
-  } catch (err) {
-    console.error('해외투자 불러오기 오류:', err);
-    
-    // 네트워크/파싱 오류 시에도 지정 횟수까지 재시도
-    if (retryCount < maxRetries) {
-      setTimeout(() => {
-        loadMyInvestments(retryCount + 1);
-      }, 1500);
-    } else {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
-    }
-  }
-}
-
-// 2. 전달받은 투자 목록 데이터를 HTML 테이블에 출력하기
-function renderMyInvestments(investments) {
-  const tbody = document.getElementById('my-investment-list');
-  if (!tbody) return;
-
-  if (!investments || investments.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
-    return;
-  }
-
-  // index.html의 7개 컬럼(피투자국, 피투자국 등급, 투자금, 수익여부, 환수율, 성장률 증가, 차익금)에 맞추어 출력
-  tbody.innerHTML = investments.map(item => `
-    <tr>
-      <td>${item.targetCountry || '-'}</td>
-      <td>${item.targetCountryrate || '-'}</td>
-      <td>${formatInvestmentAmount((item.amount || 0) * 10)}</td>
-      <td>${item.profitStatus || '-'}</td>
-      <td>${item.ReturnRate || '-'}%</td>
-      <td>${item.growthRate || '-'}%p</td>
-      <td>${formatInvestmentAmount((item.Profitgain || 0) * 10)}</td>
-      <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
-    </tr>
-  `).join('');
-}
-  function formatInvestmentAmount(valIn100M) {
-  const num = Number(valIn100M) || 0;
-
-  if(num < 1 && num > 0)
-  {
-    const trillionval = (num*10000).toLocaleString(undefined, {maximumFractionDigits: 2});
-    return `${trillionval}만 달러`;
-  }
-  if (num >= 10000) {
-    // 10,000억 달러 = 1조 달러 (소수점 1~2자리 처리)
-    const trillionVal = (num / 10000).toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return `${trillionVal}조 달러`;
-  }
-  
-  // 1만 미만일 경우 기존대로 억달러 표시
-  return `${num.toLocaleString()}억달러`;
-}
-
-  //=========== 해외 경제 투자 정보 등록/수정 전송 =============
-  // 해외 경제 투자 정보 등록/수정 전송
-async function submitInvestment() {
-  if (!currentUser || !currentUser.country) {
-    alert("로그인이 필요합니다.");
-    return;
-  }
-
-  // 모달 폼 요소 값 읽기
-  const targetCountry = document.getElementById("invest-target-country")?.value;
-  const amount = parseFloat(document.getElementById("invest-amount")?.value || 0);
-  const profitStatus = document.getElementById("invest-return-option")?.value || "X"; // O / X 값
-
-  if (!targetCountry) {
-    alert("피투자국을 선택해 주세요.");
-    return;
-  }
-  if (amount <= 0 || isNaN(amount)) {
-    alert("투자금을 0보다 큰 숫자로 입력해 주세요.");
-    return;
-  }
-
-  // 백엔드 요청 페이로드 (투자국: 자국, 피투자국, 투자금, 수익여부)
-  const payload = {
-    action: "saveInvestData",
-    myCountry: currentUser.country, // A열: 투자국 (자국)
-    targetCountry: targetCountry,   // C열: 피투자국
-    amount: amount,                 // E열: 투자금액
-    profitStatus: profitStatus     // J열: 수익여부 (O/X)
-  };
-
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json();
-
-    if (result.result === "success" || result.success) {
-      alert("해외투자 정보가 저장되었습니다.");
-      
-      // 모달 닫기
-      if (typeof closeInvestmentModal === "function") {
-        closeInvestmentModal();
-      }
-      
-      // 내 해외투자 목록 다시 불러오기
-      if (typeof loadMyInvestments === "function") {
-        loadMyInvestments();
-      }
-    } else {
-      alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
-    }
-  } catch (err) {
-    console.error("해외투자 저장 오류:", err);
-    alert("저장 처리 중 오류가 발생했습니다.");
-  }
-}
-  // ========= 투자 모달 열기 =============
-  // 해외투자 모달 열기
-function openInvestmentModal() {
-  const modal = document.getElementById("invest-modal");
-  const selectTarget = document.getElementById("invest-target-country");
-  
-  if (!modal) return;
-
-  if (selectTarget) {
-    selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
-    
-    // 현재 로그인된 유저의 자국명 가져오기
-    const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
-    const cleanMyCountry = cleanName(myCountry);
-
-    // mainData(스프레드시트에서 가져온 전체 데이터) 배열 순회
-    if (Array.isArray(mainData) && mainData.length > 0) {
-      mainData.forEach(item => {
-        // B열 헤더 '국가' 값 또는 안전한 추출 함수 사용
-        const rawCountryName = item.국가 || extractCountryFromRow(item);
-        const cleanCName = cleanName(rawCountryName);
-
-        // 국가명이 존재하고, '전세계' 및 '자국'이 아닌 경우만 옵션 추가
-        if (rawCountryName && cleanCName !== '전세계' && cleanCName !== cleanMyCountry) {
-          const opt = document.createElement("option");
-          opt.value = rawCountryName;
-          opt.textContent = rawCountryName;
-          selectTarget.appendChild(opt);
-        }
-      });
-    }
-  }
-
-  modal.style.display = "flex";
-}
-
-// 해외투자 모달 닫기
-function closeInvestmentModal() {
-  const modal = document.getElementById("invest-modal");
-  if (modal) modal.style.display = "none";
-}
-
-// 3. 수치 조절 버튼 함수
-function adjustValue(inputId, step, precision) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  let val = parseFloat(input.value) || 0;
-  val += step;
-  if (val < 0) val = 0;
-  input.value = val.toFixed(precision);
-  
-  // 값 변경 시 실시간 수치 재계산 호출
-  calculateInvestmentPreview();
-}
-
-// 4. 피투자국 변경 시 이벤트
-function onInvestTargetChange(targetCountry) {
-  calculateInvestmentPreview();
-}
-
-// 5. 모달 내 실시간 연산/표시 로직
-function calculateInvestmentPreview() {
-  // 피투자국 등급, 환수율, 성장률, 차익금 실시간 계산 후 info-display-box들에 갱신
-}
-
-// 6. 폼 제출 함수 (GAS doPost 호출)
-async function submitInvestment() {
-  const targetCountry = document.getElementById("invest-target-country").value;
-  const amount = parseFloat(document.getElementById("invest-amount").value) || 0;
-  const profitStatus = document.getElementById("invest-return-option").value;
-  const myCountry = currentUser.country;
-
-  if (!targetCountry) {
-    alert("피투자국을 선택해주세요.");
-    return;
-  }
-  if (amount <= 0) {
-    alert("투자금을 0보다 크게 입력해주세요.");
-    return;
-  }
-
-  const payload = {
-    action: "saveInvestData",
-    myCountry: myCountry,
-    targetCountry: targetCountry,
-    amount: amount,
-    profitStatus: profitStatus
-  };
-
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    const res = await response.json();
-
-    if (res.result === "success") {
-      alert("성공적으로 해외투자가 등록되었습니다.");
-      closeInvestmentModal();
-      loadMyInvestments();
-      // 투자 내역 재조회 함수 호출 (예: loadInvestments())
-    } else {
-      alert("등록 실패: " + (res.message || "오류 발생"));
-    }
-  } catch (err) {
-    console.error(err);
-    alert("서버 통신 중 오류가 발생했습니다.");
-  }
-}
-  // script.js 최하단
-window.openInvestmentModal = openInvestmentModal;
-window.closeInvestmentModal = closeInvestmentModal;
-window.onInvestTargetChange = onInvestTargetChange;
-window.submitInvestment = submitInvestment;
-
-async function deleteInvestment(targetCountry) {
-  const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
-  
-  if (!myCountry) {
-    alert("로그인 정보(자국명)를 찾을 수 없습니다.");
-    return;
-  }
-
-  if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
-    return;
-  }
-
-  try {
     const payload = {
-      action: "deleteInvestment",
-      ownerCountry: myCountry,
-      targetCountry: targetCountry
+      action: 'updateMyEconomy',
+      country: cleanName(currentUser.country),
+      defRate: defRate,
+      taxRate: taxRate,
+      investRate: investRate,
+      economicSystem: economicSystem,
+      welfare: welfare,
+      mainJobs: selectedJobs.join(' ')
     };
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const response = await fetch(API_URL, { 
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
 
-    const result = await response.json();
-
-    if (result.result === "success") {
-      alert("성공적으로 삭제되었습니다.");
-      if (typeof loadMyInvestments === "function") {
-        loadMyInvestments(); // 내 해외투자 목록 새로고침
+      if (result.success || result.result === 'success') {
+        alert('자국 경제 설정이 정상적으로 저장되었습니다.');
+        if (typeof loadMainData === 'function') {
+          await loadMainData();
+          showMyEconomyView();
+        }
+      } else {
+        alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
       }
-    } else {
-      alert("삭제 실패: " + result.message);
+    } catch (err) {
+      console.error('저장 중 오류 발생:', err);
+      alert('저장 처리 도중 오류가 발생했습니다.');
     }
-  } catch (error) {
-    console.error("해외투자 삭제 중 오류 발생:", error);
-    alert("삭제 처리 중 오류가 발생했습니다.");
-  }
-}
-
-// 전역 스코프 등록
-window.deleteInvestment = deleteInvestment;
-  // JWT 토큰 디코딩 함수 (Base64 파싱)
-function parseJwt(token) {
-  const base64Url = token.split('.')[1];
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split('')
-      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-      .join('')
-  );
-  return JSON.parse(jsonPayload);
-}
-
-// Google Auth 콜백 함수
-function handleGoogleLogin(response) {
-  // Google에서 전달받은 사용자 credential (JWT)
-  const responsePayload = parseJwt(response.credential);
-
-  console.log("ID: " + responsePayload.sub);
-  console.log("Full Name: " + responsePayload.name);
-  console.log("Image URL: " + responsePayload.picture);
-  console.log("Email: " + responsePayload.email);
-
-  const googleUser = {
-    email: responsePayload.email,
-    name: responsePayload.name,
-    picture: responsePayload.picture,
-    authProvider: 'GOOGLE'
   };
 
-  // 기존 사용자 데이터베이스/Apps Script에 사용자 이메일 정보 전송 및 로그인 처리
-  processUserLogin(googleUser);
-}
+  // 해외 경제 투자 목록 불러오기
+  async function loadMyInvestments(retryCount = 0) {
+    if (!currentUser || !currentUser.country) return;
 
-// 사용자 로그인 및 DB 연동 처리
-function processUserLogin(userData) {
-  // 사용자의 Google 이메일 정보(userData.email)를 바탕으로 
-  // 기존 DB(Google Sheet 등)에 사용자가 존재하는지 확인하거나 신규 생성 후 세션/상태를 업데이트합니다.
-  alert(`${userData.email} 계정으로 로그인되었습니다.`);
-  
-  // 예: UI 프로필 표시 업데이트
-  document.getElementById('auth-nav-area').style.display = 'none';
-  const profileArea = document.getElementById('user-profile-area');
-  profileArea.style.display = 'flex';
-  profileArea.innerHTML = `<span>${userData.name || userData.email}</span>`;
-}
+    const tbody = document.getElementById('my-investment-list');
+    if (!tbody) return;
+
+    const maxRetries = 5;
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
+
+    try {
+      const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result.result === 'success' && Array.isArray(result.investments)) {
+        renderMyInvestments(result.investments);
+      } else {
+        if (retryCount < maxRetries) {
+          console.warn(`[해외투자] 불러오기 응답 미완료/실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
+          setTimeout(() => {
+            loadMyInvestments(retryCount + 1);
+          }, 1500);
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오지 못했습니다. (재시도 횟수 초과)</td></tr>';
+        }
+      }
+    } catch (err) {
+      console.error('해외투자 불러오기 오류:', err);
+      if (retryCount < maxRetries) {
+        setTimeout(() => {
+          loadMyInvestments(retryCount + 1);
+        }, 1500);
+      } else {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+      }
+    }
+  }
+
+  function renderMyInvestments(investments) {
+    const tbody = document.getElementById('my-investment-list');
+    if (!tbody) return;
+
+    if (!investments || investments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = investments.map(item => `
+      <tr>
+        <td>${item.targetCountry || '-'}</td>
+        <td>${item.targetCountryrate || '-'}</td>
+        <td>${formatInvestmentAmount((item.amount || 0) * 10)}</td>
+        <td>${item.profitStatus || '-'}</td>
+        <td>${item.ReturnRate || '-'}%</td>
+        <td>${item.growthRate || '-'}%p</td>
+        <td>${formatInvestmentAmount((item.Profitgain || 0) * 10)}</td>
+        <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function formatInvestmentAmount(valIn100M) {
+    const num = Number(valIn100M) || 0;
+
+    if(num < 1 && num > 0) {
+      const trillionval = (num*10000).toLocaleString(undefined, {maximumFractionDigits: 2});
+      return `${trillionval}만 달러`;
+    }
+    if (num >= 10000) {
+      const trillionVal = (num / 10000).toLocaleString(undefined, { maximumFractionDigits: 2 });
+      return `${trillionVal}조 달러`;
+    }
+    return `${num.toLocaleString()}억달러`;
+  }
+
+  async function submitInvestment() {
+    if (!currentUser || !currentUser.country) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const targetCountry = document.getElementById("invest-target-country")?.value;
+    const amount = parseFloat(document.getElementById("invest-amount")?.value || 0);
+    const profitStatus = document.getElementById("invest-return-option")?.value || "X";
+
+    if (!targetCountry) {
+      alert("피투자국을 선택해 주세요.");
+      return;
+    }
+    if (amount <= 0 || isNaN(amount)) {
+      alert("투자금을 0보다 큰 숫자로 입력해 주세요.");
+      return;
+    }
+
+    const payload = {
+      action: "saveInvestData",
+      myCountry: currentUser.country,
+      targetCountry: targetCountry,
+      amount: amount,
+      profitStatus: profitStatus
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (result.result === "success" || result.success) {
+        alert("해외투자 정보가 저장되었습니다.");
+        
+        if (typeof closeInvestmentModal === "function") {
+          closeInvestmentModal();
+        }
+        
+        if (typeof loadMyInvestments === "function") {
+          loadMyInvestments();
+        }
+      } else {
+        alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
+      }
+    } catch (err) {
+      console.error("해외투자 저장 오류:", err);
+      alert("저장 처리 중 오류가 발생했습니다.");
+    }
+  }
+
+  function openInvestmentModal() {
+    const modal = document.getElementById("invest-modal");
+    const selectTarget = document.getElementById("invest-target-country");
+    
+    if (!modal) return;
+
+    if (selectTarget) {
+      selectTarget.innerHTML = '<option value="">국가를 선택하세요</option>';
+      
+      const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+      const cleanMyCountry = cleanName(myCountry);
+
+      if (Array.isArray(mainData) && mainData.length > 0) {
+        mainData.forEach(item => {
+          const rawCountryName = item.국가 || extractCountryFromRow(item);
+          const cleanCName = cleanName(rawCountryName);
+
+          if (rawCountryName && cleanCName !== '전세계' && cleanCName !== cleanMyCountry) {
+            const opt = document.createElement("option");
+            opt.value = rawCountryName;
+            opt.textContent = rawCountryName;
+            selectTarget.appendChild(opt);
+          }
+        });
+      }
+    }
+
+    modal.style.display = "flex";
+  }
+
+  function closeInvestmentModal() {
+    const modal = document.getElementById("invest-modal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function adjustValue(inputId, step, precision) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    let val = parseFloat(input.value) || 0;
+    val += step;
+    if (val < 0) val = 0;
+    input.value = val.toFixed(precision);
+    
+    calculateInvestmentPreview();
+  }
+
+  function onInvestTargetChange(targetCountry) {
+    calculateInvestmentPreview();
+  }
+
+  function calculateInvestmentPreview() {
+    // 실시간 계산 박스 갱신 로직 위치
+  }
+
+  async function deleteInvestment(targetCountry) {
+    const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+    
+    if (!myCountry) {
+      alert("로그인 정보(자국명)를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const payload = {
+        action: "deleteInvestment",
+        ownerCountry: myCountry,
+        targetCountry: targetCountry
+      };
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.result === "success") {
+        alert("성공적으로 삭제되었습니다.");
+        if (typeof loadMyInvestments === "function") {
+          loadMyInvestments();
+        }
+      } else {
+        alert("삭제 실패: " + result.message);
+      }
+    } catch (error) {
+      console.error("해외투자 삭제 중 오류 발생:", error);
+      alert("삭제 처리 중 오류가 발생했습니다.");
+    }
+  }
+
+  // 전역 스코프 등록
+  window.openInvestmentModal = openInvestmentModal;
+  window.closeInvestmentModal = closeInvestmentModal;
+  window.onInvestTargetChange = onInvestTargetChange;
+  window.submitInvestment = submitInvestment;
+  window.deleteInvestment = deleteInvestment;
+  window.adjustValue = adjustValue;
 });
