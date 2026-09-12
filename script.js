@@ -838,36 +838,51 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // 일반 아이디/비밀번호 로그인
-  async function handleLogin() {
-    const id = document.getElementById('auth-id').value.trim();
-    const pw = document.getElementById('auth-pw').value.trim();
+  window.handleLogin = function(e) {
+  if (e) e.preventDefault();
 
-    if (!id || !pw) {
-      alert("아이디와 비밀번호를 모두 입력해 주세요.");
-      return;
-    }
+  const idInput = document.getElementById('login-id');
+  const pwInput = document.getElementById('login-pw');
 
-    try {
-      const res = await fetch(LOGIN_GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'login', id, pw })
-      });
-      const result = await res.json();
+  if (!idInput || !pwInput) return;
 
-      if (result.success) {
-        currentUser = { username: result.username || id, email: id, country: result.country, authProvider: 'LOCAL' };
-        localStorage.setItem('nara_user', JSON.stringify(currentUser));
-        alert(`${result.country} 계정으로 로그인되었습니다.`);
-        closeAuthModal();
-        updateAuthUI();
-      } else {
-        alert(result.message || "로그인 실패");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("로그인 중 오류가 발생했습니다.");
-    }
+  const inputId = idInput.value.trim();
+  const inputPw = pwInput.value.trim();
+
+  if (!inputId || !inputPw) {
+    alert("아이디와 비밀번호를 모두 입력해주세요.");
+    return;
   }
+
+  // 저장된 사용자 목록 조회
+  const users = JSON.parse(localStorage.getItem('nara_users') || '[]');
+  
+  // 아이디 일치 사용자 찾기
+  const user = users.find(u => u.id === inputId);
+
+  if (!user) {
+    alert("존재하지 않는 아이디입니다.");
+    return;
+  }
+
+  // 비밀번호 검증 (구글 계정인 경우 GOOGLE_ACCOUNT와 비교)
+  const isGoogleUser = user.password === 'GOOGLE_ACCOUNT';
+  const isValidPassword = isGoogleUser ? (inputPw === 'GOOGLE_ACCOUNT') : (user.password === inputPw);
+
+  if (!isValidPassword) {
+    alert("비밀번호가 일치하지 않습니다.");
+    return;
+  }
+
+  // 로그인 성공 처리
+  localStorage.setItem('nara_user', JSON.stringify(user));
+  currentUser = user;
+
+  alert(`${user.name || user.id}님, 환영합니다!`);
+  
+  if (typeof updateAuthUI === 'function') updateAuthUI();
+  if (typeof showMainView === 'function') showMainView();
+};
 
   // Google OAuth 토큰 디코딩 함수
 function parseJwt(token) {
@@ -886,13 +901,16 @@ function parseJwt(token) {
     return {};
   }
 }
-
-// 구글 로그인 인증 성공 콜백
+//구글 로그인 성공 롤백
 window.handleGoogleLogin = function(response) {
+  console.log("1. Google Login 버튼 응답 도착:", response);
+
   try {
     const responsePayload = parseJwt(response.credential);
+    console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
     
     if (!responsePayload.email) {
+      console.warn("⚠️ Google 계정 이메일 정보가 존재하지 않습니다.");
       alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
       return;
     }
@@ -904,10 +922,12 @@ window.handleGoogleLogin = function(response) {
       authProvider: 'GOOGLE'
     };
 
+    console.log("3. 백엔드로 전달할 Google 사용자 데이터:", googleUser);
+
     // 백엔드 DB 검증 요청 실행
     processGoogleLogin(googleUser);
   } catch (err) {
-    console.error("Google Token Processing Error:", err);
+    console.error("❌ Google Token Processing Error:", err);
     alert("구글 로그인 처리 중 오류가 발생했습니다.");
   }
 };
@@ -918,26 +938,36 @@ async function processGoogleLogin(userData) {
     const userEmail = userData.email;
     const userName = userData.name || userEmail.split('@')[0]; // 이름이 없을 경우 이메일 앞자리 사용
 
+    console.log("4. Apps Script 요청 시작 (userEmail):", userEmail, "| userName:", userName);
+
     if (!userEmail) {
+      console.warn("⚠️ 유효한 구글 이메일이 아닙니다.");
       alert("유효한 구글 이메일이 아닙니다.");
       return;
     }
 
     // Apps Script DB로 구글 계정 조회 및 자동 가입 요청
+    const requestBody = {
+      action: "googleLogin",
+      email: userEmail,
+      name: userName,
+      country: ""
+    };
+
+    console.log("5. LOGIN_GAS_URL로 전송되는 Payload:", requestBody);
+
     const response = await fetch(LOGIN_GAS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "text/plain;charset=utf-8" // CORS 제한 방지
       },
-      body: JSON.stringify({
-        action: "googleLogin",
-        email: userEmail,
-        name: userName,
-        country: ""
-      })
+      body: JSON.stringify(requestBody)
     });
 
+    console.log("6. Apps Script 응답 상태 코드:", response.status);
+
     const result = await response.json();
+    console.log("7. Apps Script 수신 결과 데이터 (result):", result);
 
     if (result.success || result.result === "success") {
       // 시트 DB에 저장된 이메일과 국가 정보, 그리고 구글 프로필 이름을 조합하여 사용자 객체 생성
@@ -948,17 +978,20 @@ async function processGoogleLogin(userData) {
         authProvider: "GOOGLE"
       };
 
+      console.log("8. 로그인 성공! 설정된 currentUser:", currentUser);
+
       // 세션 저장 및 UI 업데이트
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
       alert(`[${currentUser.username}] 님, 구글 로그인 성공!`);
       
-      closeAuthModal();
-      updateAuthUI();
+      if (typeof closeAuthModal === 'function') closeAuthModal();
+      if (typeof updateAuthUI === 'function') updateAuthUI();
     } else {
+      console.warn("⚠️ Apps Script 검증 실패:", result.message);
       alert(result.message || "구글 계정 확인에 실패했습니다.");
     }
   } catch (err) {
-    console.error("Google Login DB Error:", err);
+    console.error("❌ Google Login DB Error:", err);
     alert("로그인 데이터베이스 연결에 실패했습니다.");
   }
 }
