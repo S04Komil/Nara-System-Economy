@@ -1343,4 +1343,50 @@ async function deleteInvestment(targetCountry) {
 
 // 전역 스코프 등록
 window.deleteInvestment = deleteInvestment;
+  // JWT 토큰 디코딩 함수 (Base64 파싱)
+function parseJwt(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split('')
+      .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+      .join('')
+  );
+  return JSON.parse(jsonPayload);
+}
+
+// Google Auth 콜백 함수
+function handleGoogleLogin(response) {
+  // Google에서 전달받은 사용자 credential (JWT)
+  const responsePayload = parseJwt(response.credential);
+
+  console.log("ID: " + responsePayload.sub);
+  console.log("Full Name: " + responsePayload.name);
+  console.log("Image URL: " + responsePayload.picture);
+  console.log("Email: " + responsePayload.email);
+
+  const googleUser = {
+    email: responsePayload.email,
+    name: responsePayload.name,
+    picture: responsePayload.picture,
+    authProvider: 'GOOGLE'
+  };
+
+  // 기존 사용자 데이터베이스/Apps Script에 사용자 이메일 정보 전송 및 로그인 처리
+  processUserLogin(googleUser);
+}
+
+// 사용자 로그인 및 DB 연동 처리
+function processUserLogin(userData) {
+  // 사용자의 Google 이메일 정보(userData.email)를 바탕으로 
+  // 기존 DB(Google Sheet 등)에 사용자가 존재하는지 확인하거나 신규 생성 후 세션/상태를 업데이트합니다.
+  alert(`${userData.email} 계정으로 로그인되었습니다.`);
+  
+  // 예: UI 프로필 표시 업데이트
+  document.getElementById('auth-nav-area').style.display = 'none';
+  const profileArea = document.getElementById('user-profile-area');
+  profileArea.style.display = 'flex';
+  profileArea.innerHTML = `<span>${userData.name || userData.email}</span>`;
+}
 });
