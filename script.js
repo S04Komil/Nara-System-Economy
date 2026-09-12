@@ -838,51 +838,36 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // 일반 아이디/비밀번호 로그인
-  window.handleLogin = function(e) {
-  if (e) e.preventDefault();
+ async function handleLogin() {
+    const id = document.getElementById('auth-id').value.trim();
+    const pw = document.getElementById('auth-pw').value.trim();
 
-  const idInput = document.getElementById('login-id');
-  const pwInput = document.getElementById('login-pw');
+    if (!id || !pw) {
+      alert("아이디와 비밀번호를 모두 입력해 주세요.");
+      return;
+    }
 
-  if (!idInput || !pwInput) return;
+    try {
+      const res = await fetch(LOGIN_GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', id, pw })
+      });
+      const result = await res.json();
 
-  const inputId = idInput.value.trim();
-  const inputPw = pwInput.value.trim();
-
-  if (!inputId || !inputPw) {
-    alert("아이디와 비밀번호를 모두 입력해주세요.");
-    return;
+      if (result.success) {
+        currentUser = { username: result.username || id, email: id, country: result.country, authProvider: 'LOCAL' };
+        localStorage.setItem('nara_user', JSON.stringify(currentUser));
+        alert(`${result.country} 계정으로 로그인되었습니다.`);
+        closeAuthModal();
+        updateAuthUI();
+      } else {
+        alert(result.message || "로그인 실패");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("로그인 중 오류가 발생했습니다.");
+    }
   }
-
-  // 저장된 사용자 목록 조회
-  const users = JSON.parse(localStorage.getItem('nara_users') || '[]');
-  
-  // 아이디 일치 사용자 찾기
-  const user = users.find(u => u.id === inputId);
-
-  if (!user) {
-    alert("존재하지 않는 아이디입니다.");
-    return;
-  }
-
-  // 비밀번호 검증 (구글 계정인 경우 GOOGLE_ACCOUNT와 비교)
-  const isGoogleUser = user.password === 'GOOGLE_ACCOUNT';
-  const isValidPassword = isGoogleUser ? (inputPw === 'GOOGLE_ACCOUNT') : (user.password === inputPw);
-
-  if (!isValidPassword) {
-    alert("비밀번호가 일치하지 않습니다.");
-    return;
-  }
-
-  // 로그인 성공 처리
-  localStorage.setItem('nara_user', JSON.stringify(user));
-  currentUser = user;
-
-  alert(`${user.name || user.id}님, 환영합니다!`);
-  
-  if (typeof updateAuthUI === 'function') updateAuthUI();
-  if (typeof showMainView === 'function') showMainView();
-};
 
   // Google OAuth 토큰 디코딩 함수
 function parseJwt(token) {
