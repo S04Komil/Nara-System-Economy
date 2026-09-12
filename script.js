@@ -869,7 +869,7 @@ async function handleLogin() {
   }
 }
 
-// Google OAuth 토큰 디코딩 함수
+// 1. JWT 디코딩 함수
 function parseJwt(token) {
   try {
     const base64Url = token.split('.')[1];
@@ -887,7 +887,7 @@ function parseJwt(token) {
   }
 }
 
-// 구글 로그인 성공 콜백 함수
+// 3. 구글 로그인 콜백 함수 (initGoogleAuth보다 반드시 위에 정의!)
 window.handleGoogleLogin = function(response) {
   console.log("1. Google Login 버튼 응답 도착:", response);
 
@@ -896,7 +896,6 @@ window.handleGoogleLogin = function(response) {
     console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
     
     if (!responsePayload.email) {
-      console.warn("⚠️ Google 계정 이메일 정보가 존재하지 않습니다.");
       alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
       return;
     }
@@ -908,9 +907,6 @@ window.handleGoogleLogin = function(response) {
       authProvider: 'GOOGLE'
     };
 
-    console.log("3. 백엔드로 전달할 Google 사용자 데이터:", googleUser);
-
-    // 백엔드 DB 검증 요청 실행
     processGoogleLogin(googleUser);
   } catch (err) {
     console.error("❌ Google Token Processing Error:", err);
@@ -918,27 +914,24 @@ window.handleGoogleLogin = function(response) {
   }
 };
 
-// 백엔드 Apps Script와 연동하여 구글 계정 검증 및 데이터 매핑
+// 2. 백엔드 DB 연동 함수
 async function processGoogleLogin(userData) {
   try {
     const userEmail = userData.email;
-
     if (!userEmail) {
       alert("유효한 구글 이메일이 아닙니다.");
       return;
     }
 
-    // Apps Script 요청 데이터 준비
     const requestBody = {
       action: "googleLogin",
       email: userEmail
     };
 
-    // Apps Script DB로 구글 계정 조회 및 자동 가입 요청
     const response = await fetch(LOGIN_GAS_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8" // CORS 에러 방지
+        "Content-Type": "text/plain;charset=utf-8"
       },
       body: JSON.stringify(requestBody)
     });
@@ -946,7 +939,6 @@ async function processGoogleLogin(userData) {
     const result = await response.json();
 
     if (result.success || result.result === "success") {
-      // 스프레드시트(A열 이메일, C열 국가명) 데이터를 바탕으로 유저 정보 세팅
       currentUser = {
         username: result.username || userEmail,
         email: userEmail,
@@ -954,7 +946,6 @@ async function processGoogleLogin(userData) {
         authProvider: "GOOGLE"
       };
 
-      // 세션 저장 및 UI 업데이트
       localStorage.setItem("nara_user", JSON.stringify(currentUser));
       alert(`[${currentUser.username}] 님, 로그인되었습니다. (국가: ${currentUser.country})`);
       
@@ -968,6 +959,27 @@ async function processGoogleLogin(userData) {
     alert("로그인 데이터베이스 연결에 실패했습니다.");
   }
 }
+  // 4. 구글 로그인 초기화 및 버튼 렌더링 함수
+function initGoogleAuth() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // 본인의 구글 클라이언트 ID
+      callback: window.handleGoogleLogin // 상단에 정의된 콜백 연동
+    });
+
+    const btnContainer = document.getElementById("google-login-btn");
+    if (btnContainer) {
+      google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large"
+      });
+    }
+  } else {
+    setTimeout(initGoogleAuth, 100);
+  }
+}
+  // 5. 페이지 로드 시 실행
+window.addEventListener('DOMContentLoaded', initGoogleAuth);
   // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
   window.showMyEconomyView = function() {
@@ -1380,7 +1392,4 @@ window.handleLogout = function() {
     setTimeout(initGoogleAuth, 100);
   }
 }
-
-// 페이지 로드 시 구글 Auth 초기화 실행
-window.addEventListener('DOMContentLoaded', initGoogleAuth);
 });
