@@ -1188,28 +1188,14 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       <tr>
         <td>${item.targetCountry || '-'}</td>
         <td>${item.targetCountryrate || '-'}</td>
-        <td>${formatInvestmentAmount((item.amount || 0) * 10)}</td>
+        <td>${formatMoney((item.amount || 0) * 10)}</td>
         <td>${item.profitStatus || '-'}</td>
         <td>${item.ReturnRate || '-'}%</td>
         <td>${item.growthRate || '-'}%p</td>
-        <td>${formatInvestmentAmount((item.Profitgain || 0) * 10)}</td>
+        <td>${formatMoney((item.Profitgain || 0) * 10)}</td>
         <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
       </tr>
     `).join('');
-  }
-
-  function formatInvestmentAmount(valIn100M) {
-    const num = Number(valIn100M) || 0;
-
-    if(num < 1 && num > 0) {
-      const trillionval = (num*10000).toLocaleString(undefined, {maximumFractionDigits: 2});
-      return `${trillionval}만 달러`;
-    }
-    if (num >= 10000) {
-      const trillionVal = (num / 10000).toLocaleString(undefined, { maximumFractionDigits: 2 });
-      return `${trillionVal}조 달러`;
-    }
-    return `${num.toLocaleString()}억달러`;
   }
 
   async function submitInvestment() {
