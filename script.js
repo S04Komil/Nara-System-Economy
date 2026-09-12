@@ -1337,5 +1337,4 @@ async function processGoogleLogin(userData) {
   window.submitInvestment = submitInvestment;
   window.deleteInvestment = deleteInvestment;
   window.adjustValue = adjustValue;
-  window.handleGoogleLogin = handleGoogleLogin;
 });
