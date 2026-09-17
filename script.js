@@ -39,25 +39,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // JSON 파일 호출을 위한 fetch 함수 (스마트 재시도 로직 유지)
   const fetchWithSmartRetry = async (url, name) => {
-    let attempt = 1;
-    let waitTime = 1000;
-    while (true) {
-      try {
-        // 브라우저 캐시 방지를 위해 타임스탬프 쿼리 파라미터 추가
-        const cacheBusterUrl = `${url}?_t=${new Date().getTime()}`;
-        const res = await fetch(cacheBusterUrl);
-        if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
-        
-        const parsedData = await res.json();
-        return parsedData;
-      } catch (err) {
-        console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
-        await delay(waitTime);
-        attempt++;
-        waitTime = Math.min(waitTime + 500, 3000); 
-      }
+  let attempt = 1;
+  let waitTime = 1000;
+  while (true) {
+    try {
+      const cacheBusterUrl = `${url}?_t=${Date.now()}`;
+      // cache: 'no-store' 및 headers 추가로 CDN/브라우저 강제 재요청
+      const res = await fetch(cacheBusterUrl, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
+      
+      const parsedData = await res.json();
+      return parsedData;
+    } catch (err) {
+      console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
+      await delay(waitTime);
+      attempt++;
+      waitTime = Math.min(waitTime + 500, 3000); 
     }
-  };
+  }
+};
 
   const apiRequests = [
     { url: API_URL, name: "메인 API" },
@@ -1404,4 +1410,13 @@ window.handleLogout = function() {
     setTimeout(initGoogleAuth, 100);
   }
 }
+  // 사용자가 다른 탭에 갔다 돌아오거나 탭이 다시 활성화될 때 최신 데이터 자동 로드
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      console.log("🔄 탭 활성화: 최신 데이터를 불러옵니다.");
+      if (typeof loadMainData === "function") {
+        loadMainData();
+      }
+    }
+  });
 });
