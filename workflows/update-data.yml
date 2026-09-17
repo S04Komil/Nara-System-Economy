@@ -1,0 +1,43 @@
+name: Update Economy Data from Google Sheets
+
+on:
+  schedule:
+    # 매시간 정각마다 자동 실행 (UTC 기준)
+    - cron: '0 * * * *'
+  # GitHub Actions 탭에서 수동 실행 가능
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install gspread google-auth
+
+      - name: Fetch data from Google Sheets
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: python fetch_sheets.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add *.json
+          git status
+          git diff-index --quiet HEAD || (git commit -m "chore: auto-update economy data [skip ci]" && git push)
