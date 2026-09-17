@@ -1149,23 +1149,29 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const maxRetries = 5;
 
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
 
     try {
-      const url = `${API_OEI}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
-      const response = await fetch(url);
-      const result = await response.json();
+      // 캐시 방지 타임스탬프 적용
+      const cacheBusterUrl = `${API_OEI}?_t=${new Date().getTime()}`;
+      const response = await fetch(cacheBusterUrl);
+      
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
-      if (result.result === 'success' && Array.isArray(result.investments)) {
-        renderMyInvestments(result.investments);
+      const dataArr = await response.json();
+
+      if (Array.isArray(dataArr)) {
+        // 투자국이 현재 로그인한 사용자 국가와 같은 데이터만 필터링
+        const myInvestments = dataArr.filter(item => cleanName(item['투자국']) === cleanName(currentUser.country));
+        renderMyInvestments(myInvestments);
       } else {
         if (retryCount < maxRetries) {
-          console.warn(`[해외투자] 불러오기 응답 미완료/실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
+          console.warn(`[해외투자] 불러오기 실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
           setTimeout(() => {
             loadMyInvestments(retryCount + 1);
           }, 1500);
         } else {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오지 못했습니다. (재시도 횟수 초과)</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">투자 내역을 불러오지 못했습니다.</td></tr>';
         }
       }
     } catch (err) {
@@ -1175,34 +1181,44 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
           loadMyInvestments(retryCount + 1);
         }, 1500);
       } else {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
       }
     }
-  }
+}
 
-  function renderMyInvestments(investments) {
+function renderMyInvestments(investments) {
     const tbody = document.getElementById('my-investment-list');
     if (!tbody) return;
 
     if (!investments || investments.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = investments.map(item => `
-      <tr>
-        <td>${item.targetCountry || '-'}</td>
-        <td>${item.targetCountryrate || '-'}</td>
-        <td>${formatMoney((item.amount || 0) * 10)}</td>
-        <td>${item.profitStatus || '-'}</td>
-        <td>${item.ReturnRate || '-'}%</td>
-        <td>${item.growthRate || '-'}%p</td>
-        <td>${formatMoney((item.Profitgain || 0) * 10)}</td>
-        <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
-      </tr>
-    `).join('');
-  }
+    // JSON 한글 키 명칭 매핑
+    tbody.innerHTML = investments.map(item => {
+      const pCountry = item['피투자국'] || '-';
+      const pGrade = item['피투자국 등급'] || '-';
+      const amount = parseFloat(item['투자금액(10억달러)']) || 0;
+      const profitStatus = item['수익여부'] || '-';
+      const exchangeRate = item['환수율(%)'] !== undefined ? `${item['환수율(%)']}%` : '-';
+      const growthRate = item['성장률(%p)'] !== undefined ? `${item['성장률(%p)']}%p` : '-';
+      const profitGain = parseFloat(item['투자국 자금(순이익)']) || 0;
 
+      return `
+        <tr>
+          <td>${pCountry}</td>
+          <td>${pGrade}</td>
+          <td>${formatMoney(amount * 10)}</td>
+          <td>${profitStatus}</td>
+          <td>${exchangeRate}</td>
+          <td>${growthRate}</td>
+          <td>${formatMoney(profitGain * 10)}</td>
+          <td><button type="button" class="btn-delete" onclick="deleteInvestment('${pCountry}')">삭제</button></td>
+        </tr>
+      `;
+    }).join('');
+}
   async function submitInvestment() {
     if (!currentUser || !currentUser.country) {
       alert("로그인이 필요합니다.");
