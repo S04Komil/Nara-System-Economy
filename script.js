@@ -1,18 +1,18 @@
 document.addEventListener("DOMContentLoaded", function() {
   // 1. GitHub Actions가 구글 시트에서 추출하여 저장하는 JSON 파일 경로
-  const API_URL = "data-main.json"; 
-  const API_OEI = "data-OEI.json";
+  const API_URL = "data-main.json";  // 메인 시트
+  const API_OEI = "data-OEI.json";  // 해외경제투자 시트
   
   // 1-1. 수정 전용 구글 api (Apps Script 유지)
   const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
   // 2. 항목별 전체 연도 시계열 JSON 경로
-  const API_URL_GDP = "data-GDPRank.json";
-  const API_URL_DEF = "data-DefenceRank.json";
-  const API_URL_CAP = "data-GDP-per-capiaRank.json";
+  const API_URL_GDP = "data-GDPRank.json"; // GDP순위
+  const API_URL_DEF = "data-DefenceRank.json"; // 국방비순위
+  const API_URL_CAP = "data-GDP-per-capiaRank.json"; // 1인당GDP순위
 
   // 3. 세계 통계 성장률 API
-  const API_URL_GROWTH = "data-WorldStas.json"; 
+  const API_URL_GROWTH = "data-WorldStas.json"; //세계 통계 성장률
 
   // 4. 회원가입/로그인 및 데이터 업데이트 전용 Apps Script 웹 앱 URL
   const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; 
@@ -1156,7 +1156,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
 
     try {
-      const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
+      const url = `${API_OEI}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
       const response = await fetch(url);
       const result = await response.json();
 
