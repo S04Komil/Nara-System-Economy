@@ -1203,7 +1203,7 @@ function renderMyInvestments(investments) {
       const profitStatus = item['수익여부'] || '-';
       const exchangeRate = item['환수율(%)'] !== undefined ? `${item['환수율(%)']}%` : '-';
       const growthRate = item['성장률(%p)'] !== undefined ? `${item['성장률(%p)']}%p` : '-';
-      const profitGain = parseFloat(item['투자국 자금(순이익)']) || 0;
+      const profitGain = parseFloat(item['투자국의 차익금']) || 0;
 
       return `
         <tr>
@@ -1345,7 +1345,7 @@ function renderMyInvestments(investments) {
         targetCountry: targetCountry
       };
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_EDIT, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
