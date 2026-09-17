@@ -1126,7 +1126,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       const result = await response.json();
 
       if (result.success || result.result === 'success') {
-        alert('자국 경제 설정이 정상적으로 저장되었습니다.');
+        alert('자국 경제 설정이 정상적으로 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.');
         if (typeof loadMainData === 'function') {
           await loadMainData();
           showMyEconomyView();
@@ -1254,7 +1254,7 @@ function renderMyInvestments(investments) {
       const result = await response.json();
 
       if (result.result === "success" || result.success) {
-        alert("해외투자 정보가 저장되었습니다.");
+        alert("해외투자 정보가 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
         
         if (typeof closeInvestmentModal === "function") {
           closeInvestmentModal();
@@ -1354,7 +1354,7 @@ function renderMyInvestments(investments) {
       const result = await response.json();
 
       if (result.result === "success") {
-        alert("성공적으로 삭제되었습니다.");
+        alert("성공적으로 삭제되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
         if (typeof loadMyInvestments === "function") {
           loadMyInvestments();
         }
