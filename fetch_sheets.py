@@ -22,7 +22,7 @@ spreadsheets_config = [
     {
         "id_env": "SPREADSHEET_ID_2",  # 두 번째 구글 시트 파일
         "sheets": {
-            "시트1": "data-Union.json"
+            "시트1": "data-WorldStas.json"
         }
     },
     {
