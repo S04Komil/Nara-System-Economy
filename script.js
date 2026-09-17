@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_CAP = "NaraSystemEconomy-GDPpercapitaRank.csv";
 
   // 3. 세계 통계 성장률 API (Apps Script 유지 또는 CSV 경로로 변경 가능)
-  const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec.csv"; 
+  const API_URL_GROWTH = "data-WorldStas.json"; 
 
   // 4. 회원가입/로그인 및 데이터 업데이트 전용 Apps Script 웹 앱 URL
   const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; 
