@@ -1,16 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
-  // 1. 현재 연도 메인 통합 API (로컬 CSV 경로)
-  const API_URL = "NaraSystemEconomy-Main.csv"; 
-  const API_OEI = "NaraSystemEconomy_OEI.csv";
-  // 1-1. 수정 전용 구글 api
-  const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec"
+  // 1. GitHub Actions가 구글 시트에서 추출하여 저장하는 JSON 파일 경로
+  const API_URL = "data-main.json"; 
+  const API_OEI = "data-OEI.json";
+  
+  // 1-1. 수정 전용 구글 api (Apps Script 유지)
+  const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
-  // 2. 항목별 전체 연도 시계열 API (로컬 CSV 경로)
-  const API_URL_GDP = "NaraSystemEconomy-GDPRank.csv";
-  const API_URL_DEF = "NaraSystemEconomy-DefenceRank.csv";
-  const API_URL_CAP = "NaraSystemEconomy-GDPpercapitaRank.csv";
+  // 2. 항목별 전체 연도 시계열 JSON 경로
+  const API_URL_GDP = "data-GDPRank.json";
+  const API_URL_DEF = "data-DefenceRank.json";
+  const API_URL_CAP = "data-GDP-per-capiaRank.json";
 
-  // 3. 세계 통계 성장률 API (Apps Script 유지 또는 CSV 경로로 변경 가능)
+  // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = "data-WorldStas.json"; 
 
   // 4. 회원가입/로그인 및 데이터 업데이트 전용 Apps Script 웹 앱 URL
@@ -29,49 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // CSV 텍스트를 객체 배열(JSON 형태)로 변환하는 파서 함수
-  function parseCSV(text) {
-    if (!text || !text.trim()) return [];
-    
-    // 줄바꿈 기준 분할 (윈도우 \r\n 대응)
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
-
-    // 큰따옴표(Quotes) 내부 쉼표 구분 처리용 정규식
-    const splitRow = (row) => {
-      const result = [];
-      let insideQuote = false;
-      let entry = '';
-      for (let i = 0; i < row.length; i++) {
-        let char = row[i];
-        if (char === '"') {
-          insideQuote = !insideQuote;
-        } else if (char === ',' && !insideQuote) {
-          result.push(entry.trim().replace(/^"|"$/g, ''));
-          entry = '';
-        } else {
-          entry += char;
-        }
-      }
-      result.push(entry.trim().replace(/^"|"$/g, ''));
-      return result;
-    };
-
-    const headers = splitRow(lines[0]);
-    const result = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const values = splitRow(lines[i]);
-      const obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = values[index] !== undefined ? values[index] : '';
-      });
-      result.push(obj);
-    }
-    return result;
-  }
-
   // 유효한 숫자 데이터 파싱 함수
   const parseNumber = (val) => {
     if (val === undefined || val === null || val === '') return 0;
@@ -79,26 +37,18 @@ document.addEventListener("DOMContentLoaded", function() {
     return isNaN(num) ? 0 : num;
   };
 
-  // CSV 파일 패치를 위한 fetchWithSmartRetry 수정 (text 수신 -> parseCSV 적용)
+  // JSON 파일 호출을 위한 fetch 함수 (스마트 재시도 로직 유지)
   const fetchWithSmartRetry = async (url, name) => {
     let attempt = 1;
     let waitTime = 1000;
     while (true) {
       try {
-        const res = await fetch(url);
+        // 브라우저 캐시 방지를 위해 타임스탬프 쿼리 파라미터 추가
+        const cacheBusterUrl = `${url}?_t=${new Date().getTime()}`;
+        const res = await fetch(cacheBusterUrl);
         if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
         
-        const rawText = await res.text();
-        if (!rawText) throw new Error("수신된 데이터가 비어 있습니다.");
-        
-        // 데이터가 CSV 형식인지 JSON 문자열인지 판별 후 변환
-        let parsedData;
-        try {
-          parsedData = JSON.parse(rawText);
-        } catch (e) {
-          parsedData = parseCSV(rawText);
-        }
-        
+        const parsedData = await res.json();
         return parsedData;
       } catch (err) {
         console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
@@ -118,12 +68,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   async function loadMainData() {
     try {
-      const [mainRes, gdpRes, defRes, capRes] = await Promise.all(apiRequests.map(req => fetchWithSmartRetry(req.url, req.name)));
+      const [mainRes, gdpRes, defRes, capRes] = await Promise.all(
+        apiRequests.map(req => fetchWithSmartRetry(req.url, req.name))
+      );
       
-      mainData = Array.isArray(mainRes) ? mainRes : (mainRes ? mainRes.data || [] : []);
-      globalGdpData = Array.isArray(gdpRes) ? gdpRes : (gdpRes ? gdpRes.data || [] : []);
-      globalDefData = Array.isArray(defRes) ? defRes : (defRes ? defRes.data || [] : []);
-      globalCapData = Array.isArray(capRes) ? capRes : (capRes ? capRes.data || [] : []);
+      mainData = Array.isArray(mainRes) ? mainRes : [];
+      globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
+      globalDefData = Array.isArray(defRes) ? defRes : [];
+      globalCapData = Array.isArray(capRes) ? capRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -141,16 +93,8 @@ document.addEventListener("DOMContentLoaded", function() {
       const dashboardEl = document.getElementById('dashboard');
       if (dashboardEl) dashboardEl.style.display = 'block';
 
-      let sheetName = mainRes ? mainRes.sheetName : null;
-      if (sheetName) {
-        const dataYearEl = document.getElementById('data-year');
-        if (dataYearEl) dataYearEl.innerText = `${sheetName} 기준`;
-        currentSheetYear = parseInt(sheetName, 10) || 1970;
-      } else {
-        const dataYearEl = document.getElementById('data-year');
-        if (dataYearEl) dataYearEl.innerText = `최신 데이터 기준`;
-        currentSheetYear = 1970;
-      }
+      const dataYearEl = document.getElementById('data-year');
+      if (dataYearEl) dataYearEl.innerText = `최신 데이터 기준`;
 
       calculateWorldTotals(mainData);
       renderMainCards(mainData);
@@ -1056,44 +1000,7 @@ function initGoogleAuth() {
 // 5. 페이지 로드 시 구글 로그인 초기화 실행
 window.addEventListener('DOMContentLoaded', initGoogleAuth);
   
-// ---------------- OEI CSV 데이터 파싱 및 해외투자 연동 ----------------
-  const OEI_URL = "NaraSystemEconomy-OEI.csv";
-  let oeiData = [];
-
-  // OEI CSV 불러오기 및 파싱
-  async function loadOEIData() {
-    try {
-      const response = await fetch(OEI_URL);
-      const csvText = await response.text();
-      oeiData = parseCSV(csvText);
-      console.log("OEI CSV Loaded successfully:", oeiData.length, "items");
-    } catch (err) {
-      console.error("OEI CSV 로드 중 오류 발생:", err);
-    }
-  }
-
-  // 간단한 CSV 파서 (필요 시 기존 CSV 파서 함수로 대체 가능)
-  function parseCSV(text) {
-    const lines = text.trim().split('\n');
-    if (lines.length < 2) return [];
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    
-    return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-      const obj = {};
-      headers.forEach((h, idx) => {
-        obj[h] = values[idx] || '';
-      });
-      return obj;
-    });
-  }
-
-  // 페이지 로드 시 OEI 데이터 초기화
-  window.addEventListener('DOMContentLoaded', () => {
-    loadOEIData();
-  });
-
-  // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
+// ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
   window.showMyEconomyView = function() {
     if (!currentUser) {
@@ -1216,7 +1123,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     };
 
     try {
-      const response = await fetch(API_URL, { 
+      const response = await fetch(API_EDIT, { 
         method: 'POST',
         body: JSON.stringify(payload)
       });
@@ -1237,7 +1144,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     }
   };
 
-  // 해외 경제 투자 목록 불러오기 (API 백엔드 + OEI.csv 로컬 백업/보완 연동)
+  // 해외 경제 투자 목록 불러오기
   async function loadMyInvestments(retryCount = 0) {
     if (!currentUser || !currentUser.country) return;
 
@@ -1245,70 +1152,36 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     if (!tbody) return;
 
     const maxRetries = 5;
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">투자 및 해외 결제 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오는 중... ${retryCount > 0 ? `(재시도 ${retryCount}/${maxRetries})` : ''}</td></tr>`;
 
     try {
-      const response = await fetch(API_OEI);
-      const csvText = await response.text();
-      
-      // 기존에 정상 작동하던 parseCSV 함수 사용
-      const parsedRows = parseCSV(csvText);
-      const cleanUserCountry = cleanName(currentUser.country);
+      const url = `${API_URL}?target=investments&country=${encodeURIComponent(currentUser.country)}`;
+      const response = await fetch(url);
+      const result = await response.json();
 
-      // A열 (투자국) 기준 필터링
-      const investments = parsedRows
-        .filter(row => {
-          const investor = row['투자국'] || row['A'] || row['investor'] || '';
-          return cleanName(investor) === cleanUserCountry;
-        })
-        .map(row => parseInvestmentRow(row));
-
-      renderMyInvestments(investments);
-    } catch (err) {
-      console.error('API_OEI CSV 로드 중 오류 발생:', err);
-      if (retryCount < maxRetries) {
-        setTimeout(() => loadMyInvestments(retryCount + 1), 1500);
+      if (result.result === 'success' && Array.isArray(result.investments)) {
+        renderMyInvestments(result.investments);
       } else {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">투자 데이터를 불러오지 못했습니다.</td></tr>';
+        if (retryCount < maxRetries) {
+          console.warn(`[해외투자] 불러오기 응답 미완료/실패. 1.5초 후 재시도 (${retryCount + 1}/${maxRetries})`);
+          setTimeout(() => {
+            loadMyInvestments(retryCount + 1);
+          }, 1500);
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">투자 내역을 불러오지 못했습니다. (재시도 횟수 초과)</td></tr>';
+        }
+      }
+    } catch (err) {
+      console.error('해외투자 불러오기 오류:', err);
+      if (retryCount < maxRetries) {
+        setTimeout(() => {
+          loadMyInvestments(retryCount + 1);
+        }, 1500);
+      } else {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">데이터를 불러오는 중 오류가 발생했습니다.</td></tr>';
       }
     }
-  }
-
-  // 실제 시트 헤더 명칭에 맞춘 데이터 추출 함수
-  function parseInvestmentRow(row) {
-    // 1. 피투자국 (C열)
-    const targetCountry = row['피투자국'] || row['C'] || row['targetCountry'] || '-';
-
-    // 2. 피투자국 등급 (D열)
-    const targetCountryrate = row['피투자국등급'] || row['피투자국 등급'] || row['D'] || row['투자비율'] || '-';
-
-    // 3. 투자금액 (E열) -> "투자금액(10억달러)"
-    const amount = parseNumber(row['투자금액(10억달러)'] || row['투자금액'] || row['E'] || row['amount'] || 0);
-
-    // 4. 환수율 (G열) -> "환수율(%)"
-    const returnRate = parseNumber(row['환수율(%)'] || row['환수율'] || row['G'] || row['수익률'] || 0);
-
-    // 5. 성장률 (H열) -> "성장률(%p)"
-    const growthRate = parseNumber(row['성장률(%p)'] || row['성장률증가'] || row['성장률'] || row['H'] || 0);
-
-    // 6. 수익 여부 (J열)
-    const profitStatus = row['수익여부'] || row['수익 여부'] || row['J'] || row['profitStatus'] || 'O';
-
-    // 7. 차익금/수익금 -> "투자국의 차익금"
-    let profitGain = parseNumber(row['투자국의 차익금'] || row['투자국 차익금'] || row['차익금'] || row['수익금']);
-    if (isNaN(profitGain) || profitGain === 0) {
-      profitGain = amount * (returnRate / 100);
-    }
-
-    return {
-      targetCountry,
-      targetCountryrate,
-      amount,
-      returnRate,
-      growthRate,
-      profitStatus,
-      profitGain
-    };
   }
 
   function renderMyInvestments(investments) {
@@ -1316,19 +1189,19 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     if (!tbody) return;
 
     if (!investments || investments.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">현재 해외 투자 및 결제 내역이 없습니다.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">현재 해외 투자 내역이 없습니다.</td></tr>';
       return;
     }
 
     tbody.innerHTML = investments.map(item => `
       <tr>
-        <td>${item.targetCountry}</td>
-        <td>${item.targetCountryrate}</td>
+        <td>${item.targetCountry || '-'}</td>
+        <td>${item.targetCountryrate || '-'}</td>
         <td>${formatMoney((item.amount || 0) * 10)}</td>
-        <td>${item.profitStatus}</td>
-        <td>${item.returnRate}%</td>
-        <td>${item.growthRate}%p</td>
-        <td>${formatMoney((item.profitGain || 0) * 10)}</td>
+        <td>${item.profitStatus || '-'}</td>
+        <td>${item.ReturnRate || '-'}%</td>
+        <td>${item.growthRate || '-'}%p</td>
+        <td>${formatMoney((item.Profitgain || 0) * 10)}</td>
         <td><button type="button" class="btn-delete" onclick="deleteInvestment('${item.targetCountry}')">삭제</button></td>
       </tr>
     `).join('');
@@ -1355,7 +1228,6 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const payload = {
       action: "saveInvestData",
-      oeiUrl: OEI_URL,
       myCountry: currentUser.country,
       targetCountry: targetCountry,
       amount: amount,
@@ -1363,16 +1235,22 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     };
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_EDIT, {
         method: "POST",
         body: JSON.stringify(payload)
       });
       const result = await response.json();
 
       if (result.result === "success" || result.success) {
-        alert("해외 투자 및 결제 정보가 정상 저장되었습니다.");
-        if (typeof closeInvestmentModal === "function") closeInvestmentModal();
-        if (typeof loadMyInvestments === "function") loadMyInvestments();
+        alert("해외투자 정보가 저장되었습니다.");
+        
+        if (typeof closeInvestmentModal === "function") {
+          closeInvestmentModal();
+        }
+        
+        if (typeof loadMyInvestments === "function") {
+          loadMyInvestments();
+        }
       } else {
         alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
       }
@@ -1432,31 +1310,8 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     calculateInvestmentPreview();
   }
 
-  // OEI 데이터 기반 실시간 투자 수익 및 결제 예상치 미리보기 계산
   function calculateInvestmentPreview() {
-    const targetCountry = document.getElementById("invest-target-country")?.value;
-    const amount = parseFloat(document.getElementById("invest-amount")?.value || 0);
-    const previewEl = document.getElementById("invest-preview-info");
-
-    if (!previewEl) return;
-
-    if (!targetCountry || amount <= 0) {
-      previewEl.innerText = "대상 국가와 금액을 입력하면 예상 수익/결제 정보가 계산됩니다.";
-      return;
-    }
-
-    const cleanTarget = cleanName(targetCountry);
-    const targetObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === cleanTarget) || {};
-    const oeiMatch = oeiData.find(d => cleanName(d['피투자국'] || d['targetCountry']) === cleanTarget) || {};
-
-    const growthRate = parseNumber(targetObj['최종경제성장률'] || targetObj['경제성장률'] || oeiMatch['성장률'] || 0);
-    const estimatedProfit = amount * (growthRate / 100);
-
-    previewEl.innerHTML = `
-      <strong>[OEI 연동 예상 결과]</strong><br/>
-      대상국 성장률: <b>${growthRate.toFixed(2)}%</b><br/>
-      예상 연간 수익금: <b>${formatMoney(estimatedProfit * 10)}</b>
-    `;
+    // 실시간 계산 박스 갱신 로직 위치
   }
 
   async function deleteInvestment(targetCountry) {
@@ -1467,7 +1322,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       return;
     }
 
-    if (!confirm(`[${targetCountry}] 대상 해외투자/결제 내역을 삭제하시겠습니까?`)) {
+    if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
       return;
     }
 
@@ -1507,19 +1362,42 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
   window.submitInvestment = submitInvestment;
   window.deleteInvestment = deleteInvestment;
   window.adjustValue = adjustValue;
-  window.calculateInvestmentPreview = calculateInvestmentPreview;
 
   // 로그아웃 처리 함수
-  window.handleLogout = function() {
-    if (confirm("로그아웃 하시겠습니까?")) {
-      localStorage.removeItem('nara_user');
-      currentUser = null;
-      alert("로그아웃 되었습니다.");
-      updateAuthUI();
+window.handleLogout = function() {
+  if (confirm("로그아웃 하시겠습니까?")) {
+    // 1. 저장된 사용자 정보 제거
+    localStorage.removeItem('nara_user');
+    currentUser = null;
 
-      if (typeof window.showMainView === 'function') {
-        window.showMainView();
-      }
+    // 2. 알림창 및 UI 갱신
+    alert("로그아웃 되었습니다.");
+    updateAuthUI();
+
+    // 3. 메인 화면으로 이동
+    if (typeof window.showMainView === 'function') {
+      window.showMainView();
     }
-  };
- });
+  }
+};
+  function initGoogleAuth() {
+  if (typeof google !== 'undefined' && google.accounts) {
+    google.accounts.id.initialize({
+      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com", // 본인의 구글 클라이언트 ID
+      callback: window.handleGoogleLogin // 콜백 함수 연결 확인
+    });
+
+    // 구글 로그인 버튼렌더링
+    const btnContainer = document.getElementById("google-login-btn"); // 버튼이 들어갈 div ID
+    if (btnContainer) {
+      google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large"
+      });
+    }
+  } else {
+    // SDK가 아직 안 불러와졌으면 재시도
+    setTimeout(initGoogleAuth, 100);
+  }
+}
+});
