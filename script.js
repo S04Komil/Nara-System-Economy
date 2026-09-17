@@ -1,14 +1,18 @@
 document.addEventListener("DOMContentLoaded", function() {
-  // 1. 현재 연도 메인 통합 API
-  const API_URL = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec"; 
+  // 1. GitHub Actions가 구글 시트에서 추출하여 저장하는 JSON 파일 경로
+  const API_URL = "data-main.json"; 
+  const API_OEI = "data-OEI.json";
+  
+  // 1-1. 수정 전용 구글 api (Apps Script 유지)
+  const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
-  // 2. 항목별 전체 연도 시계열 API
-  const API_URL_GDP = "https://script.google.com/macros/s/AKfycbzyzCjtpkPMsXf20Z9mylf_h_58KR-9wclFykOlzq9zADXWgr_dOVLc0KLzjsCF8CDowg/exec";
-  const API_URL_DEF = "https://script.google.com/macros/s/AKfycbz8SvI3IPuc28iW3N5FI0rrwpqVHZb0suFjWPeINP8Lm9ZDMin6ynu0We4m95EqahAHRg/exec";
-  const API_URL_CAP = "https://script.google.com/macros/s/AKfycbyyq9gnFw4mPr3jY6ReqYMJphX9TzfmecVnz0WfoFru9u9aiTwk3Cr5wzdbBw1aQ9xsyA/exec";
+  // 2. 항목별 전체 연도 시계열 JSON 경로
+  const API_URL_GDP = "data-GDPRank.json";
+  const API_URL_DEF = "data-DefenceRank.json";
+  const API_URL_CAP = "data-GDP-per-capiaRank.json";
 
   // 3. 세계 통계 성장률 API
-  const API_URL_GROWTH = "https://script.google.com/macros/s/AKfycbz2v5Yoh3CmMcTfKBUoO4EWiKOYe1kZ8Z3nWZ2Jvu6kzUICsaJgmlFatcBn1ixfShzJyA/exec"; 
+  const API_URL_GROWTH = "data-WorldStas.json"; 
 
   // 4. 회원가입/로그인 및 데이터 업데이트 전용 Apps Script 웹 앱 URL
   const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; 
@@ -33,16 +37,19 @@ document.addEventListener("DOMContentLoaded", function() {
     return isNaN(num) ? 0 : num;
   };
 
+  // JSON 파일 호출을 위한 fetch 함수 (스마트 재시도 로직 유지)
   const fetchWithSmartRetry = async (url, name) => {
     let attempt = 1;
     let waitTime = 1000;
     while (true) {
       try {
-        const res = await fetch(url);
+        // 브라우저 캐시 방지를 위해 타임스탬프 쿼리 파라미터 추가
+        const cacheBusterUrl = `${url}?_t=${new Date().getTime()}`;
+        const res = await fetch(cacheBusterUrl);
         if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
-        const data = await res.json();
-        if (!data) throw new Error("수신된 데이터가 비어 있습니다.");
-        return data;
+        
+        const parsedData = await res.json();
+        return parsedData;
       } catch (err) {
         console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
         await delay(waitTime);
@@ -61,12 +68,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   async function loadMainData() {
     try {
-      const [mainRes, gdpRes, defRes, capRes] = await Promise.all(apiRequests.map(req => fetchWithSmartRetry(req.url, req.name)));
+      const [mainRes, gdpRes, defRes, capRes] = await Promise.all(
+        apiRequests.map(req => fetchWithSmartRetry(req.url, req.name))
+      );
       
-      mainData = mainRes ? (mainRes.data || mainRes) : [];
-      globalGdpData = gdpRes ? (gdpRes.data || gdpRes) : [];
-      globalDefData = defRes ? (defRes.data || defRes) : [];
-      globalCapData = capRes ? (capRes.data || capRes) : [];
+      mainData = Array.isArray(mainRes) ? mainRes : [];
+      globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
+      globalDefData = Array.isArray(defRes) ? defRes : [];
+      globalCapData = Array.isArray(capRes) ? capRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -84,22 +93,14 @@ document.addEventListener("DOMContentLoaded", function() {
       const dashboardEl = document.getElementById('dashboard');
       if (dashboardEl) dashboardEl.style.display = 'block';
 
-      let sheetName = mainRes ? mainRes.sheetName : null;
-      if (sheetName) {
-        const dataYearEl = document.getElementById('data-year');
-        if (dataYearEl) dataYearEl.innerText = `${sheetName} 기준`;
-        currentSheetYear = parseInt(sheetName, 10) || 1970;
-      } else {
-        const dataYearEl = document.getElementById('data-year');
-        if (dataYearEl) dataYearEl.innerText = `최신 데이터 기준`;
-        currentSheetYear = 1970;
-      }
+      const dataYearEl = document.getElementById('data-year');
+      if (dataYearEl) dataYearEl.innerText = `최신 데이터 기준`;
 
       calculateWorldTotals(mainData);
       renderMainCards(mainData);
       renderWorldStats();
       
-      updateAuthUI();
+      if (typeof updateAuthUI === 'function') updateAuthUI();
       fetchWorldGrowthData();
     } catch (error) {
       console.error('Data Fetch Error:', error);
@@ -169,8 +170,16 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!API_URL_GROWTH) return;
 
     fetch(API_URL_GROWTH)
-      .then(res => res.json())
-      .then(data => {
+      .then(res => res.text())
+      .then(text => {
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          const parsedArr = parseCSV(text);
+          data = parsedArr.length > 0 ? parsedArr[0] : null;
+        }
+        
         if (!data) return;
         
         const formatGrowth = (val) => {
@@ -184,9 +193,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const popEl = document.getElementById('world-pop-growth');
         const capEl = document.getElementById('world-cap-growth');
 
-        if (gdpEl) gdpEl.innerText = formatGrowth(data.gdpGrowthRate);
-        if (popEl) popEl.innerText = formatGrowth(data.popGrowthRate);
-        if (capEl) capEl.innerText = formatGrowth(data.capGrowthRate);
+        if (gdpEl) gdpEl.innerText = formatGrowth(data.gdpGrowthRate || data['GDP성장률']);
+        if (popEl) popEl.innerText = formatGrowth(data.popGrowthRate || data['인구성장률']);
+        if (capEl) capEl.innerText = formatGrowth(data.capGrowthRate || data['1인당GDP성장률']);
       })
       .catch(err => console.error("성장률 데이터 로드 실패:", err));
   }
@@ -991,7 +1000,7 @@ function initGoogleAuth() {
 // 5. 페이지 로드 시 구글 로그인 초기화 실행
 window.addEventListener('DOMContentLoaded', initGoogleAuth);
   
-  // ---------------- 자국 경제 관리 및 수정 뷰 ----------------
+// ---------------- 자국 경제 관리 및 수정 뷰 ----------------
 
   window.showMyEconomyView = function() {
     if (!currentUser) {
@@ -1114,7 +1123,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     };
 
     try {
-      const response = await fetch(API_URL, { 
+      const response = await fetch(API_EDIT, { 
         method: 'POST',
         body: JSON.stringify(payload)
       });
@@ -1226,7 +1235,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     };
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_EDIT, {
         method: "POST",
         body: JSON.stringify(payload)
       });
