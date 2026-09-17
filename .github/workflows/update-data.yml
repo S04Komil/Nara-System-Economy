@@ -31,7 +31,11 @@ jobs:
       - name: Fetch data from Google Sheets
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          SPREADSHEET_ID_1: ${{ secrets.SPREADSHEET_ID_1 }}
+          SPREADSHEET_ID_2: ${{ secrets.SPREADSHEET_ID_2 }}
+          SPREADSHEET_ID_3: ${{ secrets.SPREADSHEET_ID_3 }}
+          SPREADSHEET_ID_4: ${{ secrets.SPREADSHEET_ID_4 }}
+          SPREADSHEET_ID_5: ${{ secrets.SPREADSHEET_ID_5 }}
         run: python fetch_sheets.py
 
       - name: Commit and push changes
