@@ -1129,7 +1129,6 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
         alert('자국 경제 설정이 정상적으로 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.');
         if (typeof loadMainData === 'function') {
           await loadMainData();
-          showMyEconomyView();
         }
       } else {
         alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
@@ -1259,10 +1258,6 @@ function renderMyInvestments(investments) {
         if (typeof closeInvestmentModal === "function") {
           closeInvestmentModal();
         }
-        
-        if (typeof loadMyInvestments === "function") {
-          loadMyInvestments();
-        }
       } else {
         alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
       }
@@ -1355,9 +1350,6 @@ function renderMyInvestments(investments) {
 
       if (result.result === "success") {
         alert("성공적으로 삭제되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
-        if (typeof loadMyInvestments === "function") {
-          loadMyInvestments();
-        }
       } else {
         alert("삭제 실패: " + result.message);
       }
