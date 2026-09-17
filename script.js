@@ -166,39 +166,35 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  function fetchWorldGrowthData() {
-    if (!API_URL_GROWTH) return;
+ function fetchWorldGrowthData() {
+  if (!API_URL_GROWTH) return;
 
-    fetch(API_URL_GROWTH)
-      .then(res => res.text())
-      .then(text => {
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          const parsedArr = parseCSV(text);
-          data = parsedArr.length > 0 ? parsedArr[0] : null;
-        }
-        
-        if (!data) return;
-        
-        const formatGrowth = (val) => {
-          if (val === null || val === undefined || isNaN(val)) return "-";
-          const num = parseFloat(val);
-          const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
-          return `${prefix}${Math.abs(num).toFixed(2)}%`;
-        };
+  fetch(API_URL_GROWTH)
+    .then(res => res.json())
+    .then(dataArr => {
+      if (!dataArr || !Array.isArray(dataArr) || dataArr.length === 0) return;
+      
+      // 배열의 가장 마지막 항목(최신 연도 데이터) 가져오기
+      const latestData = dataArr[dataArr.length - 1];
 
-        const gdpEl = document.getElementById('world-gdp-growth');
-        const popEl = document.getElementById('world-pop-growth');
-        const capEl = document.getElementById('world-cap-growth');
+      const formatGrowth = (val) => {
+        if (val === null || val === undefined || val === '' || isNaN(parseFloat(val))) return "-";
+        const num = parseFloat(val);
+        const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
+        return `${prefix}${Math.abs(num).toFixed(2)}%`;
+      };
 
-        if (gdpEl) gdpEl.innerText = formatGrowth(data.gdpGrowthRate || data['GDP성장률']);
-        if (popEl) popEl.innerText = formatGrowth(data.popGrowthRate || data['인구성장률']);
-        if (capEl) capEl.innerText = formatGrowth(data.capGrowthRate || data['1인당GDP성장률']);
-      })
-      .catch(err => console.error("성장률 데이터 로드 실패:", err));
-  }
+      const gdpEl = document.getElementById('world-gdp-growth');
+      const popEl = document.getElementById('world-pop-growth');
+      const capEl = document.getElementById('world-cap-growth');
+
+      // 한글 키 이름("전연도대비...")에 맞춰 추출
+      if (gdpEl) gdpEl.innerText = formatGrowth(latestData['전연도대비GDP성장률']);
+      if (popEl) popEl.innerText = formatGrowth(latestData['전연도대비인구성장률']);
+      if (capEl) capEl.innerText = formatGrowth(latestData['전연도대비1인당GDP성장률']);
+    })
+    .catch(err => console.error("성장률 데이터 로드 실패:", err));
+}
 
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
