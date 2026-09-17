@@ -1,22 +1,21 @@
-name: Update Economy Data from Google Sheets
+name: Update Data from Google Sheets
 
 on:
   schedule:
-    # 매시간 정각마다 자동 실행 (UTC 기준)
-    - cron: '0 * * * *'
-  # GitHub Actions 탭에서 수동 실행 가능
-  workflow_dispatch:
+    - cron: '*/30 * * * *'  # 30분마다 자동 실행
+  workflow_dispatch:      # 수동 실행 가능
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  update-data:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
