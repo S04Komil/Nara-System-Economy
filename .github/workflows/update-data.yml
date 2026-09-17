@@ -45,4 +45,5 @@ jobs:
           git add *.json
           git status
           git commit -m "chore: update economic data [build $(date +'%Y-%m-%d %H:%M:%S')]" || exit 0
+          git pull --rebase origin main
           git push
