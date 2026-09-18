@@ -622,7 +622,7 @@ document.addEventListener("DOMContentLoaded", function() {
       listEl.appendChild(li);
     });
   };
-});
+
   // 모달 함수
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
