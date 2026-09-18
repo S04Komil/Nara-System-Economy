@@ -709,57 +709,54 @@ nav {
 }
 
 /* ==========================================
-   기준표 모달 (가로 스크롤 및 중앙 정렬 완벽 보장)
+   기준표 모달 (상하좌우 스크롤 & 높이 고정 해제)
    ========================================== */
 
-/* 1. 모달 전체 오버레이: 열렸을 때만 flex 중앙 정렬 */
+/* 1. 모달 열렸을 때 flex 배치 */
 #standard-modal:not([style*="display: none"]) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-/* 2. 모달 창 기본 크기 및 여백 설정 */
+/* 2. 모달 컨텐츠 크기 및 내부 flex 처리 */
 #standard-modal .modal-content {
   width: 92vw !important;
   max-width: 1100px !important;
-  max-height: 85vh !important;
+  max-height: 85vh !important;       /* 화면 높이의 85%로 제한 */
   margin: auto !important;
   padding: 20px !important;
   box-sizing: border-box;
   display: flex !important;
   flex-direction: column !important;
-  overflow: hidden !important; /* 모달 자체 스크롤을 막고 내부 바디에 전달 */
 }
 
-/* 3. 모달 바디: 가로 & 세로 스크롤 핵심 영역 */
+/* 3. 모달 바디: 스크롤 동작 핵심 영역 */
 #standard-modal #standard-modal-body {
   width: 100% !important;
-  flex: 1 !important;
-  overflow-x: auto !important; /* 표가 넓을 때 가로 스크롤 강제 생성 */
-  overflow-y: auto !important; /* 세로 스크롤 */
+  max-height: calc(85vh - 90px) !important; /* 모달 헤더를 제외한 영역 스크롤 */
+  overflow-x: auto !important;             /* 가로 스크롤 */
+  overflow-y: auto !important;             /* 세로 스크롤 (아래로 내려가기 가능) */
   margin-top: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   -webkit-overflow-scrolling: touch;
 }
 
-/* 4. 기준표 테이블 규격 설정 */
+/* 4. 기준표 테이블 규격 */
 #standard-modal-body .rank-table {
   width: 100% !important;
-  min-width: 850px !important; /* 표가 찌그러지거나 잘리지 않도록 최소 너비 크게 확보 */
+  min-width: 850px !important;
   border-collapse: collapse !important;
-  table-layout: auto !important;
 }
 
-/* 5. 셀 테두리 및 줄바꿈 방지 */
 #standard-modal-body .rank-table th,
 #standard-modal-body .rank-table td {
   border: 1px solid #cbd5e1 !important;
   padding: 8px 10px !important;
   text-align: center !important;
   font-size: 13px !important;
-  white-space: nowrap !important; /* 글자가 모달 밖으로 넘어가지 않고 표 폭을 확장시킴 */
+  white-space: nowrap !important;
 }
 
 #standard-modal-body .rank-table th {
