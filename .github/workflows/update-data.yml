@@ -2,8 +2,10 @@ name: Update Data from Google Sheets
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # 30분마다 자동 실행
-  workflow_dispatch:      # 수동 실행 가능
+    - cron: '*/30 * * * *'
+  workflow_dispatch:      # 수동 실행
+  repository_dispatch:    # Apps Script/외부 API 호출용
+    types: [sheets-update]
 
 permissions:
   contents: write
