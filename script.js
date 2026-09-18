@@ -362,7 +362,15 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  window.switchCategory = function(key, title, unitType, navBtnId) {
+  window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
+    // 1. API_EDIT 등에서 전달받은 시트 이름(예: "2024", "2024년")이 있을 경우 currentSheetYear 자동 업데이트
+    if (sheetName) {
+      const parsedYear = parseInt(String(sheetName).replace(/[^\d]/g, ''), 10);
+      if (!isNaN(parsedYear)) {
+        currentSheetYear = parsedYear;
+      }
+    }
+
     const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
     const rankView = document.getElementById('rank-view');
     const myEconomyView = document.getElementById('my-economy-view');
@@ -439,42 +447,56 @@ document.addEventListener("DOMContentLoaded", function() {
     if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
+      // 현재 시트 연도(currentSheetYear) 이하의 연도 목록 추출
       const validYearKeys = yearKeys.filter(k => {
         const y = parseInt(k.replace(/[^\d]/g, ''), 10);
         return y <= currentSheetYear;
       });
 
       if (validYearKeys.length > 0) {
-        let targetIndex = validYearKeys.length >= 2 ? validYearKeys.length - 2 : validYearKeys.length - 1;
-        let prevYearKey = validYearKeys[targetIndex];
+        // 현재 시트 연도와 정확히 일치하는 인덱스 조회
+        const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
+        
+        let prevYearKey = null;
+        if (exactIdx > 0) {
+          // 정확히 일치하는 연도가 있으면 그 바로 직전 연도 선택
+          prevYearKey = validYearKeys[exactIdx - 1];
+        } else if (exactIdx === -1 && validYearKeys.length >= 2) {
+          // 일치 연도가 없으나 2개 이상일 때 최신 연도의 직전 연도 선택
+          prevYearKey = validYearKeys[validYearKeys.length - 2];
+        } else if (validYearKeys.length >= 1) {
+          prevYearKey = validYearKeys[0];
+        }
 
-        let prevList = targetSeriesData
-          .map(item => {
-            let rawCountry = extractCountryFromRow(item);
-            let cleanedName = cleanName(rawCountry);
+        if (prevYearKey) {
+          let prevList = targetSeriesData
+            .map(item => {
+              let rawCountry = extractCountryFromRow(item);
+              let cleanedName = cleanName(rawCountry);
 
-            if (cleanedName === '전세계') return null;
+              if (cleanedName === '전세계') return null;
 
-            let rawVal = item[prevYearKey];
-            if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
-              return null;
-            }
+              let rawVal = item[prevYearKey];
+              if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+                return null;
+              }
 
-            let numVal = parseFloat(rawVal);
-            if (isNaN(numVal) || numVal <= 0) return null;
+              let numVal = parseFloat(rawVal);
+              if (isNaN(numVal) || numVal <= 0) return null;
 
-            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
-              numVal *= 10;
-            }
+              if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
+                numVal *= 10;
+              }
 
-            return { rawCountry: String(rawCountry).trim(), cleanKey: cleanedName, val: numVal };
-          })
-          .filter(item => item !== null && item.cleanKey !== '')
-          .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+              return { rawCountry: String(rawCountry).trim(), cleanKey: cleanedName, val: numVal };
+            })
+            .filter(item => item !== null && item.cleanKey !== '')
+            .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
 
-        prevList.forEach((item, idx) => {
-          prevRankMap.set(item.cleanKey, idx + 1);
-        });
+          prevList.forEach((item, idx) => {
+            prevRankMap.set(item.cleanKey, idx + 1);
+          });
+        }
       }
     }
 
@@ -571,7 +593,7 @@ document.addEventListener("DOMContentLoaded", function() {
       `;
       listEl.appendChild(li);
     });
-  };
+};
 
   // 모달 함수
   window.openCountryModal = function(cleanKey) {
