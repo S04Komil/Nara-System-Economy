@@ -602,6 +602,8 @@ document.addEventListener("DOMContentLoaded", function() {
     if (continentEl) continentEl.innerText = getPropByCleanKey(item, '대륙') || getPropByCleanKey(item, '소속대륙') || '-';
     const allianceEl = document.getElementById('modal-alliance');
     if (allianceEl) allianceEl.innerText = getPropByCleanKey(item, '소속연합') || getPropByCleanKey(item, '연합') || '-';
+    const powerEl = document.getElementById('modal-power');
+    if (powerEl) powerEl.innerText = getPropByCleanKey(item, '강대국등급') || getPropByCleanKey(item, '강국등급') || '-';
 
     const rawGdp = (parseFloat(getPropByCleanKey(item, 'GDP(10억달러)') || getPropByCleanKey(item, 'GDP')) || 0) * 10;
     const gdpEl = document.getElementById('modal-gdp');
@@ -641,6 +643,9 @@ document.addEventListener("DOMContentLoaded", function() {
     if (capEl) capEl.innerText = `${Math.round(capVal).toLocaleString()} 달러`;
     const capRankEl = document.getElementById('modal-cap-rank');
     if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
+    const EconomyGradeEl = document.getElementById('modal-EconomyGrade');
+    if (EconomyGradeEl) EconomyGradeEl.innerText = getCountryRank('등급', cleanKey);
+    
 
     const taxVal = getPropByCleanKey(item, '세율');
     const taxEl = document.getElementById('modal-tax');
