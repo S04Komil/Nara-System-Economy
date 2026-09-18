@@ -1038,8 +1038,10 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const continentEl = document.getElementById('my-continent');
     const unionEl = document.getElementById('my-union');
+    const powerE1 = document.getElementById('modal-power-grade');
     if (continentEl) continentEl.innerText = myObj['대륙'] || myObj['소속대륙'] || '-';
     if (unionEl) unionEl.innerText = myObj['소속연합'] || myObj['연합'] || '-';
+    if (powerE1) powerE1.innerText = myObj['강대국등급'] || myObj['국가등급'] || '-';
 
     const gdpVal = parseNumber(myObj['GDP'] || myObj['GDP(10억달러)']);
     const gdpEl = document.getElementById('my-gdp-display');
@@ -1061,8 +1063,11 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const perGdpValEl = document.getElementById('my-per-gdp-display');
     const perGdpRankEl = document.getElementById('my-per-gdp-rank');
+    const EconomyGradeE1 = document.getElementById('my-economy-grade');
     if (perGdpValEl) perGdpValEl.innerText = `${Math.round(parseNumber(myObj['1인당GDP'])).toLocaleString()} 달러`;
     if (perGdpRankEl) perGdpRankEl.innerText = getRankStr(perGdpSorted);
+    if (EconomyGradeE1) EconomyGradeE1.innerText = myObj['등급'] || myObj['경제등급'] || '-';
+    
 
     const taxRateInput = document.getElementById('edit-tax-rate');
     const budgetEl = document.getElementById('my-budget-display');
