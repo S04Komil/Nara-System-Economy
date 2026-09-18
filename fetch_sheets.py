@@ -66,18 +66,22 @@ for config in spreadsheets_config:
             except Exception as e:
                 print(f"에러 (첫 번째 탭): {e}")
 
-        # 2. 고정된 이름의 다른 시트(탭)들 처리
+       # 2. 고정된 이름의 다른 시트(탭)들 처리
         if "sheets" in config:
             for sheet_name, file_name in config["sheets"].items():
                 try:
                     worksheet = sh.worksheet(sheet_name)
-                    records = worksheet.get_all_records()
-                    
+                    # 표 구조가 복잡한 기준표 등은 원본 형태 그대로(2차원 배열) 추출
+                    if sheet_name == "기준표":
+                        records = worksheet.get_all_values()
+                    else:
+                        records = worksheet.get_all_records()
+
                     with open(file_name, "w", encoding="utf-8") as f:
                         json.dump(records, f, ensure_ascii=False, indent=2)
                     print(f"성공: {sheet_name} -> {file_name}")
                 except Exception as e:
-                    print(f"에러 ({sheet_name}): {e}")
+                    print(f"❌ 에러 발생 [{sheet_name}]: {type(e).__name__} - {e}")
 
     except Exception as e:
         print(f"스프레드시트 열기 실패 ({config['id_env']}): {e}")
