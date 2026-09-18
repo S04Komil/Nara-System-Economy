@@ -471,17 +471,21 @@
     </div>
   </div>
   <!-- 기준표 모달 -->
+<!-- 기준표 모달 -->
 <div id="standard-modal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-    <Button class="close-btn" onclick="closeStandardModal()">&times;</Button>
-    <h2>경제 기준표</h2>
-    <div id="standard-modal-body">
-      <table class="rank-table">
-        <thead>
-          <tr id="standard-table-head"></tr>
-        </thead>
-        <tbody id="standard-table-body"></tbody>
-      </table>
+  <div class="modal-content">
+    <!-- 닫기 버튼 클래스명을 modal-close로 통일 -->
+    <button class="modal-close" onclick="closeStandardModal()">&times;</button>
+    <div class="modal-body">
+      <h2 style="margin-bottom: 20px; text-align: center;">경제 기준표</h2>
+      <div id="standard-modal-body" class="table-responsive">
+        <table class="rank-table">
+          <thead>
+            <tr id="standard-table-head"></tr>
+          </thead>
+          <tbody id="standard-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
