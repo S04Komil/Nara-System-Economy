@@ -1467,4 +1467,6 @@ async function openStandardModal() {
 function closeStandardModal() {
   document.getElementById('standard-modal').style.display = 'none';
 }
+
+window.openStandardModal = openStandardModal;
 });
