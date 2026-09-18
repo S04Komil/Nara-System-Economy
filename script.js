@@ -1469,4 +1469,5 @@ function closeStandardModal() {
 }
 
 window.openStandardModal = openStandardModal;
+window.closeStandardModal = closeStandardModal;
 });
