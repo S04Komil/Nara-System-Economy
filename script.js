@@ -1419,4 +1419,47 @@ window.handleLogout = function() {
       }
     }
   });
+  // 기준표 모달 열기
+async function openStandardModal() {
+  const modal = document.getElementById('standard-modal');
+  const tbody = document.getElementById('standard-table-body');
+  const thead = document.getElementById('standard-table-head');
+  
+  if (thead) thead.innerHTML = ''; // 별도 헤더 영역 초기화
+
+  try {
+    const res = await fetch('data-standard.json');
+    const rows = await res.json(); // 2차원 배열 [[A1, B1, ...], [A2, B2, ...]]
+
+    if (rows && rows.length > 0) {
+      tbody.innerHTML = rows.map(row => {
+        // 행 전체가 비어 있는 경우 여백 줄 처리
+        const isEmptyRow = row.every(cell => String(cell).trim() === '');
+        if (isEmptyRow) {
+          return `<tr style="height: 12px;"><td colspan="100%" style="border:none;"></td></tr>`;
+        }
+
+        // 셀 단위 출력
+        const colsHtml = row.map(cell => {
+          const val = (cell !== null && cell !== undefined) ? cell : '';
+          return `<td>${val}</td>`;
+        }).join('');
+
+        return `<tr>${colsHtml}</tr>`;
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="100%">기준표 데이터가 없습니다.</td></tr>';
+    }
+  } catch (err) {
+    console.error('기준표 로드 실패:', err);
+    tbody.innerHTML = '<tr><td colspan="100%">기준표 데이터를 불러오지 못했습니다.</td></tr>';
+  }
+
+  modal.style.display = 'block';
+}
+
+// 기준표 모달 닫기
+function closeStandardModal() {
+  document.getElementById('standard-modal').style.display = 'none';
+}
 });
