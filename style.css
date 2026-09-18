@@ -707,3 +707,31 @@ nav {
 .btn-secondary:active {
   transform: translateY(1px);
 }
+
+/* 기준표 모달 테이블 테두리 스타일 */
+#standard-modal-body .rank-table {
+  width: 100%;
+  border-collapse: collapse; /* 테두리 겹침 방지 */
+  margin-top: 10px;
+}
+
+/* 각 셀(칸)의 테두리 및 패딩 */
+#standard-modal-body .rank-table th,
+#standard-modal-body .rank-table td {
+  border: 1px solid #cbd5e1; /* 연한 회색 테두리 선 */
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* 헤더 및 주요 구분을 위한 배경색 및 선 강조 */
+#standard-modal-body .rank-table th {
+  background-color: #f1f5f9;
+  font-weight: bold;
+  border-bottom: 2px solid #94a3b8; /* 헤더 하단 강조선 */
+}
+
+/* 빈 행(여백용)의 경우 테두리 제거 */
+#standard-modal-body .rank-table tr td[style*="border:none"] {
+  border: none !important;
+}
