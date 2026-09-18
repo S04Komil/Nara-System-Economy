@@ -171,6 +171,7 @@
             <div class="edit-row row-grid-2">
               <div class="info-box"><span class="info-label">대륙</span><span id="my-continent" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">소속연합</span><span id="my-union" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">강대국등급</span><span id="modal-power-grade" class="info-val">-</span></div>
             </div>
 
             <!-- 3행: GDP와 GDP순위 -->
@@ -201,6 +202,7 @@
             <div class="edit-row row-grid-2">
               <div class="info-box"><span class="info-label">1인당 GDP</span><span id="my-per-gdp-display" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="my-per-gdp-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">경제등급</span><span id="my-economy-grade" class="info-val">-</span></div>
             </div>
 
             <!-- 7행: 세율(입력/조절)과 국가예산 -->
@@ -273,6 +275,7 @@
             </div>
 
             <div style="margin-top: 20px; text-align: right;">
+              <button type="button" class="btn-secondary" onclick="openStandardModal()">기준표</button>
               <button type="submit" class="submit-Economy-btn" onclick="saveMyEconomyData()" id="submit-economy-btn" style="width: auto; padding: 12px 30px;">자국 경제 저장하기</button>
             </div>
 
@@ -467,6 +470,21 @@
       </div>
     </div>
   </div>
+  <!-- 기준표 모달 -->
+<div id="standard-modal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+    <span class="close-btn" onclick="closeStandardModal()">&times;</span>
+    <h2>경제 기준표</h2>
+    <div id="standard-modal-body">
+      <table class="rank-table">
+        <thead>
+          <tr id="standard-table-head"></tr>
+        </thead>
+        <tbody id="standard-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
   <script src="script.js"></script>
 </body>
