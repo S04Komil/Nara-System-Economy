@@ -685,3 +685,25 @@ nav {
     padding: 12px;
   }
 }
+
+.btn-secondary {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a5568;
+  background-color: #edf2f7;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+  color: #2d3748;
+  border-color: #a0aec0;
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
