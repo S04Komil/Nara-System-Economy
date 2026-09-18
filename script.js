@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const capRankEl = document.getElementById('modal-cap-rank');
     if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
     const EconomyGradeEl = document.getElementById('modal-EconomyGrade');
-    if (EconomyGradeEl) EconomyGradeEl.innerText = getCountryRank('등급', cleanKey);
+    if (EconomyGradeE1) EconomyGradeE1.innerText = myObj['등급'] || myObj['경제등급'] || '-';
     
 
     const taxVal = getPropByCleanKey(item, '세율');
