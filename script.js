@@ -39,31 +39,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // JSON 파일 호출을 위한 fetch 함수 (스마트 재시도 로직 유지)
   const fetchWithSmartRetry = async (url, name) => {
-  let attempt = 1;
-  let waitTime = 1000;
-  while (true) {
-    try {
-      const cacheBusterUrl = `${url}?_t=${Date.now()}`;
-      // cache: 'no-store' 및 headers 추가로 CDN/브라우저 강제 재요청
-      const res = await fetch(cacheBusterUrl, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      });
-      if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
-      
-      const parsedData = await res.json();
-      return parsedData;
-    } catch (err) {
-      console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
-      await delay(waitTime);
-      attempt++;
-      waitTime = Math.min(waitTime + 500, 3000); 
+    let attempt = 1;
+    let waitTime = 1000;
+    while (true) {
+      try {
+        const cacheBusterUrl = `${url}?_t=${Date.now()}`;
+        const res = await fetch(cacheBusterUrl, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
+        if (!res.ok) throw new Error(`HTTP 에러 상태: ${res.status}`);
+        
+        const parsedData = await res.json();
+        return parsedData;
+      } catch (err) {
+        console.warn(`⚠️ [${name}] 수신 실패(${attempt}회) - ${waitTime/1000}초 후 재시도...`);
+        await delay(waitTime);
+        attempt++;
+        waitTime = Math.min(waitTime + 500, 3000); 
+      }
     }
-  }
-};
+  };
 
   const apiRequests = [
     { url: API_URL, name: "메인 API" },
@@ -99,8 +98,40 @@ document.addEventListener("DOMContentLoaded", function() {
       const dashboardEl = document.getElementById('dashboard');
       if (dashboardEl) dashboardEl.style.display = 'block';
 
+      // -------------------------------------------------------------
+      // [수정] 데이터에서 최신 연도 자동 감지 및 반영 로직 추가
+      // -------------------------------------------------------------
+      let detectedYear = null;
+
+      // 1. mainData 내 항목의 '연도' 또는 'sheetName' 필드 탐색
+      if (mainData[0]) {
+        const rawYear = mainData[0]['연도'] || mainData[0]['sheetName'] || mainData[0]['Year'];
+        if (rawYear) {
+          const parsed = parseInt(String(rawYear).replace(/[^\d]/g, ''), 10);
+          if (!isNaN(parsed)) detectedYear = parsed;
+        }
+      }
+
+      // 2. 발견되지 않았다면 GDP 시계열 데이터의 가장 최근 연도 키 탐색
+      if (!detectedYear && globalGdpData.length > 0) {
+        const yearKeys = getSortedYearKeys(globalGdpData);
+        if (yearKeys.length > 0) {
+          const latestKey = yearKeys[yearKeys.length - 1];
+          const parsed = parseInt(latestKey.replace(/[^\d]/g, ''), 10);
+          if (!isNaN(parsed)) detectedYear = parsed;
+        }
+      }
+
+      // 연도가 추출되었으면 currentSheetYear 및 화면 엘리먼트 업데이트
+      if (detectedYear) {
+        currentSheetYear = detectedYear;
+      }
+
       const dataYearEl = document.getElementById('data-year');
-      if (dataYearEl) dataYearEl.innerText = `최신 데이터 기준`;
+      if (dataYearEl) {
+        dataYearEl.innerText = `${currentSheetYear}년 데이터 기준`;
+      }
+      // -------------------------------------------------------------
 
       calculateWorldTotals(mainData);
       renderMainCards(mainData);
@@ -172,35 +203,37 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
- function fetchWorldGrowthData() {
-  if (!API_URL_GROWTH) return;
+  function fetchWorldGrowthData() {
+    if (!API_URL_GROWTH) return;
 
-  fetch(API_URL_GROWTH)
-    .then(res => res.json())
-    .then(dataArr => {
-      if (!dataArr || !Array.isArray(dataArr) || dataArr.length === 0) return;
-      
-      // 배열의 가장 마지막 항목(최신 연도 데이터) 가져오기
-      const latestData = dataArr[dataArr.length - 1];
+    fetch(API_URL_GROWTH)
+      .then(res => res.json())
+      .then(dataArr => {
+        if (!dataArr || !Array.isArray(dataArr) || dataArr.length === 0) return;
+        
+        // 현재 설정된 currentSheetYear와 일치하는 성장률 데이터 찾기 (없으면 최신 데이터)
+        let targetData = dataArr.find(item => {
+          const y = parseInt(String(item['연도'] || item['sheetName'] || '').replace(/[^\d]/g, ''), 10);
+          return y === currentSheetYear;
+        }) || dataArr[dataArr.length - 1];
 
-      const formatGrowth = (val) => {
-        if (val === null || val === undefined || val === '' || isNaN(parseFloat(val))) return "-";
-        const num = parseFloat(val);
-        const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
-        return `${prefix}${Math.abs(num).toFixed(2)}%`;
-      };
+        const formatGrowth = (val) => {
+          if (val === null || val === undefined || val === '' || isNaN(parseFloat(val))) return "-";
+          const num = parseFloat(val);
+          const prefix = num > 0 ? "▲ " : num < 0 ? "▼ " : "";
+          return `${prefix}${Math.abs(num).toFixed(2)}%`;
+        };
 
-      const gdpEl = document.getElementById('world-gdp-growth');
-      const popEl = document.getElementById('world-pop-growth');
-      const capEl = document.getElementById('world-cap-growth');
+        const gdpEl = document.getElementById('world-gdp-growth');
+        const popEl = document.getElementById('world-pop-growth');
+        const capEl = document.getElementById('world-cap-growth');
 
-      // 한글 키 이름("전연도대비...")에 맞춰 추출
-      if (gdpEl) gdpEl.innerText = formatGrowth(latestData['전연도대비GDP성장률']);
-      if (popEl) popEl.innerText = formatGrowth(latestData['전연도대비인구성장률']);
-      if (capEl) capEl.innerText = formatGrowth(latestData['전연도대비1인당GDP성장률']);
-    })
-    .catch(err => console.error("성장률 데이터 로드 실패:", err));
-}
+        if (gdpEl) gdpEl.innerText = formatGrowth(targetData['전연도대비GDP성장률']);
+        if (popEl) popEl.innerText = formatGrowth(targetData['전연도대비인구성장률']);
+        if (capEl) capEl.innerText = formatGrowth(targetData['전연도대비1인당GDP성장률']);
+      })
+      .catch(err => console.error("성장률 데이터 로드 실패:", err));
+  }
 
   function calculateWorldTotals(data) {
     let gdp = 0, pop = 0, def = 0;
@@ -363,7 +396,6 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
-    // 1. API_EDIT 등에서 전달받은 시트 이름(예: "2024", "2024년")이 있을 경우 currentSheetYear 자동 업데이트
     if (sheetName) {
       const parsedYear = parseInt(String(sheetName).replace(/[^\d]/g, ''), 10);
       if (!isNaN(parsedYear)) {
@@ -447,22 +479,18 @@ document.addEventListener("DOMContentLoaded", function() {
     if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
       const yearKeys = getSortedYearKeys(targetSeriesData);
 
-      // 현재 시트 연도(currentSheetYear) 이하의 연도 목록 추출
       const validYearKeys = yearKeys.filter(k => {
         const y = parseInt(k.replace(/[^\d]/g, ''), 10);
         return y <= currentSheetYear;
       });
 
       if (validYearKeys.length > 0) {
-        // 현재 시트 연도와 정확히 일치하는 인덱스 조회
         const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
         
         let prevYearKey = null;
         if (exactIdx > 0) {
-          // 정확히 일치하는 연도가 있으면 그 바로 직전 연도 선택
           prevYearKey = validYearKeys[exactIdx - 1];
         } else if (exactIdx === -1 && validYearKeys.length >= 2) {
-          // 일치 연도가 없으나 2개 이상일 때 최신 연도의 직전 연도 선택
           prevYearKey = validYearKeys[validYearKeys.length - 2];
         } else if (validYearKeys.length >= 1) {
           prevYearKey = validYearKeys[0];
@@ -593,8 +621,8 @@ document.addEventListener("DOMContentLoaded", function() {
       `;
       listEl.appendChild(li);
     });
-};
-
+  };
+});
   // 모달 함수
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
