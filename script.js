@@ -1529,23 +1529,33 @@ window.closeStandardModal = closeStandardModal;
   // 모달 열기 및 대상 국가 목록 채우기
 function openRemittanceModal() {
   const modal = document.getElementById('remittance-modal');
+  const selectEl = document.getElementById('remittance-target-country');
+  
   if (!modal) return;
 
-  const selectEl = document.getElementById('remittance-target-country');
   if (selectEl) {
     selectEl.innerHTML = '<option value="">국가를 선택하세요</option>';
     
-    // mainData 목록에서 자국을 제외한 국가들을 옵션으로 추가
-    mainData.forEach(item => {
-      const countryName = item["국가명"] || item.country;
-      if (countryName && currentUser && countryName !== currentUser.country) {
-        const option = document.createElement('option');
-        option.value = countryName;
-        option.textContent = countryName;
-        selectEl.appendChild(option);
-      }
-    });
+    const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+    const cleanMyCountry = cleanName(myCountry);
+
+    if (Array.isArray(mainData) && mainData.length > 0) {
+      mainData.forEach(item => {
+        const rawCountryName = item.국가 || extractCountryFromRow(item);
+        const cleanCName = cleanName(rawCountryName);
+
+        if (rawCountryName && cleanCName !== '전세계' && cleanCName !== cleanMyCountry) {
+          const opt = document.createElement("option");
+          opt.value = rawCountryName;
+          opt.textContent = rawCountryName;
+          selectEl.appendChild(opt);
+        }
+      });
+    }
   }
+
+  modal.style.display = 'flex';
+}
 
   modal.style.display = 'flex';
 }
@@ -1559,7 +1569,7 @@ function closeRemittanceModal() {
   }
 }
 
-// API_EDIT (또는 GAS_WEB_APP_URL)로 송금 데이터 전송
+// API_EDIT으로 송금 요청 전송
 async function submitRemittance() {
   const targetCountry = document.getElementById('remittance-target-country').value;
   const amount = parseFloat(document.getElementById('remittance-amount').value);
@@ -1579,7 +1589,6 @@ async function submitRemittance() {
   if (submitBtn) submitBtn.disabled = true;
 
   try {
-    // API 요청 페이로드 구성
     const payload = {
       action: "remittance",
       fromCountry: currentUser.country,
@@ -1597,10 +1606,9 @@ async function submitRemittance() {
     const result = await response.json();
 
     if (result.status === "success" || result.result === "success") {
-      alert(`${targetCountry}에게 ${amount} 송금이 완료되었습니다.`);
+      alert(`${targetCountry}에게 ${amount} (10억 달러 단위) 송금이 완료되었습니다.`);
       closeRemittanceModal();
       
-      // 화면 국고 데이터 즉시 갱신 (선택사항)
       if (typeof loadData === "function") loadData();
     } else {
       alert("송금 실패: " + (result.message || "오류가 발생했습니다."));
