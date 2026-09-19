@@ -1615,4 +1615,50 @@ async function submitRemittance() {
 window.openRemittanceModal = openRemittanceModal;
 window.closeRemittanceModal = closeRemittanceModal;
 window.submitRemittance = submitRemittance;
+
+  function updateConvertedAmount(val) {
+  const displayEl = document.getElementById('remittance-converted-text');
+  if (!displayEl) return;
+
+  const num = parseFloat(val);
+  if (isNaN(num) || num <= 0) {
+    displayEl.textContent = '';
+    return;
+  }
+
+  // 10억 달러 = 1,000,000,000
+  const actualAmount = num * 1000000000;
+  
+  // 1 미만(0.1 ~ 0.9)일 때는 'X억 달러', 1 이상일 때는 'X억 달러 ($X,XXX,XXX,XXX)' 형식으로 표시
+  let formattedText = '';
+  const eok = Math.round(num * 10); // 0.1 -> 1억, 1 -> 10억
+  
+  if (eok < 10) {
+    formattedText = `= 약 ${eok}억 달러 ($${actualAmount.toLocaleString()})`;
+  } else {
+    const cho = Math.floor(eok / 10000);
+    const remainEok = eok % 10000;
+    
+    let koreanUnit = '';
+    if (cho > 0) koreanUnit += `${cho}조 `;
+    if (remainEok > 0) koreanUnit += `${remainEok}억 `;
+    
+    formattedText = `= 약 ${koreanUnit.trim()}달러 ($${actualAmount.toLocaleString()})`;
+  }
+
+  displayEl.textContent = formattedText;
+}
+
+// 모달을 닫을 때 텍스트도 함께 초기화하도록 closeRemittanceModal 함수에 추가
+function closeRemittanceModal() {
+  const modal = document.getElementById('remittance-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.getElementById('remittance-form').reset();
+    const displayEl = document.getElementById('remittance-converted-text');
+    if (displayEl) displayEl.textContent = '';
+  }
+}
+window.updateConvertedAmount = updateConvertedAmount;
+window.closeRemittanceModal = closeRemittanceModal;
 });
