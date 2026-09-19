@@ -1560,15 +1560,6 @@ function openRemittanceModal() {
   modal.style.display = 'flex';
 }
 
-// 모달 닫기
-function closeRemittanceModal() {
-  const modal = document.getElementById('remittance-modal');
-  if (modal) {
-    modal.style.display = 'none';
-    document.getElementById('remittance-form').reset();
-  }
-}
-
 // API_EDIT으로 송금 요청 전송
 async function submitRemittance() {
   const targetCountry = document.getElementById('remittance-target-country').value;
@@ -1624,7 +1615,7 @@ window.openRemittanceModal = openRemittanceModal;
 window.closeRemittanceModal = closeRemittanceModal;
 window.submitRemittance = submitRemittance;
 
-  function updateConvertedAmount(val) {
+function updateConvertedAmount(val) {
   const displayEl = document.getElementById('remittance-converted-text');
   if (!displayEl) return;
 
@@ -1668,5 +1659,4 @@ function closeRemittanceModal() {
   }
 }
 window.updateConvertedAmount = updateConvertedAmount;
-window.closeRemittanceModal = closeRemittanceModal;
 });
