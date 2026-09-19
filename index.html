@@ -264,9 +264,10 @@
             </div>
 
             <!-- 10행: 국고 -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box"><span class="info-label">순이익</span><span id="my-profit-display" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">국고</span><span id="my-treasury-display" class="info-val">-</span></div>
+              <button type="button" class="btn-secondary" onclick="openRemittanceModal()" style="padding: 2px 8px; font-size: 11px;">송금하기</button>
             </div>
 
             <!-- 11행: 경제성장률 -->
@@ -489,6 +490,40 @@
         </table>
       </div>
     </div>
+  </div>
+</div>
+
+  <!-- 국고 송금 모달 팝업 -->
+<div id="remittance-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeRemittanceModal()">&times;</button>
+    <h2 style="margin-bottom: 20px; text-align: center;">국고 송금하기</h2>
+    
+    <form id="remittance-form" onsubmit="event.preventDefault(); submitRemittance();">
+      <!-- 1. 받는 국가 선택 -->
+      <div class="form-group">
+        <label for="remittance-target-country">송금 대상 국가</label>
+        <select id="remittance-target-country" required>
+          <option value="">국가를 선택하세요</option>
+          <!-- JS로 국가 목록을 동적으로 로딩 -->
+        </select>
+      </div>
+
+      <!-- 2. 송금 금액 입력 -->
+      <div class="form-group">
+        <label for="remittance-amount">송금 금액</label> <div class="number-control-group">
+          <input type="number" id="remittance-amount" step="0.1" min="0.1" placeholder="0.0" required>
+        </div>
+      </div>
+
+      <!-- 3. 송금 사유 (선택 항목) -->
+      <div class="form-group">
+        <label for="remittance-reason">송금 사유 / 메모</label>
+        <input type="text" id="remittance-reason" placeholder="예: 무역 대금 결제, 지원금 등">
+      </div>
+
+      <button type="submit" class="btn-submit-auth" style="margin-top: 15px;">송금 완료</button>
+    </form>
   </div>
 </div>
 
