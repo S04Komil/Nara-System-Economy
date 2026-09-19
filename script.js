@@ -1363,10 +1363,16 @@ function renderMyInvestments(investments) {
     modal.style.display = "flex";
   }
 
-  function closeInvestmentModal() {
-    const modal = document.getElementById("invest-modal");
-    if (modal) modal.style.display = "none";
+  // 투자 모달 닫기 시 텍스트 초기화 (closeInvestmentModal 함수에 추가)
+function closeInvestmentModal() {
+  const modal = document.getElementById('invest-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.getElementById('invest-form').reset();
+    const displayEl = document.getElementById('invest-converted-text');
+    if (displayEl) displayEl.textContent = '';
   }
+}
 
   function adjustValue(inputId, step, precision) {
     const input = document.getElementById(inputId);
@@ -1655,5 +1661,38 @@ function closeRemittanceModal() {
     if (displayEl) displayEl.textContent = '';
   }
 }
+  // 해외투자 모달 실시간 금액 환산 함수
+function updateInvestConvertedAmount(val) {
+  const displayEl = document.getElementById('invest-converted-text');
+  if (!displayEl) return;
+
+  const num = parseFloat(val);
+  if (isNaN(num) || num <= 0) {
+    displayEl.textContent = '';
+    return;
+  }
+
+  // 10억 달러 = 1,000,000,000
+  const actualAmount = num * 1000000000;
+  const eok = Math.round(num * 10); // 0.1 -> 1억, 1 -> 10억
+  
+  let formattedText = '';
+  if (eok < 10) {
+    formattedText = `= 약 ${eok}억 달러 ($${actualAmount.toLocaleString()})`;
+  } else {
+    const cho = Math.floor(eok / 10000);
+    const remainEok = eok % 10000;
+    
+    let koreanUnit = '';
+    if (cho > 0) koreanUnit += `${cho}조 `;
+    if (remainEok > 0) koreanUnit += `${remainEok}억 `;
+    
+    formattedText = `= 약 ${koreanUnit.trim()}달러 ($${actualAmount.toLocaleString()})`;
+  }
+
+  displayEl.textContent = formattedText;
+}
+
+window.updateInvestConvertedAmount = updateInvestConvertedAmount;
 window.updateConvertedAmount = updateConvertedAmount;
 });
