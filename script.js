@@ -1557,9 +1557,6 @@ function openRemittanceModal() {
   modal.style.display = 'flex';
 }
 
-  modal.style.display = 'flex';
-}
-
 // API_EDIT으로 송금 요청 전송
 async function submitRemittance() {
   const targetCountry = document.getElementById('remittance-target-country').value;
