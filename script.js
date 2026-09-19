@@ -1525,4 +1525,94 @@ function closeStandardModal() {
 
 window.openStandardModal = openStandardModal;
 window.closeStandardModal = closeStandardModal;
+
+  // 모달 열기 및 대상 국가 목록 채우기
+function openRemittanceModal() {
+  const modal = document.getElementById('remittance-modal');
+  if (!modal) return;
+
+  const selectEl = document.getElementById('remittance-target-country');
+  if (selectEl) {
+    selectEl.innerHTML = '<option value="">국가를 선택하세요</option>';
+    
+    // mainData 목록에서 자국을 제외한 국가들을 옵션으로 추가
+    mainData.forEach(item => {
+      const countryName = item["국가명"] || item.country;
+      if (countryName && currentUser && countryName !== currentUser.country) {
+        const option = document.createElement('option');
+        option.value = countryName;
+        option.textContent = countryName;
+        selectEl.appendChild(option);
+      }
+    });
+  }
+
+  modal.style.display = 'flex';
+}
+
+// 모달 닫기
+function closeRemittanceModal() {
+  const modal = document.getElementById('remittance-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.getElementById('remittance-form').reset();
+  }
+}
+
+// API_EDIT (또는 GAS_WEB_APP_URL)로 송금 데이터 전송
+async function submitRemittance() {
+  const targetCountry = document.getElementById('remittance-target-country').value;
+  const amount = parseFloat(document.getElementById('remittance-amount').value);
+  const reason = document.getElementById('remittance-reason').value || "국고 송금";
+
+  if (!currentUser || !currentUser.country) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  if (!targetCountry || isNaN(amount) || amount <= 0) {
+    alert("올바른 대상 국가와 금액을 입력해 주세요.");
+    return;
+  }
+
+  const submitBtn = document.querySelector("#remittance-form button[type='submit']");
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    // API 요청 페이로드 구성
+    const payload = {
+      action: "remittance",
+      fromCountry: currentUser.country,
+      toCountry: targetCountry,
+      amount: amount,
+      reason: reason
+    };
+
+    const response = await fetch(API_EDIT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success" || result.result === "success") {
+      alert(`${targetCountry}에게 ${amount} 송금이 완료되었습니다.`);
+      closeRemittanceModal();
+      
+      // 화면 국고 데이터 즉시 갱신 (선택사항)
+      if (typeof loadData === "function") loadData();
+    } else {
+      alert("송금 실패: " + (result.message || "오류가 발생했습니다."));
+    }
+  } catch (error) {
+    console.error("송금 요청 중 오류 발생:", error);
+    alert("송금 처리 중 통신 오류가 발생했습니다.");
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+window.openRemittanceModal = openRemittanceModal;
+window.closeRemittanceModal = closeRemittanceModal;
+window.submitRemittance = submitRemittance;
 });
