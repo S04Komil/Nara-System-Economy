@@ -1402,7 +1402,7 @@ function closeInvestmentModal() {
       return;
     }
 
-    if (!confirm(`${cleanMyCountry}의 [${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
+    if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
       return;
     }
 
