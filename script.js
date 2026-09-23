@@ -1394,7 +1394,7 @@ function closeInvestmentModal() {
   }
 
   async function deleteInvestment(targetCountry) {
-    const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+    const myCountry = currentUser.country || window.myCountryName || "";
     const cleanMyCountry = cleanName(myCountry);
     
     if (!cleanMyCountry) {
@@ -1402,7 +1402,7 @@ function closeInvestmentModal() {
       return;
     }
 
-    if (!confirm(`[${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
+    if (!confirm(`${cleanMyCountry}의 [${targetCountry}] 대상 해외투자 내역을 삭제하시겠습니까?`)) {
       return;
     }
 
