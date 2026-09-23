@@ -1395,8 +1395,9 @@ function closeInvestmentModal() {
 
   async function deleteInvestment(targetCountry) {
     const myCountry = (currentUser && currentUser.country) || window.myCountryName || "";
+    const cleanMyCountry = cleanName(myCountry);
     
-    if (!myCountry) {
+    if (!cleanMyCountry) {
       alert("로그인 정보(자국명)를 찾을 수 없습니다.");
       return;
     }
@@ -1408,7 +1409,7 @@ function closeInvestmentModal() {
     try {
       const payload = {
         action: "deleteInvestment",
-        ownerCountry: myCountry,
+        ownerCountry: cleanMyCountry,
         targetCountry: targetCountry
       };
 
