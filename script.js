@@ -624,124 +624,46 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   // 모달 함수
-  window.openCountryModal = function(cleanKey) {
-    if (cleanKey === '전세계') return;
+ // ==========================================
+    // R&D 및 기술 정보 연동
+    // ==========================================
 
-    const item = mainData.find(d => cleanName(extractCountryFromRow(d)) === cleanKey);
-    if (!item) {
-      alert("국가 상세 정보를 찾을 수 없습니다.");
-      return;
-    }
-
-    const countryName = extractCountryFromRow(item);
-    const flagUrl = flagMap.get(cleanKey) || "";
-
-    const flagImg = document.getElementById('modal-flag');
-    if (flagImg) {
-      if (flagUrl) {
-        flagImg.src = flagUrl;
-        flagImg.style.display = 'block';
+    // 1. GDP 대비 R&D 예산 (%)
+    const rawRndRatio = getPropByCleanKey(item, 'GDP대비R&D예산');
+    const rndRatioEl = document.getElementById('modal-rnd-ratio');
+    if (rndRatioEl) {
+      if (rawRndRatio !== undefined && rawRndRatio !== '' && !isNaN(parseFloat(rawRndRatio))) {
+        let numRatio = parseFloat(rawRndRatio);
+        // 소수 형태(0.025)로 입력되어 있을 경우 퍼센트(2.5%)로 변환
+        if (numRatio > 0 && numRatio < 1 && String(rawRndRatio).includes(".")) {
+          numRatio = numRatio * 100;
+        }
+        rndRatioEl.innerText = `${numRatio.toFixed(2)}%`;
       } else {
-        flagImg.style.display = 'none';
-      }
-    }
-    const nameEl = document.getElementById('modal-country-name');
-    if (nameEl) nameEl.innerText = countryName;
-
-    const continentEl = document.getElementById('modal-continent');
-    if (continentEl) continentEl.innerText = getPropByCleanKey(item, '대륙') || getPropByCleanKey(item, '소속대륙') || '-';
-    const allianceEl = document.getElementById('modal-alliance');
-    if (allianceEl) allianceEl.innerText = getPropByCleanKey(item, '소속연합') || getPropByCleanKey(item, '연합') || '-';
-    const powerEl = document.getElementById('modal-power');
-    if (powerEl) powerEl.innerText = getPropByCleanKey(item, '강대국등급') || getPropByCleanKey(item, '강국등급') || '-';
-
-    const rawGdp = (parseFloat(getPropByCleanKey(item, 'GDP(10억달러)') || getPropByCleanKey(item, 'GDP')) || 0) * 10;
-    const gdpEl = document.getElementById('modal-gdp');
-    if (gdpEl) gdpEl.innerText = formatMoney(rawGdp);
-    const gdpRankEl = document.getElementById('modal-gdp-rank');
-    if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP(10억달러)', cleanKey);
-
-    const rawDef = (parseFloat(getPropByCleanKey(item, '국방비(10억달러)') || getPropByCleanKey(item, '국방비')) || 0) * 10;
-    const rawDefRatio = getPropByCleanKey(item, 'GDP대비국방비');
-    
-    let defRatioDisplay = "-";
-    if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
-      let numRatio = parseFloat(rawDefRatio);
-      if (numRatio > 0 && numRatio < 1 && String(rawDefRatio).includes(".")) {
-        numRatio = numRatio * 100;
-      }
-      defRatioDisplay = `${numRatio.toFixed(2)}%`;
-    } else if (rawGdp > 0) {
-      defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
-    }
-
-    const defRatioEl = document.getElementById('modal-def-ratio');
-    if (defRatioEl) defRatioEl.innerText = defRatioDisplay;
-
-    const defEl = document.getElementById('modal-def');
-    if (defEl) defEl.innerText = formatMoney(rawDef);
-    const defRankEl = document.getElementById('modal-def-rank');
-    if (defRankEl) defRankEl.innerText = getCountryRank('국방비(10억달러)', cleanKey);
-
-    const popEl = document.getElementById('modal-pop');
-    if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)') || getPropByCleanKey(item, '인구'));
-    const popRankEl = document.getElementById('modal-pop-rank');
-    if (popRankEl) popRankEl.innerText = getCountryRank('인구(만명)', cleanKey);
-
-    const capVal = parseFloat(getPropByCleanKey(item, '1인당GDP')) || 0;
-    const capEl = document.getElementById('modal-cap');
-    if (capEl) capEl.innerText = `${Math.round(capVal).toLocaleString()} 달러`;
-    const capRankEl = document.getElementById('modal-cap-rank');
-    if (capRankEl) capRankEl.innerText = getCountryRank('1인당GDP', cleanKey);
-    const EconomyGradeEl = document.getElementById('modal-EconomyGrade');
-    if (EconomyGradeEl) EconomyGradeEl.innerText = getPropByCleanKey(item, '등급') || getPropByCleanKey(item, '경제등급') || '-';
-    
-
-    const taxVal = getPropByCleanKey(item, '세율');
-    const taxEl = document.getElementById('modal-tax');
-    if (taxEl) taxEl.innerText = taxVal !== undefined && taxVal !== '' ? `${taxVal}%` : '-';
-    
-    const rawBudgetVal = getPropByCleanKey(item, '국가예산');
-    const rawBudget = (parseFloat(rawBudgetVal) || 0) * 10;
-    const budgetEl = document.getElementById('modal-budget');
-    if (budgetEl) budgetEl.innerText = rawBudget !== 0 ? formatMoney(rawBudget) : '-';
-
-    const systemEl = document.getElementById('modal-system');
-    if (systemEl) systemEl.innerText = getPropByCleanKey(item, '경제체제') || '-';
-    
-    const mainIndustry = getPropByCleanKey(item, '주업') || '-';
-    const industryEl = document.getElementById('modal-industry');
-    if (industryEl) industryEl.innerText = mainIndustry;
-
-    const welfareEl = document.getElementById('modal-welfare');
-    if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
-
-    const rawTreasuryVal = getPropByCleanKey(item, '국고');
-    const treasuryEl = document.getElementById('modal-treasury');
-    if (treasuryEl) {
-      if (rawTreasuryVal !== undefined && rawTreasuryVal !== '' && !isNaN(parseFloat(rawTreasuryVal))) {
-        treasuryEl.innerText = formatMoney(rawTreasuryVal*10);
-      } else {
-        treasuryEl.innerText = '-';
+        rndRatioEl.innerText = '-';
       }
     }
 
-    const rawGrowth = getPropByCleanKey(item, '최종경제성장률') !== undefined && getPropByCleanKey(item, '최종경제성장률') !== '' 
-      ? getPropByCleanKey(item, '최종경제성장률') 
-      : getPropByCleanKey(item, '경제성장률');
-      
-    const growthEl = document.getElementById('modal-growth');
-    if (growthEl) {
-      if (rawGrowth !== undefined && rawGrowth !== '' && !isNaN(parseFloat(rawGrowth))) {
-        growthEl.innerText = `${parseFloat(rawGrowth).toFixed(2)}%`;
-      } else {
-        growthEl.innerText = '-';
-      }
+    // 2. R&D 예산 (10억 달러 단위 데이터 -> formatMoney 연동)
+    const rawRndBudget = parseFloat(getPropByCleanKey(item, 'R&D예산')) || 0;
+    const rndBudgetEl = document.getElementById('modal-rnd-budget');
+    if (rndBudgetEl) {
+      rndBudgetEl.innerText = rawRndBudget !== 0 ? formatMoney(rawRndBudget * 10) : '-';
     }
 
-    const modal = document.getElementById('country-modal');
-    if (modal) modal.style.display = 'flex';
-  };
+    // 3. 기술개발정도
+    const techLevelVal = getPropByCleanKey(item, '기술개발정도');
+    const techLevelEl = document.getElementById('modal-tech-level');
+    if (techLevelEl) {
+      techLevelEl.innerText = techLevelVal !== undefined && techLevelVal !== '' ? `${techLevelVal}점` : '-';
+    }
+
+    // 4. 미래기술 적용 (또는 '미래기술적용')
+    const futureTechVal = getPropByCleanKey(item, '미래기술 적용') || getPropByCleanKey(item, '미래기술적용') || '-';
+    const futureTechEl = document.getElementById('modal-future-tech');
+    if (futureTechEl) {
+      futureTechEl.innerText = futureTechVal;
+    }
 
   window.closeCountryModal = function() {
     const modal = document.getElementById('country-modal');
