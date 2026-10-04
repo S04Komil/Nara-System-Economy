@@ -216,6 +216,31 @@
               <div class="info-box"><span class="info-label">국가예산</span><span id="my-budget-display" class="info-val">-</span></div>
             </div>
 
+            <!-- 자국 R&D 및 기술 정보 (입력 및 표시) -->
+            <div class="edit-row row-grid-2">
+              <div class="info-box edit-input-box">
+                <label class="info-label" for="edit-rnd-ratio">GDP대비 R&D 예산 (%)</label>
+                <div class="number-control-group">
+                  <input type="number" id="edit-rnd-ratio" step="0.01" min="0" placeholder="0.00">
+                </div>
+              </div>
+              <div class="info-box">
+                <span class="info-label">R&D 예산</span>
+                <span id="my-rnd-budget-display" class="info-val">-</span>
+              </div>
+            </div>
+
+            <div class="edit-row row-grid-2">
+              <div class="info-box">
+                <span class="info-label">기술개발정도</span>
+                <span id="my-tech-level-display" class="info-val">-</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">미래기술적용</span>
+                <span id="my-future-tech-display" class="info-val">-</span>
+              </div>
+            </div>
+
             <!-- 8행: 경제체제(선택형)와 주업(선택형 최대 4개) -->
             <div class="edit-row row-grid-2">
               <div class="info-box edit-input-box">
