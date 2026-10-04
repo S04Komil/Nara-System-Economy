@@ -1747,10 +1747,18 @@ function updateInvestConvertedAmount(val) {
 window.updateInvestConvertedAmount = updateInvestConvertedAmount;
 window.updateConvertedAmount = updateConvertedAmount;
 
-  // 패치노트 모달 열기
-function openChangelogModal() {
+ // 패치노트 데이터를 보관할 변수
+let changelogData = null;
+
+// 패치노트 모달 열기
+async function openChangelogModal() {
   const modal = document.getElementById('changelog-modal');
   if (modal) modal.style.display = 'flex';
+
+  // 아직 데이터를 가져온 적이 없다면 fetch로 불러오기
+  if (!changelogData) {
+    await loadChangelog();
+  }
 }
 
 // 패치노트 모달 닫기
@@ -1759,7 +1767,40 @@ function closeChangelogModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// 모달 바깥 배경 클릭 시 닫기 (선택 사항)
+// JSON 파일 읽어서 화면에 뿌려주는 함수
+async function loadChangelog() {
+  const container = document.getElementById('changelog-list');
+  
+  try {
+    const response = await fetch('changelog.json');
+    if (!response.ok) throw new Error('패치노트를 불러오는데 실패했습니다.');
+    
+    changelogData = await response.json();
+
+    // 불러온 데이터 HTML로 동적 생성
+    let html = '';
+    changelogData.forEach(item => {
+      html += `
+        <div class="changelog-item" style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: bold; font-size: 16px; color: var(--primary-color, #007bff);">${item.version} - ${item.title}</span>
+          </div>
+          <ul style="margin: 0; padding-left: 20px; line-height: 1.6; font-size: 14px; color: #333;">
+            ${item.changes.map(change => `<li>${change}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<p style="color: red; text-align: center;">패치노트 데이터를 불러올 수 없습니다.</p>';
+  }
+}
+
+// 모달 외부 클릭 시 닫기
 window.addEventListener('click', function(event) {
   const changelogModal = document.getElementById('changelog-modal');
   if (event.target === changelogModal) {
