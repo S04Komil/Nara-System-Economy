@@ -1163,7 +1163,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     const rndRateInput = document.getElementById('edit-rnd-ratio');
     const rndgetEl = document.getElementById('my-rnd-budget-display');
     if (rndRateInput) rndRateInput.value = parseFloat(myObj['GDP대비R&D예산'] || 0).toFixed(2);
-    if (rndgetEl) rndgetEl.innerText = `${Math.round(parseNumber(myObj['R&D예산'])).toLocaleString()} 달러`;
+    if (rndgetEl) rndgetEl.innerText = formatMoney(parseNumber(myObj['R&D예산']) * 10);
     // 기술개발정도 및 미래기술적용 추가
     const techLevelEl = document.getElementById('my-tech-level-display');
     const futureTechEl = document.getElementById('my-future-tech-display');
