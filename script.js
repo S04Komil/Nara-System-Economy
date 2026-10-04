@@ -1807,4 +1807,6 @@ window.addEventListener('click', function(event) {
     closeChangelogModal();
   }
 });
+window.openChagelogModal = openChagelogModal();
+window.closeChangelogModal = closeChangelogModal();
 });
