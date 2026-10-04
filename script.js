@@ -734,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const futureTechVal = getPropByCleanKey(item, '미래기술 적용') || getPropByCleanKey(item, '미래기술적용') || '-';
     const futureTechEl = document.getElementById('modal-future-tech');
     if (futureTechEl) {
-      futureTechEl.innerText = futureTechVal;
+      futureTechEl.innerText = `${futureTechVal} 장비사용가능`;
     }
 
     const systemEl = document.getElementById('modal-system');
