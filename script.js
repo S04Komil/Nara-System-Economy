@@ -1746,4 +1746,24 @@ function updateInvestConvertedAmount(val) {
 
 window.updateInvestConvertedAmount = updateInvestConvertedAmount;
 window.updateConvertedAmount = updateConvertedAmount;
+
+  // 패치노트 모달 열기
+function openChangelogModal() {
+  const modal = document.getElementById('changelog-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+// 패치노트 모달 닫기
+function closeChangelogModal() {
+  const modal = document.getElementById('changelog-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// 모달 바깥 배경 클릭 시 닫기 (선택 사항)
+window.addEventListener('click', function(event) {
+  const changelogModal = document.getElementById('changelog-modal');
+  if (event.target === changelogModal) {
+    closeChangelogModal();
+  }
+});
 });
