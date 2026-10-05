@@ -1070,7 +1070,8 @@ function initGoogleAuth() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
       client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
-      callback: window.handleGoogleLogin
+      callback: window.handleGoogleLogin,
+      ux_mode: "redirect"
     });
 
     const btnContainer = document.getElementById("google-login-btn");
