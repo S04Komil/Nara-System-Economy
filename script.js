@@ -1781,15 +1781,44 @@ async function loadChangelog() {
     let html = '';
     changelogData.forEach(item => {
       html += `
-        <div class="changelog-item" style="margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px;">
+        <div class="changelog-item" style="margin-bottom: 25px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-weight: bold; font-size: 16px; color: var(--primary-color, #007bff);">${item.version} - ${item.title}</span>
           </div>
-          <ul style="margin: 0; padding-left: 20px; line-height: 1.6; font-size: 14px; color: #333;">
+      `;
+
+      // 1. 일반 패치내용 (불릿 리스트)
+      if (item.changes && item.changes.length > 0) {
+        html += `
+          <ul style="margin: 0 0 12px 0; padding-left: 20px; line-height: 1.6; font-size: 14px; color: #333;">
             ${item.changes.map(change => `<li>${change}</li>`).join('')}
           </ul>
-        </div>
-      `;
+        `;
+      }
+
+      // 2. 표 데이터(table)가 있을 경우 표 생성
+      if (item.table && item.table.rows && item.table.rows.length > 0) {
+        const headers = item.table.headers || ['항목', '기존 사항', '변경 사항'];
+        
+        html += `
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background-color: #f8f9fa;">
+                ${headers.map(h => `<th style="border: 1px solid #333; padding: 8px; font-weight: bold;">${h}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${item.table.rows.map(row => `
+                <tr>
+                  ${row.map(cell => `<td style="border: 1px solid #333; padding: 8px; vertical-align: top;">${cell}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      html += `</div>`;
     });
 
     container.innerHTML = html;
