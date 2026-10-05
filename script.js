@@ -1851,4 +1851,42 @@ window.addEventListener('click', function(event) {
 });
 window.openChangelogModal = openChangelogModal;
 window.closeChangelogModal = closeChangelogModal;
+
+  // 페이지 로드 시 첫 방문/오늘 안보기 체크
+document.addEventListener('DOMContentLoaded', () => {
+  checkNoticeModal();
+});
+
+// 안내문 모달 표시 여부 확인
+function checkNoticeModal() {
+  const hideUntil = localStorage.getItem('hideNoticeUntil');
+  const now = new Date().getTime();
+
+  // 저장된 숨김 기한이 없거나 기한이 지났을 경우에만 팝업 표시
+  if (!hideUntil || now > parseInt(hideUntil)) {
+    const noticeModal = document.getElementById('notice-modal');
+    if (noticeModal) {
+      noticeModal.style.display = 'flex';
+    }
+  }
+}
+
+// 안내문 모달 닫기
+function closeNoticeModal() {
+  const dontShowToday = document.getElementById('dont-show-today');
+  
+  if (dontShowToday && dontShowToday.checked) {
+    // 일주일 동안 보지 않기 (7일 뒤의 타임스탬프 계산)
+    const expires = new Date().getTime() + (7* 24 * 60 * 60 * 1000);
+    localStorage.setItem('hideNoticeUntil', expires);
+  }
+
+  const noticeModal = document.getElementById('notice-modal');
+  if (noticeModal) {
+    noticeModal.style.display = 'none';
+  }
+}
+
+// 전역 함수 등록
+window.closeNoticeModal = closeNoticeModal;
 });
