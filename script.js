@@ -1889,4 +1889,6 @@ function closeNoticeModal() {
 
 // 전역 함수 등록
 window.closeNoticeModal = closeNoticeModal;
+  // 테스트용으로 콘솔에서 불러볼 수 있도록 전역 선언
+window.checkNoticeModal = checkNoticeModal;
 });
