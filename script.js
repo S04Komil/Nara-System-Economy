@@ -1778,19 +1778,24 @@ async function loadChangelog() {
     changelogData = await response.json();
 
     let html = '';
-    changelogData.forEach(item => {
+    changelogData.forEach((item, index) => {
+      // 가장 최근 패치노트(첫 번째 항목)만 기본으로 열어두고 싶다면 open 속성을 부여합니다.
+      const isOpen = index === 0 ? 'open' : '';
+
       html += `
-        <div class="changelog-item" style="margin-bottom: 25px; border-bottom: 1px dashed #ccc; padding-bottom: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-weight: bold; font-size: 16px; color: var(--primary-color, #007bff);">${item.version} - ${item.title}</span>
-          </div>
+        <details class="changelog-item" ${isOpen} style="margin-bottom: 12px; border: 1px solid #e1e4e8; border-radius: 6px; padding: 10px 14px; background: #fff;">
+          <summary style="font-weight: bold; font-size: 15px; color: var(--primary-color, #007bff); cursor: pointer; user-select: none; outline: none;">
+            <span style="font-size: 15px;">${item.version} - ${item.title}</span>
+          </summary>
+          
+          <div class="changelog-body" style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ddd;">
       `;
 
-      // sections 배열을 순서대로 읽어서 HTML 생성
+      // sections 배열 순회 (리스트 및 표 렌더링)
       if (item.sections && Array.isArray(item.sections)) {
         item.sections.forEach(sec => {
           
-          // 1. 일반 리스트(불릿 포인트) 형태인 경우
+          // 1. 일반 리스트(불릿 포인트)
           if (sec.type === 'list' && sec.content && sec.content.length > 0) {
             html += `
               <ul style="margin: 8px 0 12px 0; padding-left: 20px; line-height: 1.6; font-size: 14px; color: #333;">
@@ -1799,7 +1804,7 @@ async function loadChangelog() {
             `;
           }
           
-          // 2. 표 형태인 경우
+          // 2. 표 형태
           else if (sec.type === 'table' && sec.rows && sec.rows.length > 0) {
             const headers = sec.headers || ['항목', '기존 사항', '변경 사항'];
             html += `
@@ -1823,7 +1828,10 @@ async function loadChangelog() {
         });
       }
 
-      html += `</div>`;
+      html += `
+          </div>
+        </details>
+      `;
     });
 
     container.innerHTML = html;
