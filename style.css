@@ -763,3 +763,17 @@ nav {
   background-color: #f1f5f9 !important;
   font-weight: bold !important;
 }
+
+/* 패치노트 아코디언 스타일 */
+.changelog-item summary {
+  transition: color 0.2s ease;
+}
+
+.changelog-item summary:hover {
+  color: #0056b3 !important;
+}
+
+/* 열렸을 때 배경 살짝 강조 */
+.changelog-item[open] {
+  background-color: #fafafa !important;
+}
