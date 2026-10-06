@@ -2151,4 +2151,6 @@ function openImportModal() {
 function closeImportModal() {
   document.getElementById("import-modal").style.display = "none";
 }
+window.openEquipmentModal = openEquipmentModal;
+window.openImportModal = openImportModal;
 });
