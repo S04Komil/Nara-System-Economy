@@ -42,7 +42,15 @@ spreadsheets_config = [
         "sheets": {
             "시트1": "data-GDPRank.json"
         }
-    }
+    },
+    # 기존 4번째 시트 설정 바로 아래에 추가합니다.
+    {
+        "id_env": "SPREADSHEET_ID_6", # 다섯 번째 구글 시트 파일
+        "sheets": {
+            "장비등록": "data-equipment.json",
+            "수출입로그": "data-importLogs.json"
+        }
+    },
 ]
 
 for config in spreadsheets_config:
