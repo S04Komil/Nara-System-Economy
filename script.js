@@ -2298,4 +2298,5 @@ window.openImportModal = openImportModal;
 window.closeImportModal = closeImportModal;
 window.openLogModal = openLogModal;
 window.closeLogModal = closeLogModal;
+window.loadEquipmentData = loadEquipmentData;
 });
