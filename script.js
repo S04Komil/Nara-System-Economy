@@ -2345,4 +2345,5 @@ window.openLogModal = openLogModal;
 window.closeLogModal = closeLogModal;
 window.loadEquipmentData = loadEquipmentData;
 window.filterEquipmentOptions = filterEquipmentOptions;
+window.loadImportLogsData = loadImportLogsData;
 });
