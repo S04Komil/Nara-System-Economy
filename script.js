@@ -1979,7 +1979,7 @@ function populateEquipmentDropdown() {
     selectEl.appendChild(option);
   });
 }
-
+let SelectEquipemntIndex = null;
 // 드롭다운 선택 시 필드 자동 채우기
 function onSelectEquipment(index) {
   if (index === "" || index === null || undefined === equipmentList[index]) {
@@ -1998,7 +1998,7 @@ function onSelectEquipment(index) {
   if (document.getElementById("importExporter")) document.getElementById("importExporter").value = exporter;
   if (document.getElementById("importCategory")) document.getElementById("importCategory").value = category;
   if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = price;
-
+  SelectEquipmentIndex = index;
   calculateTotalPrice();
 }
 
@@ -2275,7 +2275,7 @@ if (importForm) {
     const payload = {
       action: "importLog",
       exporter: document.getElementById("importExporter").value,
-      name: equipmentList[index]["장비이름"],
+      name: equipmentList[SelectEquipmentIndex]["장비이름"],
       category: document.getElementById("importCategory").value,
       price: parseFloat(document.getElementById("importUnitPrice").value),
       quantity: parseInt(document.getElementById("importQuantity").value, 10),
