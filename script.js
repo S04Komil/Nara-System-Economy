@@ -1941,7 +1941,7 @@ function getMyCountry() {
   return typeof cleanName === "function" ? cleanName(rawCountry) : rawCountry.trim();
 }
 
-// 수입 모달의 장비 선택 드롭다운 생성
+// 수입 모달 드롭다운 생성 함수
 function populateEquipmentDropdown() {
   const selectEl = document.getElementById("imp-equipment-select");
   if (!selectEl) return;
@@ -1955,7 +1955,8 @@ function populateEquipmentDropdown() {
 
     const option = document.createElement("option");
     option.value = index;
-    option.textContent = `[${exporter}] ${name} (${price}억$)`;
+    // 단위 표기 변경 (만$)
+    option.textContent = `[${exporter}] ${name} (${price}만$)`;
     selectEl.appendChild(option);
   });
 }
@@ -1989,13 +1990,12 @@ function calculateTotalPrice() {
   document.getElementById("imp-total-price").value = (price * quantity).toFixed(2);
 }
 
-// 수출입 로그 테이블 렌더링
+// 로그 테이블 출력 단위 수정
 function renderImportLogsTable() {
   const tbody = document.getElementById("import-logs-tbody") || document.getElementById("log-table-body");
   if (!tbody) return;
 
   tbody.innerHTML = "";
-
   const myCountry = getMyCountry();
 
   if (!importLogsList || importLogsList.length === 0) {
@@ -2036,7 +2036,7 @@ function renderImportLogsTable() {
       <td>${name}</td>
       <td>${category}</td>
       <td>${quantity}</td>
-      <td>${totalPrice}억$</td>
+      <td>${totalPrice}만$</td>
       <td><span class="status-badge status-complete">완료</span></td>
     `;
     tbody.appendChild(tr);
