@@ -2147,13 +2147,19 @@ function closeEquipmentModal() {
 function openImportModal() {
   populateEquipmentDropdown(); // 최신 목록 채우기
 
-  const importerInput = document.getElementById("imp-importer");
-  if (importerInput) {
-    importerInput.value = getMyCountry();
+  // 자동 채움 대상 필드 ID (importCountry)
+  const countryInput = document.getElementById("importCountry") || document.getElementById("imp-importer");
+  
+  if (countryInput) {
+    // getMyCountry()로 로그인된 내 국가 이름을 가져와 자동으로 입력
+    countryInput.value = getMyCountry();
   }
 
-  const modal = document.getElementById("import-modal");
-  if (modal) modal.style.display = "flex";
+  // 모달 띄우기 (importEquipmentModal 또는 import-modal)
+  const modal = document.getElementById("importEquipmentModal") || document.getElementById("import-modal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
 }
 
 function closeImportModal() {
