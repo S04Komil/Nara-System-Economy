@@ -2287,6 +2287,31 @@ if (importForm) {
     }
   });
 }
+  // 검색어에 맞게 드롭다운 옵션 필터링
+function filterEquipmentOptions(keyword) {
+  const selectEl = document.getElementById("importEquipmentSelect");
+  if (!selectEl || !equipmentList) return;
+
+  const cleanKeyword = keyword.toLowerCase().trim();
+  selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
+
+  equipmentList.forEach((item, index) => {
+    const exporter = item["수출국"] || item.exporter || "";
+    const name = item["장비이름"] || item.name || "";
+    const category = item["장비유형"] || item.category || "";
+    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+
+    const fullText = `[${exporter}] ${name} (${category})`.toLowerCase();
+
+    // 검색어가 포함된 항목만 드롭다운에 추가
+    if (fullText.includes(cleanKeyword)) {
+      const option = document.createElement("option");
+      option.value = index; // 원래 배열 인덱스를 유지
+      option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
+      selectEl.appendChild(option);
+    }
+  });
+}
 
 // 전역 window 객체에 함수 바인딩
 window.onSelectEquipment = onSelectEquipment;
@@ -2299,4 +2324,5 @@ window.closeImportModal = closeImportModal;
 window.openLogModal = openLogModal;
 window.closeLogModal = closeLogModal;
 window.loadEquipmentData = loadEquipmentData;
+window.filterEquipmentOptions = filterEquipmentOptions;
 });
