@@ -1948,46 +1948,58 @@ function populateEquipmentDropdown() {
 
   selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
 
-  equipmentList.forEach((item, index) => {
-    const exporter = item["수출국"] || item.exporter || "미지정";
-    const name = item["장비이름"] || item.name || "미지정";
-    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+  if (equipmentList && equipmentList.length > 0) {
+    equipmentList.forEach((item, index) => {
+      const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
+      const name = item["장비이름"] || item.name || "미지정";
+      const category = item["장비유형"] || item.category || "";
+      const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
 
-    const option = document.createElement("option");
-    option.value = index;
-    // 단위 표기 변경 (만$)
-    option.textContent = `[${exporter}] ${name} (${price}만$)`;
-    selectEl.appendChild(option);
-  });
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
+      selectEl.appendChild(option);
+    });
+  }
 }
 
 // 드롭다운 선택 시 필드 자동 채우기
 function onSelectEquipment(index) {
-  if (index === "" || !equipmentList[index]) {
-    document.getElementById("imp-exporter").value = "";
-    document.getElementById("imp-name").value = "";
-    document.getElementById("imp-category").value = "";
-    document.getElementById("imp-price").value = "";
-    document.getElementById("imp-total-price").value = "";
+  if (index === "" || index === null || undefined === equipmentList[index]) {
+    if (document.getElementById("imp-exporter")) document.getElementById("imp-exporter").value = "";
+    if (document.getElementById("imp-name")) document.getElementById("imp-name").value = "";
+    if (document.getElementById("imp-category")) document.getElementById("imp-category").value = "";
+    if (document.getElementById("imp-price")) document.getElementById("imp-price").value = "";
+    if (document.getElementById("imp-total-price")) document.getElementById("imp-total-price").value = "";
     return;
   }
 
   const selected = equipmentList[index];
-  document.getElementById("imp-exporter").value = selected["수출국"] || selected.exporter || "";
-  document.getElementById("imp-name").value = selected["장비이름"] || selected.name || "";
-  document.getElementById("imp-category").value = selected["장비유형"] || selected.category || "";
-  
+  const exporter = selected["수출국"] || selected.exporter || selected.producer || "";
+  const name = selected["장비이름"] || selected.name || "";
+  const category = selected["장비유형"] || selected.category || "";
   const price = parseFloat(selected["1대당 가격"] || selected["1대당가격"] || selected.price || 0);
-  document.getElementById("imp-price").value = price;
+
+  if (document.getElementById("imp-exporter")) document.getElementById("imp-exporter").value = exporter;
+  if (document.getElementById("imp-name")) document.getElementById("imp-name").value = name;
+  if (document.getElementById("imp-category")) document.getElementById("imp-category").value = category;
+  if (document.getElementById("imp-price")) document.getElementById("imp-price").value = price;
 
   calculateTotalPrice();
 }
 
 // 수량 변경 시 총 금액 자동 계산
 function calculateTotalPrice() {
-  const price = parseFloat(document.getElementById("imp-price").value) || 0;
-  const quantity = parseInt(document.getElementById("imp-quantity").value, 10) || 0;
-  document.getElementById("imp-total-price").value = (price * quantity).toFixed(2);
+  const priceEl = document.getElementById("imp-price");
+  const qtyEl = document.getElementById("imp-quantity");
+  const totalEl = document.getElementById("imp-total-price");
+
+  if (!priceEl || !qtyEl || !totalEl) return;
+
+  const price = parseFloat(priceEl.value) || 0;
+  const quantity = parseInt(qtyEl.value, 10) || 0;
+  
+  totalEl.value = price * quantity;
 }
 
 // 수출입 로그 테이블 렌더링
@@ -2105,10 +2117,6 @@ async function handleExportApprove(timestamp, exporter, importer, name, status) 
   }
 }
 
-// 전역 바인딩
-window.handleExportApprove = handleExportApprove;
-
-
 // ==========================================
 // 3. 모달 제어 및 이벤트 처리
 // ==========================================
@@ -2122,7 +2130,6 @@ function openEquipmentModal() {
     return;
   }
 
-  // 수출국(생산국) 입력창에 자국명 자동 설정
   const exporterInput = document.getElementById("eq-exporter");
   if (exporterInput) {
     exporterInput.value = myCountry;
@@ -2138,20 +2145,13 @@ function closeEquipmentModal() {
 }
 
 function openImportModal() {
-  const myCountry = getMyCountry();
-  
-  if (!myCountry) {
-    alert("로그인 정보(자국명)를 찾을 수 없습니다.");
-    return;
-  }
+  populateEquipmentDropdown(); // 최신 목록 채우기
 
   const importerInput = document.getElementById("imp-importer");
   if (importerInput) {
-    importerInput.value = myCountry;
+    importerInput.value = getMyCountry();
   }
 
-  populateEquipmentDropdown();
-  
   const modal = document.getElementById("import-modal");
   if (modal) modal.style.display = "flex";
 }
@@ -2162,7 +2162,7 @@ function closeImportModal() {
 }
 
 function openLogModal() {
-  renderImportLogsTable(); // 로그 모달 열 때 목록 새로고침
+  renderImportLogsTable();
   const modal = document.getElementById("log-modal");
   if (modal) modal.style.display = "flex";
 }
@@ -2173,7 +2173,7 @@ function closeLogModal() {
 }
 
 // ------------------------------------------
-// 🛠️ [신규 추가] 장비 등록 폼 Submit 처리
+// 장비 등록 폼 Submit 처리
 // ------------------------------------------
 const equipmentForm = document.getElementById("equipment-form");
 if (equipmentForm) {
@@ -2181,7 +2181,7 @@ if (equipmentForm) {
     e.preventDefault();
 
     const payload = {
-      action: "addEquipment", // GAS 백엔드 조건식에 맞게 지정
+      action: "addEquipment",
       exporter: document.getElementById("eq-exporter").value,
       name: document.getElementById("eq-name").value,
       category: document.getElementById("eq-category").value,
@@ -2189,9 +2189,7 @@ if (equipmentForm) {
     };
 
     try {
-      const targetApiUrl = GAS_API_URL;
-
-      const response = await fetch(targetApiUrl, {
+      const response = await fetch(GAS_API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
@@ -2213,7 +2211,9 @@ if (equipmentForm) {
   });
 }
 
-// 📦 수입 신청 폼 Submit 처리
+// ------------------------------------------
+// 수입 신청 폼 Submit 처리
+// ------------------------------------------
 const importForm = document.getElementById("import-form");
 if (importForm) {
   importForm.addEventListener("submit", async function (e) {
@@ -2228,7 +2228,7 @@ if (importForm) {
     const payload = {
       action: "importLog",
       exporter: document.getElementById("imp-exporter").value,
-      name: document.getElementById("imp-name").value,
+      name: document.getElementById("imp-name") ? document.getElementById("imp-name").value : "",
       category: document.getElementById("imp-category").value,
       price: parseFloat(document.getElementById("imp-price").value),
       quantity: parseInt(document.getElementById("imp-quantity").value, 10),
@@ -2262,11 +2262,13 @@ if (importForm) {
 }
 
 // 전역 window 객체에 함수 바인딩
+window.onSelectEquipment = onSelectEquipment;
+window.calculateTotalPrice = calculateTotalPrice;
+window.handleExportApprove = handleExportApprove;
 window.openEquipmentModal = openEquipmentModal;
 window.closeEquipmentModal = closeEquipmentModal;
 window.openImportModal = openImportModal;
 window.closeImportModal = closeImportModal;
 window.openLogModal = openLogModal;
 window.closeLogModal = closeLogModal;
-window.calculateTotalPrice = calculateTotalPrice;
 });
