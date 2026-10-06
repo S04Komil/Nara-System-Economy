@@ -2274,17 +2274,17 @@ if (importForm) {
 
     const payload = {
       action: "importLog",
-      exporter: document.getElementById("imp-exporter").value,
-      name: document.getElementById("imp-name") ? document.getElementById("imp-name").value : "",
-      category: document.getElementById("imp-category").value,
-      price: parseFloat(document.getElementById("imp-price").value),
-      quantity: parseInt(document.getElementById("imp-quantity").value, 10),
-      totalPrice: parseFloat(document.getElementById("imp-total-price").value),
+      exporter: document.getElementById("importExporter").value,
+      name: equipmentList[index]["장비이름"],
+      category: document.getElementById("importCategory").value,
+      price: parseFloat(document.getElementById("importUnitPrice").value),
+      quantity: parseInt(document.getElementById("importQuantity").value, 10),
+      totalPrice: parseFloat(document.getElementById("importTotalPrice").value),
       importer: myCountry
     };
 
     try {
-      const targetApiUrl = typeof API_EDIT !== "undefined" ? API_EDIT : GAS_API_URL;
+      const targetApiUrl = GAS_API_URL;
 
       const response = await fetch(targetApiUrl, {
         method: "POST",
