@@ -1904,7 +1904,7 @@ let importLogsList = [];
 // ==========================================
 
 // 페이지 로드 시 JSON 데이터 불러오기
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("Load", () => {
   loadEquipmentData();
   loadImportLogsData();
 });
