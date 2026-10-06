@@ -1983,10 +1983,9 @@ function populateEquipmentDropdown() {
 // 드롭다운 선택 시 필드 자동 채우기
 function onSelectEquipment(index) {
   if (index === "" || index === null || undefined === equipmentList[index]) {
-    if (document.getElementById("imp-exporter")) document.getElementById("imp-exporter").value = "";
-    if (document.getElementById("imp-name")) document.getElementById("imp-name").value = "";
-    if (document.getElementById("imp-category")) document.getElementById("imp-category").value = "";
-    if (document.getElementById("imp-price")) document.getElementById("imp-price").value = "";
+    if (document.getElementById("importExporte")) document.getElementById("importExporte").value = "";
+    if (document.getElementById("importCategory")) document.getElementById("importCategory").value = "";
+    if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = "";
     if (document.getElementById("imp-total-price")) document.getElementById("imp-total-price").value = "";
     return;
   }
@@ -1997,19 +1996,18 @@ function onSelectEquipment(index) {
   const category = selected["장비유형"] || selected.category || "";
   const price = parseFloat(selected["1대당 가격"] || selected["1대당가격"] || selected.price || 0);
 
-  if (document.getElementById("imp-exporter")) document.getElementById("imp-exporter").value = exporter;
-  if (document.getElementById("imp-name")) document.getElementById("imp-name").value = name;
-  if (document.getElementById("imp-category")) document.getElementById("imp-category").value = category;
-  if (document.getElementById("imp-price")) document.getElementById("imp-price").value = price;
+  if (document.getElementById("importExporte")) document.getElementById("importExporte").value = exporter;
+  if (document.getElementById("importCategory")) document.getElementById("importCategory").value = category;
+  if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = price;
 
   calculateTotalPrice();
 }
 
 // 수량 변경 시 총 금액 자동 계산
 function calculateTotalPrice() {
-  const priceEl = document.getElementById("imp-price");
-  const qtyEl = document.getElementById("imp-quantity");
-  const totalEl = document.getElementById("imp-total-price");
+  const priceEl = document.getElementById("importUnitPrice");
+  const qtyEl = document.getElementById("importQuantity");
+  const totalEl = document.getElementById("importTotalPrice");
 
   if (!priceEl || !qtyEl || !totalEl) return;
 
