@@ -2128,7 +2128,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
       
       // 2. '승인 완료' 시 거래 금액을 메인 경제 시트에 반영 (updateEquipmentTrade)
       if (status === "승인 완료") {
-        // 단가 및 총금액 계산
+        // 단가 및 총금액 계산 (기본 단위: 만달러)
         let finalAmount = Number(totalPrice);
         if (finalAmount <= 0) {
           const eqInfo = (equipmentList || []).find(e => (e["장비이름"] || e.name) === name);
@@ -2137,12 +2137,15 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
         }
 
         if (finalAmount > 0) {
+          // 만달러 단위를 메인 경제 시트 단위(10억달러)로 변환 (만달러 / 100,000)
+          const amountInBillion = finalAmount / 100000;
+
           try {
             const tradePayload = {
               action: "updateEquipmentTrade",
               importer: importer,
               exporter: exporter,
-              amount: finalAmount
+              amount: amountInBillion
             };
 
             await fetch(targetApiUrl, {
