@@ -2096,7 +2096,7 @@ function renderImportLogsTable() {
 }
 
 // 수출 승인/거절 요청 처리 함수
-async function handleExportApprove(timestamp, exporter, importer, name, status) {
+async function handleExportApprove(timestamp, exporter, importer, name, status, quantity = 1) {
   const actionText = status === "승인 완료" ? "승인" : "거절";
   if (!confirm(`[${importer}]의 ${name} 수입 요청을 ${actionText}하시겠습니까?`)) {
     return;
@@ -2114,6 +2114,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status) 
   try {
     const targetApiUrl = GAS_API_URL;
 
+    // 1. 기존 승인/거절 상태(Log) 업데이트 요청
     const response = await fetch(targetApiUrl, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
@@ -2123,8 +2124,41 @@ async function handleExportApprove(timestamp, exporter, importer, name, status) 
     const result = await response.json();
 
     if (result.result === "success" || result.status === "success") {
+      
+      // 2. [신규] '승인 완료' 시 장비 거래 금액을 메인 경제 시트에 반영 (updateEquipmentTrade)
+      if (status === "승인 완료") {
+        // 장비 데이터에서 단가 가져오기 (단가 찾기 실패 시 0 처리)
+        const eqInfo = (window.equipmentData || []).find(e => e.name === name);
+        const unitPrice = eqInfo ? Number(eqInfo.price || 0) : 0;
+        const totalPrice = unitPrice * Number(quantity);
+
+        if (totalPrice > 0) {
+          try {
+            const tradePayload = {
+              action: "updateEquipmentTrade",
+              importer: importer,
+              exporter: exporter,
+              amount: totalPrice
+            };
+
+            await fetch(targetApiUrl, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain" },
+              body: JSON.stringify(tradePayload)
+            });
+          } catch (tradeError) {
+            console.error("장비 거래 금액 반영 중 오류 발생:", tradeError);
+          }
+        }
+      }
+
       alert(`수출 허가가 성공적으로 [${status}] 처리되었습니다.`);
       closeLogModal();
+      
+      // 필요 시 데이터 재로드
+      if (typeof loadImportLogs === "function") loadImportLogs();
+      if (typeof loadMainData === "function") loadMainData();
+
     } else {
       alert("처리 실패: " + (result.message || "알 수 없는 오류"));
     }
