@@ -2153,4 +2153,6 @@ function closeImportModal() {
 }
 window.openEquipmentModal = openEquipmentModal;
 window.openImportModal = openImportModal;
+window.closeImportModal = closeImportModal;
+window.closeEquipmentModal = closeEquipmentModal;
 });
