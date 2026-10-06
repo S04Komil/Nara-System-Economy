@@ -2354,8 +2354,18 @@ function filterEquipmentOptions(keyword) {
   const cleanKeyword = keyword.toLowerCase().trim();
   selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
 
+  // 현재 사용자 자국명 가져오기
+  const myCountry = typeof getMyCountry === "function" ? getMyCountry() : "";
+
   equipmentList.forEach((item, index) => {
-    const exporter = item["수출국"] || item.exporter || "";
+    const exporter = item["수출국"] || item.exporter || item.producer || "";
+    
+    // 자국명이 정규화 함수(cleanName)를 거친 것과 동일하면 제외
+    const cleanExporter = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
+    if (myCountry && cleanExporter === myCountry) {
+      return; // 자신의 국가가 수출국인 장비는 제외
+    }
+
     const name = item["장비이름"] || item.name || "";
     const category = item["장비유형"] || item.category || "";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
@@ -2370,6 +2380,7 @@ function filterEquipmentOptions(keyword) {
     }
   });
 }
+
 
 // 전역 window 객체에 함수 바인딩
 window.onSelectEquipment = onSelectEquipment;
