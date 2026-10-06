@@ -1909,15 +1909,23 @@ document.addEventListener("Load", () => {
   loadImportLogsData();
 });
 
-// 등록된 장비 목록 불러오기 (data-equipment.json)
+// 1. 장비 데이터 불러오기 함수 (콘솔 출력 강화 및 에러 핸들링)
 async function loadEquipmentData() {
   try {
     const response = await fetch("data-equipment.json");
+    
+    if (!response.ok) {
+      throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
+    }
+
     equipmentList = await response.json();
-    // 콘솔 출력 추가 부분
-    console.log("=== 불러온 장비 목록 데이터 ===");
-    console.table(equipmentList); // 콘솔에 보기 좋게 표 형태로 출력
-    populateEquipmentDropdown(); // 수입 모달 드롭다운 갱신
+    
+    // 콘솔 출력
+    console.log("=== 불러온 장비 목록 데이터 ===", equipmentList);
+    console.table(equipmentList);
+    
+    // 데이터 불러온 후 드롭다운 채우기
+    populateEquipmentDropdown();
   } catch (error) {
     console.error("장비 데이터를 불러오는 중 오류 발생:", error);
   }
@@ -1944,26 +1952,32 @@ function getMyCountry() {
   return typeof cleanName === "function" ? cleanName(rawCountry) : rawCountry.trim();
 }
 
-// 수입 모달 드롭다운 생성 함수
+// 2. 모달 드롭다운 채우기 함수
 function populateEquipmentDropdown() {
-  const selectEl = document.getElementById("imp-equipment-select");
-  if (!selectEl) return;
+  const selectEl = document.getElementById("importEquipmentSelect");
+  if (!selectEl) {
+    console.warn("importEquipmentSelect 요소를 찾을 수 없습니다.");
+    return;
+  }
 
   selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
 
-  if (equipmentList && equipmentList.length > 0) {
-    equipmentList.forEach((item, index) => {
-      const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
-      const name = item["장비이름"] || item.name || "미지정";
-      const category = item["장비유형"] || item.category || "";
-      const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
-
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
-      selectEl.appendChild(option);
-    });
+  if (!equipmentList || equipmentList.length === 0) {
+    console.warn("equipmentList가 비어 있어 드롭다운을 채울 수 없습니다.");
+    return;
   }
+
+  equipmentList.forEach((item, index) => {
+    const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
+    const name = item["장비이름"] || item.name || "미지정";
+    const category = item["장비유형"] || item.category || "";
+    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
+    selectEl.appendChild(option);
+  });
 }
 
 // 드롭다운 선택 시 필드 자동 채우기
@@ -2147,18 +2161,22 @@ function closeEquipmentModal() {
   if (modal) modal.style.display = "none";
 }
 
+// 3. 모달 열기 함수 (열릴 때 데이터를 다시 한 번 체크하도록 개선)
 function openImportModal() {
-  populateEquipmentDropdown(); // 최신 목록 채우기
-
-  // 자동 채움 대상 필드 ID (importCountry)
-  const countryInput = document.getElementById("importCountry") || document.getElementById("imp-importer");
-  
-  if (countryInput) {
-    // getMyCountry()로 로그인된 내 국가 이름을 가져와 자동으로 입력
-    countryInput.value = getMyCountry();
+  // 데이터가 비어있다면 불러오기 재시도, 있다면 바로 드롭다운 채움
+  if (!equipmentList || equipmentList.length === 0) {
+    loadEquipmentData();
+  } else {
+    populateEquipmentDropdown();
   }
 
-  // 모달 띄우기 (importEquipmentModal 또는 import-modal)
+  // 자국명 자동 입력
+  const countryInput = document.getElementById("importCountry") || document.getElementById("imp-importer");
+  if (countryInput) {
+    countryInput.value = typeof getMyCountry === "function" ? getMyCountry() : "";
+  }
+
+  // 모달 띄우기
   const modal = document.getElementById("importEquipmentModal") || document.getElementById("import-modal");
   if (modal) {
     modal.style.display = "flex";
