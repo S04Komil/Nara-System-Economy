@@ -1935,7 +1935,7 @@ async function loadImportLogsData() {
 // 2. UI 동적 연동 (드롭다운 & 표 렌더링)
 // ==========================================
 
-// Helper: 사용자 자국명 가져오기 (deleteInvestment 로직과 동일)
+// Helper: 사용자 자국명 가져오기
 function getMyCountry() {
   const rawCountry = (typeof currentUser !== "undefined" && currentUser.country) || window.myCountryName || "";
   return typeof cleanName === "function" ? cleanName(rawCountry) : rawCountry.trim();
@@ -1949,7 +1949,6 @@ function populateEquipmentDropdown() {
   selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
 
   equipmentList.forEach((item, index) => {
-    // 시트 컬럼명 또는 JSON 키값 대응 (수출국, 장비이름, 장비유형, 1대당 가격)
     const exporter = item["수출국"] || item.exporter || "미지정";
     const name = item["장비이름"] || item.name || "미지정";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
@@ -1986,13 +1985,13 @@ function onSelectEquipment(index) {
 // 수량 변경 시 총 금액 자동 계산
 function calculateTotalPrice() {
   const price = parseFloat(document.getElementById("imp-price").value) || 0;
-  const quantity = parseInt(document.getElementById("imp-quantity").value) || 0;
+  const quantity = parseInt(document.getElementById("imp-quantity").value, 10) || 0;
   document.getElementById("imp-total-price").value = (price * quantity).toFixed(2);
 }
 
-// 수출입 로그 테이블 렌더링 (자국이 수입국이거나 수출국인 내역만 필터링)
+// 수출입 로그 테이블 렌더링
 function renderImportLogsTable() {
-  const tbody = document.getElementById("import-logs-tbody");
+  const tbody = document.getElementById("import-logs-tbody") || document.getElementById("log-table-body");
   if (!tbody) return;
 
   tbody.innerHTML = "";
@@ -2004,12 +2003,10 @@ function renderImportLogsTable() {
     return;
   }
 
-  // 자국이 수입국(importer)이거나 수출국(exporter)인 로그만 필터링
   const myLogs = importLogsList.filter((log) => {
     const importer = log["수입국"] || log.importer || "";
     const exporter = log["수출국"] || log.exporter || "";
     
-    // cleanName 함수가 존재하면 가공 후 비교, 없으면 문자열 비교
     const cleanImp = typeof cleanName === "function" ? cleanName(importer) : importer.trim();
     const cleanExp = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
 
@@ -2069,13 +2066,12 @@ function openImportModal() {
     return;
   }
 
-  // 수입국(Importer) 필드에 로그인된 자국명 자동 세팅
   const importerInput = document.getElementById("imp-importer");
   if (importerInput) {
     importerInput.value = myCountry;
   }
 
-  populateEquipmentDropdown(); // 수입 모달을 열 때 최신 장비 목록 갱신
+  populateEquipmentDropdown();
   
   const modal = document.getElementById("import-modal");
   if (modal) modal.style.display = "flex";
@@ -2086,7 +2082,59 @@ function closeImportModal() {
   if (modal) modal.style.display = "none";
 }
 
-// 폼 Submit 처리 (Google Apps Script 연동)
+function openLogModal() {
+  renderImportLogsTable(); // 로그 모달 열 때 목록 새로고침
+  const modal = document.getElementById("log-modal");
+  if (modal) modal.style.display = "flex";
+}
+
+function closeLogModal() {
+  const modal = document.getElementById("log-modal");
+  if (modal) modal.style.display = "none";
+}
+
+// ------------------------------------------
+// 🛠️ [신규 추가] 장비 등록 폼 Submit 처리
+// ------------------------------------------
+const equipmentForm = document.getElementById("equipment-form");
+if (equipmentForm) {
+  equipmentForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const payload = {
+      action: "addEquipment", // GAS 백엔드 조건식에 맞게 지정
+      exporter: document.getElementById("eq-exporter").value,
+      name: document.getElementById("eq-name").value,
+      category: document.getElementById("eq-category").value,
+      price: parseFloat(document.getElementById("eq-price").value)
+    };
+
+    try {
+      const targetApiUrl = typeof API_EDIT !== "undefined" ? API_EDIT : GAS_API_URL;
+
+      const response = await fetch(targetApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.result === "success" || result.status === "success") {
+        alert("장비가 성공적으로 등록되었습니다!");
+        equipmentForm.reset();
+        closeEquipmentModal();
+      } else {
+        alert("장비 등록 실패: " + (result.message || "알 수 없는 오류"));
+      }
+    } catch (error) {
+      console.error("장비 등록 처리 중 오류 발생:", error);
+      alert("서버 통신 중 오류가 발생했습니다.");
+    }
+  });
+}
+
+// 📦 수입 신청 폼 Submit 처리
 const importForm = document.getElementById("import-form");
 if (importForm) {
   importForm.addEventListener("submit", async function (e) {
@@ -2104,9 +2152,9 @@ if (importForm) {
       name: document.getElementById("imp-name").value,
       category: document.getElementById("imp-category").value,
       price: parseFloat(document.getElementById("imp-price").value),
-      quantity: parseInt(document.getElementById("imp-quantity").value),
+      quantity: parseInt(document.getElementById("imp-quantity").value, 10),
       totalPrice: parseFloat(document.getElementById("imp-total-price").value),
-      importer: myCountry // 검증된 자국명 전송
+      importer: myCountry
     };
 
     try {
@@ -2134,25 +2182,12 @@ if (importForm) {
   });
 }
 
-// 모달 열기/닫기 함수
-function openEquipmentModal() {
-  document.getElementById("equipment-modal").style.display = "flex";
-}
-
-function closeEquipmentModal() {
-  document.getElementById("equipment-modal").style.display = "none";
-}
-
-function openImportModal() {
-  populateEquipmentDropdown(); // 수입 모달을 열 때 최신 장비 목록 갱신
-  document.getElementById("import-modal").style.display = "flex";
-}
-
-function closeImportModal() {
-  document.getElementById("import-modal").style.display = "none";
-}
+// 전역 window 객체에 함수 바인딩
 window.openEquipmentModal = openEquipmentModal;
+window.closeEquipmentModal = closeEquipmentModal;
 window.openImportModal = openImportModal;
 window.closeImportModal = closeImportModal;
-window.closeEquipmentModal = closeEquipmentModal;
+window.openLogModal = openLogModal;
+window.closeLogModal = closeLogModal;
+window.calculateTotalPrice = calculateTotalPrice;
 });
