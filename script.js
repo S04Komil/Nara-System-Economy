@@ -1071,14 +1071,21 @@ function initGoogleAuth() {
     google.accounts.id.initialize({
       client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
       callback: window.handleGoogleLogin,
-      ux_mode: "redirect"
+      ux_mode: "popup",       // callback을 사용하려면 ux_mode를 "popup"으로 지정해야 합니다.
+      auto_select: false,     // 자동 선택으로 인한 팝업 블록 방지
+      context: "signin"
     });
 
     const btnContainer = document.getElementById("google-login-btn");
     if (btnContainer) {
+      // 기존 버튼이 중복 렌더링되지 않도록 비워주기
+      btnContainer.innerHTML = "";
+      
       google.accounts.id.renderButton(btnContainer, {
         theme: "outline",
-        size: "large"
+        size: "large",
+        type: "standard",
+        shape: "rectangular"
       });
     }
   } else {
