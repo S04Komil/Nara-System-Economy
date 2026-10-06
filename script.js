@@ -2048,9 +2048,28 @@ function renderImportLogsTable() {
 // 3. 모달 제어 및 이벤트 처리
 // ==========================================
 
+// 장비 등록 모달 열기
 function openEquipmentModal() {
+  const myCountry = getMyCountry();
+  
+  if (!myCountry) {
+    alert("로그인 정보(자국명)를 찾을 수 없습니다.");
+    return;
+  }
+
+  // 수출국(생산국) 입력창에 자국명 자동 설정
+  const exporterInput = document.getElementById("eq-exporter");
+  if (exporterInput) {
+    exporterInput.value = myCountry;
+  }
+
   const modal = document.getElementById("equipment-modal");
   if (modal) modal.style.display = "flex";
+}
+
+function closeEquipmentModal() {
+  const modal = document.getElementById("equipment-modal");
+  if (modal) modal.style.display = "none";
 }
 
 function closeEquipmentModal() {
