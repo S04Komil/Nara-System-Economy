@@ -2212,6 +2212,7 @@ function closeImportModal() {
 }
 
 function openLogModal() {
+  loadImportLogsData();
   renderImportLogsTable();
   const modal = document.getElementById("log-modal");
   if (modal) modal.style.display = "flex";
