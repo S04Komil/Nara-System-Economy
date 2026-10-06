@@ -1892,24 +1892,25 @@ function closeNoticeModal() {
 window.checkNoticeModal = checkNoticeModal;
 window.closeNoticeModal = closeNoticeModal;
 
-// 구글 앱스스크립트 배포 URL (본인의 Web App URL로 교체하세요)
+// 구글 앱스스크립트 배포 URL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx3QQutdUCyAOHnn10W_xXKCFj9KPVrNOJ3V2RKyPvNbc3bfpylRvzuLwRsjGl2a1szcw/exec";
 
-// JSON 데이터 저장 변수
+// JSON 데이터 저장 및 선택 변수
 let equipmentList = [];
 let importLogsList = [];
+let SelectEquipmentIndex = null; // 오타 수정 및 전역 초기화
 
 // ==========================================
 // 1. JSON 데이터 불러오기 (GET)
 // ==========================================
 
-// 페이지 로드 시 JSON 데이터 불러오기
-document.addEventListener("Load", () => {
+// 페이지 로드 시 JSON 데이터 불러오기 ("DOMContentLoaded" 이벤트로 오타 수정)
+document.addEventListener("DOMContentLoaded", () => {
   loadEquipmentData();
   loadImportLogsData();
 });
 
-// 1. 장비 데이터 불러오기 함수 (콘솔 출력 강화 및 에러 핸들링)
+// 1. 장비 데이터 불러오기 함수
 async function loadEquipmentData() {
   try {
     const response = await fetch("data-equipment.json");
@@ -1920,11 +1921,9 @@ async function loadEquipmentData() {
 
     equipmentList = await response.json();
     
-    // 콘솔 출력
     console.log("=== 불러온 장비 목록 데이터 ===", equipmentList);
     console.table(equipmentList);
     
-    // 데이터 불러온 후 드롭다운 채우기
     populateEquipmentDropdown();
   } catch (error) {
     console.error("장비 데이터를 불러오는 중 오류 발생:", error);
@@ -1936,9 +1935,9 @@ async function loadImportLogsData() {
   try {
     const response = await fetch("data-importLogs.json");
     importLogsList = await response.json();
-    renderImportLogsTable(); // 수출입 로그 테이블 렌더링
-    // 콘솔 출력
-    console.log("=== 불러온 장비 목록 데이터 ===", importLogsList);
+    renderImportLogsTable();
+    
+    console.log("=== 불러온 수출입 로그 데이터 ===", importLogsList);
     console.table(importLogsList);
   } catch (error) {
     console.error("수출입 로그를 불러오는 중 오류 발생:", error);
@@ -1982,17 +1981,19 @@ function populateEquipmentDropdown() {
     selectEl.appendChild(option);
   });
 }
-let SelectEquipemntIndex = null;
+
 // 드롭다운 선택 시 필드 자동 채우기
 function onSelectEquipment(index) {
-  if (index === "" || index === null || undefined === equipmentList[index]) {
+  if (index === "" || index === null || index === undefined || !equipmentList[index]) {
+    SelectEquipmentIndex = null;
     if (document.getElementById("importExporter")) document.getElementById("importExporter").value = "";
     if (document.getElementById("importCategory")) document.getElementById("importCategory").value = "";
     if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = "";
-    if (document.getElementById("imp-total-price")) document.getElementById("imp-total-price").value = "";
+    if (document.getElementById("importTotalPrice")) document.getElementById("importTotalPrice").value = "";
     return;
   }
 
+  SelectEquipmentIndex = index;
   const selected = equipmentList[index];
   const exporter = selected["수출국"] || selected.exporter || selected.producer || "";
   const category = selected["장비유형"] || selected.category || "";
@@ -2001,7 +2002,7 @@ function onSelectEquipment(index) {
   if (document.getElementById("importExporter")) document.getElementById("importExporter").value = exporter;
   if (document.getElementById("importCategory")) document.getElementById("importCategory").value = category;
   if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = price;
-  SelectEquipmentIndex = index;
+  
   calculateTotalPrice();
 }
 
@@ -2055,28 +2056,25 @@ function renderImportLogsTable() {
     const exporter = log["수출국"] || log.exporter || "-";
     const name = log["장비이름"] || log.name || "-";
     const category = log["장비유형"] || log.category || "-";
-    const quantity = log["수량"] || log.quantity || 0;
-    const totalPrice = log["총 금액"] || log["총금액"] || log.totalPrice || 0;
+    const quantity = parseInt(log["수량"] || log.quantity || 1, 10);
+    const totalPrice = parseFloat(log["총 금액"] || log["총금액"] || log.totalPrice || 0);
     const status = log["상태"] || "승인 대기";
 
     const cleanExp = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
 
-    // 상태 뱃지 및 버튼 제어
+    // 상태 뱃지 및 버튼 제어 (버튼 클릭 시 quantity, totalPrice 전달 추가)
     let statusHtml = "";
     if (status === "승인 완료") {
       statusHtml = '<span style="color: #28a745; font-weight: bold;">승인 완료</span>';
     } else if (status === "거절됨") {
       statusHtml = '<span style="color: #dc3545; font-weight: bold;">거절됨</span>';
     } else {
-      // 승인 대기 상태인 경우
       if (cleanExp === myCountry) {
-        // 자국이 수출국인 경우: 승인/거절 버튼 표시
         statusHtml = `
-          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '승인 완료')" style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 4px;">승인</button>
-          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '거절됨')" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">거절</button>
+          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '승인 완료', ${quantity}, ${totalPrice})" style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 4px;">승인</button>
+          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '거절됨', ${quantity}, ${totalPrice})" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">거절</button>
         `;
       } else {
-        // 자국이 수입국인 경우: 대기 중 안내 뱃지
         statusHtml = '<span style="color: #ffc107; font-weight: bold;">수출 허가 대기중</span>';
       }
     }
@@ -2096,7 +2094,7 @@ function renderImportLogsTable() {
 }
 
 // 수출 승인/거절 요청 처리 함수
-async function handleExportApprove(timestamp, exporter, importer, name, status, quantity = 1) {
+async function handleExportApprove(timestamp, exporter, importer, name, status, quantity = 1, totalPrice = 0) {
   const actionText = status === "승인 완료" ? "승인" : "거절";
   if (!confirm(`[${importer}]의 ${name} 수입 요청을 ${actionText}하시겠습니까?`)) {
     return;
@@ -2114,7 +2112,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
   try {
     const targetApiUrl = GAS_API_URL;
 
-    // 1. 기존 승인/거절 상태(Log) 업데이트 요청
+    // 1. 승인/거절 상태(Log) 업데이트 요청
     const response = await fetch(targetApiUrl, {
       method: "POST",
       headers: { "Content-Type": "text/plain" },
@@ -2125,20 +2123,23 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
 
     if (result.result === "success" || result.status === "success") {
       
-      // 2. [신규] '승인 완료' 시 장비 거래 금액을 메인 경제 시트에 반영 (updateEquipmentTrade)
+      // 2. '승인 완료' 시 거래 금액을 메인 경제 시트에 반영 (updateEquipmentTrade)
       if (status === "승인 완료") {
-        // 장비 데이터에서 단가 가져오기 (단가 찾기 실패 시 0 처리)
-        const eqInfo = (window.equipmentData || []).find(e => e.name === name);
-        const unitPrice = eqInfo ? Number(eqInfo.price || 0) : 0;
-        const totalPrice = unitPrice * Number(quantity);
+        // 단가 및 총금액 계산
+        let finalAmount = Number(totalPrice);
+        if (finalAmount <= 0) {
+          const eqInfo = (equipmentList || []).find(e => (e["장비이름"] || e.name) === name);
+          const unitPrice = eqInfo ? Number(eqInfo["1대당 가격"] || eqInfo["1대당가격"] || eqInfo.price || 0) : 0;
+          finalAmount = unitPrice * Number(quantity);
+        }
 
-        if (totalPrice > 0) {
+        if (finalAmount > 0) {
           try {
             const tradePayload = {
               action: "updateEquipmentTrade",
               importer: importer,
               exporter: exporter,
-              amount: totalPrice
+              amount: finalAmount
             };
 
             await fetch(targetApiUrl, {
@@ -2155,8 +2156,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
       alert(`수출 허가가 성공적으로 [${status}] 처리되었습니다.`);
       closeLogModal();
       
-      // 필요 시 데이터 재로드
-      if (typeof loadImportLogs === "function") loadImportLogs();
+      if (typeof loadImportLogsData === "function") loadImportLogsData();
       if (typeof loadMainData === "function") loadMainData();
 
     } else {
@@ -2172,7 +2172,6 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
 // 3. 모달 제어 및 이벤트 처리
 // ==========================================
 
-// 장비 등록 모달 열기
 function openEquipmentModal() {
   const myCountry = getMyCountry();
   
@@ -2195,22 +2194,18 @@ function closeEquipmentModal() {
   if (modal) modal.style.display = "none";
 }
 
-// 3. 모달 열기 함수 (열릴 때 데이터를 다시 한 번 체크하도록 개선)
 function openImportModal() {
-  // 데이터가 비어있다면 불러오기 재시도, 있다면 바로 드롭다운 채움
   if (!equipmentList || equipmentList.length === 0) {
     loadEquipmentData();
   } else {
     populateEquipmentDropdown();
   }
 
-  // 자국명 자동 입력
   const countryInput = document.getElementById("importCountry") || document.getElementById("imp-importer");
   if (countryInput) {
     countryInput.value = typeof getMyCountry === "function" ? getMyCountry() : "";
   }
 
-  // 모달 띄우기
   const modal = document.getElementById("importEquipmentModal") || document.getElementById("import-modal");
   if (modal) {
     modal.style.display = "flex";
@@ -2218,13 +2213,13 @@ function openImportModal() {
 }
 
 function closeImportModal() {
-  // 1. 폼(Form) 전체 요소 리셋 (대수, 드롭다운 선택 상태 등 초기화)
   const importForm = document.getElementById("import-form") || document.getElementById("imp-form");
   if (importForm) {
     importForm.reset();
   }
 
-  // 2. 자동 채움 입력 필드들 개별 초기화
+  SelectEquipmentIndex = null;
+
   const fieldsToReset = [
     "importCountry",
     "importExporter",
@@ -2238,7 +2233,6 @@ function closeImportModal() {
     if (el) el.value = "";
   });
 
-  // 3. 모달 닫기 (숨김 처리)
   const modal = document.getElementById("importEquipmentModal") || document.getElementById("import-modal");
   if (modal) {
     modal.style.display = "none";
@@ -2247,7 +2241,6 @@ function closeImportModal() {
 
 function openLogModal() {
   loadImportLogsData();
-  renderImportLogsTable();
   const modal = document.getElementById("log-modal");
   if (modal) modal.style.display = "flex";
 }
@@ -2286,6 +2279,7 @@ if (equipmentForm) {
         alert("장비가 성공적으로 등록되었습니다!");
         equipmentForm.reset();
         closeEquipmentModal();
+        if (typeof loadEquipmentData === "function") loadEquipmentData();
       } else {
         alert("장비 등록 실패: " + (result.message || "알 수 없는 오류"));
       }
@@ -2310,10 +2304,18 @@ if (importForm) {
       return;
     }
 
+    if (SelectEquipmentIndex === null || !equipmentList[SelectEquipmentIndex]) {
+      alert("수입할 장비를 먼저 선택해주세요.");
+      return;
+    }
+
+    const selectedItem = equipmentList[SelectEquipmentIndex];
+    const selectedName = selectedItem["장비이름"] || selectedItem.name;
+
     const payload = {
       action: "importLog",
       exporter: document.getElementById("importExporter").value,
-      name: equipmentList[SelectEquipmentIndex]["장비이름"],
+      name: selectedName,
       category: document.getElementById("importCategory").value,
       price: parseFloat(document.getElementById("importUnitPrice").value),
       quantity: parseInt(document.getElementById("importQuantity").value, 10),
@@ -2322,9 +2324,7 @@ if (importForm) {
     };
 
     try {
-      const targetApiUrl = GAS_API_URL;
-
-      const response = await fetch(targetApiUrl, {
+      const response = await fetch(GAS_API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
@@ -2334,8 +2334,8 @@ if (importForm) {
 
       if (result.result === "success" || result.status === "success") {
         alert("수입 기록이 성공적으로 제출되었습니다!\n사이트에 반영되기까지 약간의 시간이 필요합니다.");
-        importForm.reset();
         closeImportModal();
+        if (typeof loadImportLogsData === "function") loadImportLogsData();
       } else {
         alert("수입 기록 실패: " + (result.message || "알 수 없는 오류"));
       }
@@ -2345,7 +2345,8 @@ if (importForm) {
     }
   });
 }
-  // 검색어에 맞게 드롭다운 옵션 필터링
+
+// 검색어에 맞게 드롭다운 옵션 필터링
 function filterEquipmentOptions(keyword) {
   const selectEl = document.getElementById("importEquipmentSelect");
   if (!selectEl || !equipmentList) return;
@@ -2361,10 +2362,9 @@ function filterEquipmentOptions(keyword) {
 
     const fullText = `[${exporter}] ${name} (${category})`.toLowerCase();
 
-    // 검색어가 포함된 항목만 드롭다운에 추가
     if (fullText.includes(cleanKeyword)) {
       const option = document.createElement("option");
-      option.value = index; // 원래 배열 인덱스를 유지
+      option.value = index;
       option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
       selectEl.appendChild(option);
     }
