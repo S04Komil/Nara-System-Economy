@@ -1071,8 +1071,8 @@ function initGoogleAuth() {
     google.accounts.id.initialize({
       client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
       callback: window.handleGoogleLogin,
-      ux_mode: "popup",       // callback을 사용하려면 ux_mode를 "popup"으로 지정해야 합니다.
-      auto_select: false,     // 자동 선택으로 인한 팝업 블록 방지
+      auto_select: false,
+      use_fedcm_for_prompt: false, // FedCM API 충돌 방지
       context: "signin"
     });
 
