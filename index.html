@@ -311,6 +311,7 @@
               <!-- 👈 [왼쪽] 장비 관련 & 로그 버튼 그룹 -->
               <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn-secondary" onclick="openEquipmentModal()" style="background-color: #28a745; color: white; border: none;">🛠️ 장비 등록</button>
+                <button type="button" class="btn-secondary" onclick="openMyEquipmentModal()" style="background-color: #ffc107; color: #212529; border: none;">📋 내 장비 관리</button>
                 <button type="button" class="btn-secondary" onclick="openImportModal()" style="background-color: #17a2b8; color: white; border: none;">📦 장비 수입</button>
                 <button type="button" class="btn-secondary" onclick="openLogModal()" style="background-color: #6c757d; color: white; border: none;">📋 수출입 로그</button>
               </div>
@@ -708,6 +709,29 @@
     </div>
     <div class="modal-buttons">
       <button type="button" onclick="closeLogModal()" class="btn-close">닫기</button>
+    </div>
+  </div>
+</div>
+  <!-- 자국 장비 관리 모달 -->
+<div id="my-equipment-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width: 800px;">
+    <span class="close-btn" onclick="closeMyEquipmentModal()">&times;</span>
+    <h2>자국 등록 장비 목록</h2>
+    
+    <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>장비이름</th>
+            <th>분류</th>
+            <th>1대당 가격</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="my-equipment-list-tbody">
+          <!-- JS로 동적 생성 -->
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
