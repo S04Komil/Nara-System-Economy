@@ -613,7 +613,8 @@
     <h3>🛠️️ 군사장비 등록</h3>
     <form id="equipment-form">
       <label>수출국(생산국)</label>
-      <input type="text" id="eq-exporter" placeholder="예: 대한민국" required>
+      <!-- readonly 속성 추가 및 연한 배경색 처리 -->
+      <input type="text" id="eq-exporter" style="background-color: #f0f0f0;" readonly required>
       <br>
       <label>장비이름</label>
       <input type="text" id="eq-name" placeholder="예: K2 흑표" required>
