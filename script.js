@@ -1937,6 +1937,9 @@ async function loadImportLogsData() {
     const response = await fetch("data-importLogs.json");
     importLogsList = await response.json();
     renderImportLogsTable(); // 수출입 로그 테이블 렌더링
+    // 콘솔 출력
+    console.log("=== 불러온 장비 목록 데이터 ===", importLogsList);
+    console.table(importLogsList);
   } catch (error) {
     console.error("수출입 로그를 불러오는 중 오류 발생:", error);
   }
