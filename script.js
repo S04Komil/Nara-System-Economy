@@ -1990,7 +1990,7 @@ function calculateTotalPrice() {
   document.getElementById("imp-total-price").value = (price * quantity).toFixed(2);
 }
 
-// 로그 테이블 출력 단위 수정
+// 수출입 로그 테이블 렌더링
 function renderImportLogsTable() {
   const tbody = document.getElementById("import-logs-tbody") || document.getElementById("log-table-body");
   if (!tbody) return;
@@ -2028,6 +2028,29 @@ function renderImportLogsTable() {
     const category = log["장비유형"] || log.category || "-";
     const quantity = log["수량"] || log.quantity || 0;
     const totalPrice = log["총 금액"] || log["총금액"] || log.totalPrice || 0;
+    const status = log["상태"] || "승인 대기";
+
+    const cleanExp = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
+
+    // 상태 뱃지 및 버튼 제어
+    let statusHtml = "";
+    if (status === "승인 완료") {
+      statusHtml = '<span style="color: #28a745; font-weight: bold;">승인 완료</span>';
+    } else if (status === "거절됨") {
+      statusHtml = '<span style="color: #dc3545; font-weight: bold;">거절됨</span>';
+    } else {
+      // 승인 대기 상태인 경우
+      if (cleanExp === myCountry) {
+        // 자국이 수출국인 경우: 승인/거절 버튼 표시
+        statusHtml = `
+          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '승인 완료')" style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 4px;">승인</button>
+          <button onclick="handleExportApprove('${date}', '${exporter}', '${importer}', '${name}', '거절됨')" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">거절</button>
+        `;
+      } else {
+        // 자국이 수입국인 경우: 대기 중 안내 뱃지
+        statusHtml = '<span style="color: #ffc107; font-weight: bold;">수출 허가 대기중</span>';
+      }
+    }
 
     tr.innerHTML = `
       <td>${date}</td>
@@ -2037,11 +2060,53 @@ function renderImportLogsTable() {
       <td>${category}</td>
       <td>${quantity}</td>
       <td>${totalPrice}만$</td>
-      <td><span class="status-badge status-complete">완료</span></td>
+      <td>${statusHtml}</td>
     `;
     tbody.appendChild(tr);
   });
 }
+
+// 수출 승인/거절 요청 처리 함수
+async function handleExportApprove(timestamp, exporter, importer, name, status) {
+  const actionText = status === "승인 완료" ? "승인" : "거절";
+  if (!confirm(`[${importer}]의 ${name} 수입 요청을 ${actionText}하시겠습니까?`)) {
+    return;
+  }
+
+  const payload = {
+    action: "approveImportLog",
+    timestamp: timestamp,
+    exporter: exporter,
+    importer: importer,
+    name: name,
+    status: status
+  };
+
+  try {
+    const targetApiUrl = typeof API_EDIT !== "undefined" ? API_EDIT : GAS_API_URL;
+
+    const response = await fetch(targetApiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.result === "success" || result.status === "success") {
+      alert(`수출 허가가 성공적으로 [${status}] 처리되었습니다.`);
+      closeLogModal();
+    } else {
+      alert("처리 실패: " + (result.message || "알 수 없는 오류"));
+    }
+  } catch (error) {
+    console.error("수출 허가 처리 오류:", error);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+// 전역 바인딩
+window.handleExportApprove = handleExportApprove;
 
 
 // ==========================================
@@ -2065,11 +2130,6 @@ function openEquipmentModal() {
 
   const modal = document.getElementById("equipment-modal");
   if (modal) modal.style.display = "flex";
-}
-
-function closeEquipmentModal() {
-  const modal = document.getElementById("equipment-modal");
-  if (modal) modal.style.display = "none";
 }
 
 function closeEquipmentModal() {
