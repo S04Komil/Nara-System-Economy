@@ -2181,8 +2181,31 @@ function openImportModal() {
 }
 
 function closeImportModal() {
-  const modal = document.getElementById("import-modal");
-  if (modal) modal.style.display = "none";
+  // 1. 폼(Form) 전체 요소 리셋 (대수, 드롭다운 선택 상태 등 초기화)
+  const importForm = document.getElementById("import-form") || document.getElementById("imp-form");
+  if (importForm) {
+    importForm.reset();
+  }
+
+  // 2. 자동 채움 입력 필드들 개별 초기화
+  const fieldsToReset = [
+    "importCountry",
+    "importExporter",
+    "importCategory",
+    "importUnitPrice",
+    "importTotalPrice"
+  ];
+
+  fieldsToReset.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  // 3. 모달 닫기 (숨김 처리)
+  const modal = document.getElementById("importEquipmentModal") || document.getElementById("import-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
 }
 
 function openLogModal() {
