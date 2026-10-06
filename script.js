@@ -1065,20 +1065,26 @@ window.handleGoogleLogin = function(response) {
   }
 };
 
+// 중복 초기화 방지 플래그
+let isGoogleAuthInitialized = false;
+
 // 4. 구글 로그인 버튼 렌더링 및 초기화
 function initGoogleAuth() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
-      callback: window.handleGoogleLogin,
-      auto_select: false,
-      use_fedcm_for_prompt: false, // FedCM API 충돌 방지
-      context: "signin"
-    });
+    // 최초 1회만 initialize 수행
+    if (!isGoogleAuthInitialized) {
+      google.accounts.id.initialize({
+        client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
+        callback: window.handleGoogleLogin,
+        auto_select: false,
+        use_fedcm_for_prompt: false,
+        context: "signin"
+      });
+      isGoogleAuthInitialized = true;
+    }
 
     const btnContainer = document.getElementById("google-login-btn");
     if (btnContainer) {
-      // 기존 버튼이 중복 렌더링되지 않도록 비워주기
       btnContainer.innerHTML = "";
       
       google.accounts.id.renderButton(btnContainer, {
@@ -1089,7 +1095,7 @@ function initGoogleAuth() {
       });
     }
   } else {
-    setTimeout(initGoogleAuth, 100);
+    setTimeout(initGoogleAuth, 200);
   }
 }
 
