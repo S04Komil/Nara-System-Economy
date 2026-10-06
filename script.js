@@ -1069,7 +1069,7 @@ window.handleGoogleLogin = function(response) {
 function initGoogleAuth() {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     google.accounts.id.initialize({
-      client_id: "278303869080-m2jll98sdrq83rllp23c0m0s6l53bksk.apps.googleusercontent.com",
+      client_id: "455580188168-cc2ti6s0vv4rj3u8m4qpa4p6io727nv0.apps.googleusercontent.com",
       callback: window.handleGoogleLogin,
       ux_mode: "popup",       // callback을 사용하려면 ux_mode를 "popup"으로 지정해야 합니다.
       auto_select: false,     // 자동 선택으로 인한 팝업 블록 방지
