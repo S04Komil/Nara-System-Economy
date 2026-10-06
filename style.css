@@ -844,6 +844,14 @@ nav {
   .edit-economy-container {
     padding: 12px;
   }
+  .modal-content {
+    padding: 20px 16px;
+  }
+  
+  .modal-buttons button {
+    flex: 1;
+  }
+
 }
 /* ==========================================
    수출입 및 장비 관리 모달 (추가 및 개선 속성)
