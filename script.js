@@ -1957,26 +1957,29 @@ function getMyCountry() {
 // 2. 모달 드롭다운 채우기 함수
 function populateEquipmentDropdown() {
   const selectEl = document.getElementById("importEquipmentSelect");
-  if (!selectEl) {
-    console.warn("importEquipmentSelect 요소를 찾을 수 없습니다.");
-    return;
-  }
+  if (!selectEl) return;
 
   selectEl.innerHTML = '<option value="">-- 장비를 선택하세요 --</option>';
 
-  if (!equipmentList || equipmentList.length === 0) {
-    console.warn("equipmentList가 비어 있어 드롭다운을 채울 수 없습니다.");
-    return;
-  }
+  if (!equipmentList || equipmentList.length === 0) return;
+
+  const myCountry = getMyCountry(); // 자국명 가져오기[cite: 2]
 
   equipmentList.forEach((item, index) => {
     const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
+
+    // 자국이 수출국인 장비는 제외[cite: 2]
+    const cleanExporter = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
+    if (myCountry && cleanExporter === myCountry) {
+      return;
+    }
+
     const name = item["장비이름"] || item.name || "미지정";
     const category = item["장비유형"] || item.category || "";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
 
     const option = document.createElement("option");
-    option.value = index;
+    option.value = index; // 원본 인덱스 유지[cite: 2]
     option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
     selectEl.appendChild(option);
   });
