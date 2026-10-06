@@ -1983,7 +1983,7 @@ function populateEquipmentDropdown() {
 // 드롭다운 선택 시 필드 자동 채우기
 function onSelectEquipment(index) {
   if (index === "" || index === null || undefined === equipmentList[index]) {
-    if (document.getElementById("importExporte")) document.getElementById("importExporte").value = "";
+    if (document.getElementById("importExporter")) document.getElementById("importExporter").value = "";
     if (document.getElementById("importCategory")) document.getElementById("importCategory").value = "";
     if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = "";
     if (document.getElementById("imp-total-price")) document.getElementById("imp-total-price").value = "";
@@ -1992,11 +1992,10 @@ function onSelectEquipment(index) {
 
   const selected = equipmentList[index];
   const exporter = selected["수출국"] || selected.exporter || selected.producer || "";
-  const name = selected["장비이름"] || selected.name || "";
   const category = selected["장비유형"] || selected.category || "";
   const price = parseFloat(selected["1대당 가격"] || selected["1대당가격"] || selected.price || 0);
 
-  if (document.getElementById("importExporte")) document.getElementById("importExporte").value = exporter;
+  if (document.getElementById("importExporter")) document.getElementById("importExporter").value = exporter;
   if (document.getElementById("importCategory")) document.getElementById("importCategory").value = category;
   if (document.getElementById("importUnitPrice")) document.getElementById("importUnitPrice").value = price;
 
