@@ -2189,7 +2189,7 @@ if (equipmentForm) {
     };
 
     try {
-      const targetApiUrl = typeof API_EDIT !== "undefined" ? API_EDIT : GAS_API_URL;
+      const targetApiUrl = GAS_API_URL;
 
       const response = await fetch(targetApiUrl, {
         method: "POST",
