@@ -1915,7 +1915,7 @@ async function loadEquipmentData() {
     const response = await fetch("data-equipment.json");
     equipmentList = await response.json();
     // 콘솔 출력 추가 부분
-    console.log("=== 불러온 장비 목록 데이터 ===", equipmentList);
+    console.log("=== 불러온 장비 목록 데이터 ===");
     console.table(equipmentList); // 콘솔에 보기 좋게 표 형태로 출력
     populateEquipmentDropdown(); // 수입 모달 드롭다운 갱신
   } catch (error) {
