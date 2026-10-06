@@ -1892,13 +1892,6 @@ function closeNoticeModal() {
 window.checkNoticeModal = checkNoticeModal;
 window.closeNoticeModal = closeNoticeModal;
 
-  // 구글 앱스스크립트 배포 URL (본인의 Web App URL로 교체하세요)
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx3QQutdUCyAOHnn10W_xXKCFj9KPVrNOJ3V2RKyPvNbc3bfpylRvzuLwRsjGl2a1szcw/exec";
-
-// JSON 데이터 저장 변수
-let equipmentList = [];
-let importLogsList = [];
-
 // 구글 앱스스크립트 배포 URL (본인의 Web App URL로 교체하세요)
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx3QQutdUCyAOHnn10W_xXKCFj9KPVrNOJ3V2RKyPvNbc3bfpylRvzuLwRsjGl2a1szcw/exec";
 
