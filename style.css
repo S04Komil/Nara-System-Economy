@@ -204,10 +204,6 @@ nav {
   z-index: 1;
 }
 
-.rank-item:last-child {
-  border-bottom: none;
-}
-
 .rank-num {
   font-weight: bold;
   width: 28px;
@@ -254,10 +250,10 @@ nav {
 }
 
 .world-card {
-  background: var(--card-bg, #ffffff);
+  background: var(--card-bg);
   padding: 14px;
   border-radius: 10px;
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
@@ -344,11 +340,13 @@ nav {
   flex-shrink: 0;
 }
 
-/* 모달 레이아웃 모바일 반응형 처리 */
+/* 모달 레이아웃 및 안내문 모달 Overlay 통합 */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -371,7 +369,8 @@ nav {
 
 .modal-close {
   position: absolute;
-  top: 12px; right: 16px;
+  top: 12px; 
+  right: 16px;
   font-size: 24px;
   background: none;
   border: none;
@@ -667,25 +666,6 @@ nav {
   min-height: 44px;
 }
 
-/* 모바일 전용 반응형 미디어 쿼리 최적화 */
-@media (max-width: 768px) {
-  .form-row-2 {
-    grid-template-columns: 1fr; /* 2분할 폼을 1열 세로 레이아웃으로 변경 */
-  }
-
-  .row-grid-2, .row-grid-3 {
-    grid-template-columns: 1fr; /* 모달 내부 그리드를 모바일에서 1열로 변경 */
-  }
-
-  .main-title {
-    font-size: 1.2rem;
-  }
-
-  .edit-economy-container {
-    padding: 12px;
-  }
-}
-
 .btn-secondary {
   padding: 12px 24px;
   font-size: 15px;
@@ -777,21 +757,8 @@ nav {
 .changelog-item[open] {
   background-color: #fafafa !important;
 }
-/* 안내문 모달 배경 Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
 
-/* 안내문 창 박스 */
+/* 안내문 모달 박스 및 애니메이션 */
 .notice-modal-content {
   background: #ffffff;
   width: 90%;
@@ -859,95 +826,41 @@ nav {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* 모바일 전용 반응형 미디어 쿼리 최적화 */
+@media (max-width: 768px) {
+  .form-row-2 {
+    grid-template-columns: 1fr; /* 2분할 폼을 1열 세로 레이아웃으로 변경 */
+  }
+
+  .row-grid-2, .row-grid-3 {
+    grid-template-columns: 1fr; /* 모달 내부 그리드를 모바일에서 1열로 변경 */
+  }
+
+  .main-title {
+    font-size: 1.2rem;
+  }
+
+  .edit-economy-container {
+    padding: 12px;
+  }
+}
 /* ==========================================
-   수출입 및 장비 관리 모달 / 테이블 스타일
+   수출입 및 장비 관리 모달 (추가 및 개선 속성)
    ========================================== */
 
-/* 모달 기본 모달 배경 및 중앙 정렬 */
+/* 모달 컨테이너 - 중앙 정렬 속성 보완 */
 .modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
   justify-content: center;
   align-items: center;
   padding: 20px;
   box-sizing: border-box;
 }
 
-/* 모달 컨텐츠 창 */
+/* 모달 컨텐츠 - 높이 제한 및 내부 스크롤 추가 */
 .modal-content {
-  background-color: #ffffff;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 520px;
-  padding: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  position: relative;
   max-height: 90vh;
   overflow-y: auto;
-}
-
-/* 모달 헤더 */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #888;
-  transition: color 0.2s;
-}
-
-.close-btn:hover {
-  color: #111;
-}
-
-/* 폼 그룹 및 레이아웃 */
-.form-group {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: #444;
-}
-
-.form-group input,
-.form-group select {
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: #2563eb;
-  outline: none;
 }
 
 /* 읽기 전용 입력창 스타일 */
@@ -967,19 +880,65 @@ nav {
   flex: 1;
 }
 
-/* 모달 버튼 영역 */
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
-}
-
-.btn-submit {
-  background-color: #2563eb;
-  color: #fff;
+/* 취소 버튼 스타일 */
+.btn-cancel {
+  background-color: #e5e7eb;
+  color: #374151;
   border: none;
   padding: 10px 18px;
-  border-radius:
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background-color: #d1d5db;
+}
+
+/* ==========================================
+   수출입 로그 테이블 & 상태 뱃지
+   ========================================== */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+th, td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.status-complete {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
