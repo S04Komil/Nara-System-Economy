@@ -2399,6 +2399,123 @@ function filterEquipmentOptions(keyword) {
     }
   });
 }
+// ==========================================
+// 4. 내 장비 목록 관리 모달 기능
+// ==========================================
+
+// 내 장비 목록 모달 열기
+function openMyEquipmentModal() {
+  const myCountry = getMyCountry();
+
+  if (!myCountry) {
+    alert("로그인 정보(자국명)를 찾을 수 없습니다.");
+    return;
+  }
+
+  // 데이터가 없으면 다시 불러오기
+  if (!equipmentList || equipmentList.length === 0) {
+    loadEquipmentData().then(() => {
+      renderMyEquipmentTable();
+    });
+  } else {
+    renderMyEquipmentTable();
+  }
+
+  const modal = document.getElementById("my-equipment-modal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+// 내 장비 목록 모달 닫기
+function closeMyEquipmentModal() {
+  const modal = document.getElementById("my-equipment-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+// 자국 장비 데이터 표 렌더링
+function renderMyEquipmentTable() {
+  const tbody = document.getElementById("my-equipment-list-tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+  const myCountry = getMyCountry();
+
+  // 내 국가 데이터 필터링
+  const myEquipments = (equipmentList || []).filter((eq) => {
+    const exporter = eq["수출국"] || eq.exporter || eq.producer || "";
+    const cleanExporter = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
+    return myCountry && cleanExporter === myCountry;
+  });
+
+  if (myEquipments.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 15px;">등록된 자국 장비가 없습니다.</td></tr>';
+    return;
+  }
+
+  myEquipments.forEach((item) => {
+    const name = item["장비이름"] || item.name || "미지정";
+    const category = item["장비유형"] || item.category || "-";
+    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>${name}</strong></td>
+      <td style="padding: 8px; border-bottom: 1px solid #ddd;">${category}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #ddd;">${price}만$</td>
+      <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">
+        <button onclick="deleteMyEquipment('${name}')" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">삭제</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// 장비 삭제 요청
+async function deleteMyEquipment(name) {
+  const myCountry = getMyCountry();
+
+  if (!confirm(`정말로 [${name}] 장비를 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  const payload = {
+    action: "deleteEquipment",
+    exporter: myCountry,
+    name: name
+  };
+
+  try {
+    const response = await fetch(GAS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.result === "success" || result.status === "success") {
+      alert("장비가 성공적으로 삭제되었습니다.");
+      if (typeof loadEquipmentData === "function") {
+        await loadEquipmentData();
+        renderMyEquipmentTable();
+      }
+    } else {
+      alert("삭제 실패: " + (result.message || "알 수 없는 오류"));
+    }
+  } catch (error) {
+    console.error("장비 삭제 처리 중 오류 발생:", error);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+// 전역 window 객체 바인딩 추가
+window.openMyEquipmentModal = openMyEquipmentModal;
+window.closeMyEquipmentModal = closeMyEquipmentModal;
+window.renderMyEquipmentTable = renderMyEquipmentTable;
+window.deleteMyEquipment = deleteMyEquipment;
 
 
 // 전역 window 객체에 함수 바인딩
