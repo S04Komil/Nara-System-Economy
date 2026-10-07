@@ -270,7 +270,7 @@
             </div>
 
             <!-- 9행: 복지수준(선택형)과 경제투자율(입력/조절, 0.1단위) -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-welfare">복지수준</label>
                 <select id="edit-welfare">
@@ -284,6 +284,10 @@
                   <option value="중간복지국가">중간복지국가</option>
                   <option value="높은복지국가">높은복지국가</option>
                 </select>
+              </div>
+              <div class="info-box">
+                <span class="info-label">복지지출비</span>
+                <span id="welfare-budget-display" class="info-val">-</span>
               </div>
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-invest-rate">경제투자율 (%)</label>
@@ -412,8 +416,9 @@
               <div class="info-box"><span class="info-label">경제체제</span><span id="modal-system" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">주업</span><span id="modal-industry" class="info-val">-</span></div>
             </div>
-            <div class="modal-row row-grid-1">
+            <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">복지수준</span><span id="modal-welfare" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">복지지출비</span><span id="modal-welfare-budget" class="info-val">-</span></div>
             </div>
             <div class="modal-row row-grid-1">
               <div class="info-box"><span class="info-label">국고</span><span id="modal-treasury" class="info-val">-</span></div>
