@@ -543,6 +543,15 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     };
   });
 
+  // 주요 연합 깃발/로고 URL 맵 정의
+  const unionFlagMap = new Map([
+    ['NATO', 'https://upload.wikimedia.org/wikipedia/commons/3/37/Flag_of_NATO.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
+    ['WTO', 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Warsaw_Pact_Logo.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
+    ['EU', 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
+    ['CSTO', 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Flag_of_the_Collective_Security_Treaty_Organization.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
+    ['SCO', 'https://upload.wikimedia.org/wikipedia/ko/7/7b/SCO.svg?utm_source=ko.wikipedia.org&utm_campaign=index&utm_content=original']
+  ]);
+
   // === 연합 데이터 집계 및 계산 (중복 쉼표 분리 반영) ===
   const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
   const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
@@ -555,14 +564,12 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       const rawUnionStr = String(item['소속연합'] || item['연합'] || '').trim();
       if (!rawUnionStr || rawUnionStr === '-' || rawUnionStr === 'N/A' || rawUnionStr === '무소속') return;
 
-      // 쉼표(,) 기준 분할 및 공백 제거
       const unions = rawUnionStr.split(',').map(u => u.trim()).filter(Boolean);
 
       const gdpVal = parseNumber(item['GDP'] || item['GDP(10억달러)']) * 10;
       const defVal = parseNumber(item['국방비'] || item['국방비(10억달러)']) * 10;
       const popVal = parseNumber(item['인구'] || item['인구(만명)']) * 10000;
 
-      // 분리된 모든 연합에 해당 국가 수치 가산
       unions.forEach(unionName => {
         if (!unionTotals.has(unionName)) {
           unionTotals.set(unionName, { gdp: 0, def: 0, pop: 0 });
@@ -583,7 +590,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       } else if (isDefKey) {
         unionVal = uData.def;
       } else if (isPerCapGdpKey) {
-        // 평균 1인당 GDP = 총 GDP(달러) / 총 인구(명)
         unionVal = uData.pop > 0 ? (uData.gdp * 100000000) / uData.pop : 0;
       }
 
@@ -651,12 +657,25 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
 
     let flagHtml = "";
-    const flagUrl = flagMap.get(item.cleanKey);
-    if (flagUrl && !item.isWorld && !item.isUnion) {
-      flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
+    if (item.isUnion) {
+      const unionFlagUrl = unionFlagMap.get(item.cleanKey);
+      if (unionFlagUrl) {
+        flagHtml = `<img src="${unionFlagUrl}" class="rank-flag" alt="${item.cleanKey} 연합기" style="width: 22px; height: 15px; object-fit: contain; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
+      }
+    } else {
+      const flagUrl = flagMap.get(item.cleanKey);
+      if (flagUrl && !item.isWorld) {
+        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
+      }
     }
 
     let percent = 0;
+    if (key === '1인당GDP') {
+      percent = (item.val / maxValInList) * 100;
+    } else {
+      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
+    }
+    percent =0;
     if (key === '1인당GDP') {
       percent = (item.val / maxValInList) * 100;
     } else {
