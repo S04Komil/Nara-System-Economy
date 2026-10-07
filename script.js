@@ -543,7 +543,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     };
   });
 
-  // 주요 연합 깃발/로고 URL 맵 정의
+  // 주요 연합 깃발/로고 URL 맵
   const unionFlagMap = new Map([
     ['NATO', 'https://upload.wikimedia.org/wikipedia/commons/3/37/Flag_of_NATO.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
     ['WTO', 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Warsaw_Pact_Logo.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
@@ -552,13 +552,13 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     ['SCO', 'https://upload.wikimedia.org/wikipedia/ko/7/7b/SCO.svg?utm_source=ko.wikipedia.org&utm_campaign=index&utm_content=original']
   ]);
 
-  // === 연합 데이터 집계 및 계산 (중복 쉼표 분리 반영) ===
+  // === 연합 데이터 집계 및 계산 ===
   const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
   const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
   const isPerCapGdpKey = (key === '1인당GDP');
 
   if (isGdpKey || isDefKey || isPerCapGdpKey) {
-    const unionTotals = new Map(); // { gdp, def, pop }
+    const unionTotals = new Map();
 
     mainData.forEach(item => {
       const rawUnionStr = String(item['소속연합'] || item['연합'] || '').trim();
@@ -675,12 +675,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     } else {
       percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
     }
-    percent =0;
-    if (key === '1인당GDP') {
-      percent = (item.val / maxValInList) * 100;
-    } else {
-      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
-    }
     percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
 
     const li = document.createElement('li');
@@ -689,21 +683,20 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const countryClickableAttr = (item.isWorld || item.isUnion) ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
 
     li.innerHTML = `
-      <div class="rank-bar" style="width: ${percent}%; ${item.isUnion ? 'background: rgba(255, 193, 7, 0.25);' : ''}"></div>
+      <div class="rank-bar" style="width: ${percent}%; ${item.isUnion ? 'background: rgba(255, 193, 7, 0.12); border-right: 2px solid #ffd54f;' : ''}"></div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="rank-num">${rankDisplay}</span>
         ${rankDiffHtml}
-        <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px; ${item.isUnion ? 'font-weight: bold; color: #ffca28;' : ''}">
+        <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px; ${item.isUnion ? 'font-weight: 600; color: #ffd54f;' : ''}">
           ${flagHtml}
           <span class="rank-country">${item.country}</span>
         </span>
       </div>
-      <span class="rank-val">${formattedVal}</span>
+      <span class="rank-val" style="${item.isUnion ? 'color: #ffd54f; font-weight: 600;' : ''}">${formattedVal}</span>
     `;
     listEl.appendChild(li);
   });
 };
-
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
 
