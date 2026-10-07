@@ -1856,11 +1856,10 @@ async function loadChangelog() {
   }
 }
 
-// 모달 외부 클릭 시 닫기
+// 모든 모달 외부(배경) 클릭 시 닫기
 window.addEventListener('click', function(event) {
-  const changelogModal = document.getElementById('changelog-modal');
-  if (event.target === changelogModal) {
-    closeChangelogModal();
+  if (event.target.classList.contains('modal-overlay')) {
+    event.target.style.display = 'none';
   }
 });
 window.openChangelogModal = openChangelogModal;
