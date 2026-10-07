@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const welfareEl = document.getElementById('modal-welfare');
     const welfareE2 = document.getElementById('modal-welfare-budget');
-    const welfare_budget = formatMoney((parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10);
+    const welfare_budget = formatMoney(parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10);
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
     if (welfareEl) welfareEl.innerText = formatMoney(welfare_budget) || '-';
 
