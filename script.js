@@ -683,16 +683,16 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const countryClickableAttr = (item.isWorld || item.isUnion) ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
 
     li.innerHTML = `
-      <div class="rank-bar" style="width: ${percent}%; ${item.isUnion ? 'background: rgba(255, 193, 7, 0.12); border-right: 2px solid #ffd54f;' : ''}"></div>
+      <div class="rank-bar" style="width: ${percent}%; ${item.isUnion ? 'background: rgba(255, 193, 7, 0.12); border-right: 2px solid rgba(255, 193, 7, 0.5);' : ''}"></div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="rank-num">${rankDisplay}</span>
         ${rankDiffHtml}
-        <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px; ${item.isUnion ? 'font-weight: 600; color: #ffd54f;' : ''}">
+        <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px;">
           ${flagHtml}
           <span class="rank-country">${item.country}</span>
         </span>
       </div>
-      <span class="rank-val" style="${item.isUnion ? 'color: #ffd54f; font-weight: 600;' : ''}">${formattedVal}</span>
+      <span class="rank-val">${formattedVal}</span>
     `;
     listEl.appendChild(li);
   });
