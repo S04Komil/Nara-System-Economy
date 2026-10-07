@@ -1933,9 +1933,6 @@ async function loadEquipmentData() {
 
     equipmentList = await response.json();
     
-    console.log("=== 불러온 장비 목록 데이터 ===", equipmentList);
-    console.table(equipmentList);
-    
     populateEquipmentDropdown();
   } catch (error) {
     console.error("장비 데이터를 불러오는 중 오류 발생:", error);
@@ -1949,8 +1946,6 @@ async function loadImportLogsData() {
     importLogsList = await response.json();
     renderImportLogsTable();
     
-    console.log("=== 불러온 수출입 로그 데이터 ===", importLogsList);
-    console.table(importLogsList);
   } catch (error) {
     console.error("수출입 로그를 불러오는 중 오류 발생:", error);
   }
