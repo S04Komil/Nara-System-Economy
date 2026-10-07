@@ -673,6 +673,7 @@ document.addEventListener("DOMContentLoaded", function() {
     } else if (rawGdp > 0) {
       defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
     }
+    
 
     const defRatioEl = document.getElementById('modal-def-ratio');
     if (defRatioEl) defRatioEl.innerText = defRatioDisplay;
@@ -746,9 +747,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const welfareEl = document.getElementById('modal-welfare');
     const welfareE2 = document.getElementById('modal-welfare-budget');
-    const welfare_budget = formatMoney(parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10);
+    const welfare_budget = parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10;
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
-    if (welfareEl) welfareEl.innerText = formatMoney(welfare_budget) || '-';
+    if (welfareE2) welfareE2.innerText = formatMoney(welfare_budget) || '-';
 
     const rawTreasuryVal = getPropByCleanKey(item, '국고');
     const treasuryEl = document.getElementById('modal-treasury');
