@@ -2161,7 +2161,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
               amount: amountInBillion
             };
 
-            await fetch(targetApiUrl, {
+            await fetch(API_EDIT, {
               method: "POST",
               headers: { "Content-Type": "text/plain" },
               body: JSON.stringify(tradePayload)
