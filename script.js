@@ -395,42 +395,22 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
-    if (sheetName) {
-      const parsedYear = parseInt(String(sheetName).replace(/[^\d]/g, ''), 10);
-      if (!isNaN(parsedYear)) {
-        currentSheetYear = parsedYear;
-      }
+window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
+  if (sheetName) {
+    const parsedYear = parseInt(String(sheetName).replace(/[^\d]/g, ''), 10);
+    if (!isNaN(parsedYear)) {
+      currentSheetYear = parsedYear;
     }
+  }
 
-    const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
-    const rankView = document.getElementById('rank-view');
-    const myEconomyView = document.getElementById('my-economy-view');
+  const mainView = document.getElementById('main-view') || document.getElementById('main-dashboard-view');
+  const rankView = document.getElementById('rank-view');
+  const myEconomyView = document.getElementById('my-economy-view');
 
-    if (key === 'my-economy-view' || key === 'my-economy' || key === '자국경제') {
-      if (mainView) mainView.style.display = 'none';
-      if (rankView) rankView.style.display = 'none';
-      if (myEconomyView) myEconomyView.style.display = 'block';
-
-      document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
-      if (navBtnId) {
-        const btn = document.getElementById(navBtnId);
-        if (btn) btn.classList.add('active');
-      }
-
-      if (typeof window.showMyEconomyView === 'function') {
-        window.showMyEconomyView();
-      } else if (typeof showMyEconomyView === 'function') {
-        showMyEconomyView();
-      }
-      return;
-    }
-
+  if (key === 'my-economy-view' || key === 'my-economy' || key === '자국경제') {
     if (mainView) mainView.style.display = 'none';
-    if (myEconomyView) myEconomyView.style.display = 'none';
-    if (rankView) rankView.style.display = 'block';
-
-    document.getElementById('rank-title').innerText = title;
+    if (rankView) rankView.style.display = 'none';
+    if (myEconomyView) myEconomyView.style.display = 'block';
 
     document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
     if (navBtnId) {
@@ -438,190 +418,272 @@ document.addEventListener("DOMContentLoaded", function() {
       if (btn) btn.classList.add('active');
     }
 
-    const listEl = document.getElementById('rank-list');
-    listEl.innerHTML = '';
+    if (typeof window.showMyEconomyView === 'function') {
+      window.showMyEconomyView();
+    } else if (typeof showMyEconomyView === 'function') {
+      showMyEconomyView();
+    }
+    return;
+  }
 
-    let totalBaseVal = 0;
-    if (key === 'GDP(10억달러)' || key === 'GDP') totalBaseVal = worldTotals.gdp;
-    else if (key === '인구(만명)' || key === '인구') totalBaseVal = worldTotals.pop;
-    else if (key === '국방비(10억달러)' || key === '국방비') totalBaseVal = worldTotals.def;
+  if (mainView) mainView.style.display = 'none';
+  if (myEconomyView) myEconomyView.style.display = 'none';
+  if (rankView) rankView.style.display = 'block';
 
-    let currentList = mainData.map(item => {
-      let rawCountry = extractCountryFromRow(item);
-      let cleanedName = cleanName(rawCountry);
+  document.getElementById('rank-title').innerText = title;
 
-      if (cleanedName === '전세계') return null;
+  document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+  if (navBtnId) {
+    const btn = document.getElementById(navBtnId);
+    if (btn) btn.classList.add('active');
+  }
 
-      let rawVal = item[key];
-      if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
-        return null;
-      }
+  const listEl = document.getElementById('rank-list');
+  listEl.innerHTML = '';
 
-      let numVal = parseFloat(rawVal);
-      if (isNaN(numVal) || numVal <= 0) return null;
+  let totalBaseVal = 0;
+  if (key === 'GDP(10억달러)' || key === 'GDP') totalBaseVal = worldTotals.gdp;
+  else if (key === '인구(만명)' || key === '인구') totalBaseVal = worldTotals.pop;
+  else if (key === '국방비(10억달러)' || key === '국방비') totalBaseVal = worldTotals.def;
 
-      if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
-        numVal *= 10;
-      }
+  let currentList = mainData.map(item => {
+    let rawCountry = extractCountryFromRow(item);
+    let cleanedName = cleanName(rawCountry);
 
-      return { country: rawCountry, cleanKey: cleanedName, val: numVal };
-    })
-    .filter(item => item !== null && item.country !== '')
-    .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+    if (cleanedName === '전세계') return null;
 
-    let targetSeriesData = [];
-    if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
-    else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
-    else if (key === '1인당GDP') targetSeriesData = globalCapData;
-
-    const prevRankMap = new Map();
-
-    if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
-      const yearKeys = getSortedYearKeys(targetSeriesData);
-
-      const validYearKeys = yearKeys.filter(k => {
-        const y = parseInt(k.replace(/[^\d]/g, ''), 10);
-        return y <= currentSheetYear;
-      });
-
-      if (validYearKeys.length > 0) {
-        const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
-        
-        let prevYearKey = null;
-        if (exactIdx > 0) {
-          prevYearKey = validYearKeys[exactIdx - 1];
-        } else if (exactIdx === -1 && validYearKeys.length >= 2) {
-          prevYearKey = validYearKeys[validYearKeys.length - 2];
-        } else if (validYearKeys.length >= 1) {
-          prevYearKey = validYearKeys[0];
-        }
-
-        if (prevYearKey) {
-          let prevList = targetSeriesData
-            .map(item => {
-              let rawCountry = extractCountryFromRow(item);
-              let cleanedName = cleanName(rawCountry);
-
-              if (cleanedName === '전세계') return null;
-
-              let rawVal = item[prevYearKey];
-              if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
-                return null;
-              }
-
-              let numVal = parseFloat(rawVal);
-              if (isNaN(numVal) || numVal <= 0) return null;
-
-              if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
-                numVal *= 10;
-              }
-
-              return { rawCountry: String(rawCountry).trim(), cleanKey: cleanedName, val: numVal };
-            })
-            .filter(item => item !== null && item.cleanKey !== '')
-            .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
-
-          prevList.forEach((item, idx) => {
-            prevRankMap.set(item.cleanKey, idx + 1);
-          });
-        }
-      }
+    let rawVal = item[key];
+    if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+      return null;
     }
 
-    let listData = currentList.map((item, idx) => {
-      const currentRank = idx + 1;
-      const prevRank = prevRankMap.get(item.cleanKey);
+    let numVal = parseFloat(rawVal);
+    if (isNaN(numVal) || numVal <= 0) return null;
 
-      return {
-        country: item.country,
-        cleanKey: item.cleanKey,
-        val: item.val,
-        currentRank: currentRank,
-        prevRank: prevRank || null,
-        isWorld: false
-      };
+    if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+      numVal *= 10;
+    }
+
+    return { country: rawCountry, cleanKey: cleanedName, val: numVal };
+  })
+  .filter(item => item !== null && item.country !== '')
+  .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+
+  let targetSeriesData = [];
+  if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
+  else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
+  else if (key === '1인당GDP') targetSeriesData = globalCapData;
+
+  const prevRankMap = new Map();
+
+  if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
+    const yearKeys = getSortedYearKeys(targetSeriesData);
+
+    const validYearKeys = yearKeys.filter(k => {
+      const y = parseInt(k.replace(/[^\d]/g, ''), 10);
+      return y <= currentSheetYear;
     });
 
-    if (key === '1인당GDP') {
-      listData.push({
-        country: '전세계',
-        cleanKey: '전세계',
-        val: worldTotals.cap,
-        currentRank: null,
-        prevRank: null,
-        isWorld: true
-      });
-      listData.sort((a, b) => b.val - a.val);
-    }
-
-    const maxValInList = listData.length > 0 ? listData[0].val : 1;
-    let rankCounter = 1;
-
-    listData.forEach((item) => {
-      let formattedVal = "";
-      if (unitType === '달러') {
-        formattedVal = formatMoney(item.val);
-      } else if (unitType === '명') {
-        formattedVal = formatPopulation(item.val);
-      } else if (unitType === '달러_직접') {
-        formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
-      }
-
-      let rankDiffHtml = "";
-      let rankDisplay = "";
-
-      if (item.isWorld) {
-        rankDisplay = "-";
-      } else {
-        rankDisplay = `${rankCounter}.`;
-        rankCounter++;
-
-        if (key === '인구(만명)' || key === '인구') {
-          rankDiffHtml = "";
-        } else if (!item.prevRank) {
-          rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
-        } else {
-          const diff = item.prevRank - item.currentRank;
-          if (diff > 0) rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
-          else if (diff < 0) rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
-          else rankDiffHtml = `<span class="rank-diff same">-</span>`;
-        }
-      }
-
-      let flagHtml = "";
-      const flagUrl = flagMap.get(item.cleanKey);
-      if (flagUrl && !item.isWorld) {
-        flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
-      }
-
-      let percent = 0;
-      if (key === '1인당GDP') {
-        percent = (item.val / maxValInList) * 100;
-      } else {
-        percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
-      }
-      percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
-
-      const li = document.createElement('li');
-      li.className = `rank-item ${item.isWorld ? 'world-item' : ''}`;
+    if (validYearKeys.length > 0) {
+      const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
       
-      const countryClickableAttr = item.isWorld ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
+      let prevYearKey = null;
+      if (exactIdx > 0) {
+        prevYearKey = validYearKeys[exactIdx - 1];
+      } else if (exactIdx === -1 && validYearKeys.length >= 2) {
+        prevYearKey = validYearKeys[validYearKeys.length - 2];
+      } else if (validYearKeys.length >= 1) {
+        prevYearKey = validYearKeys[0];
+      }
 
-      li.innerHTML = `
-        <div class="rank-bar" style="width: ${percent}%;"></div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="rank-num">${rankDisplay}</span>
-          ${rankDiffHtml}
-          <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px;">
-            ${flagHtml}
-            <span class="rank-country">${item.country}</span>
-          </span>
-        </div>
-        <span class="rank-val">${formattedVal}</span>
-      `;
-      listEl.appendChild(li);
+      if (prevYearKey) {
+        let prevList = targetSeriesData
+          .map(item => {
+            let rawCountry = extractCountryFromRow(item);
+            let cleanedName = cleanName(rawCountry);
+
+            if (cleanedName === '전세계') return null;
+
+            let rawVal = item[prevYearKey];
+            if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
+              return null;
+            }
+
+            let numVal = parseFloat(rawVal);
+            if (isNaN(numVal) || numVal <= 0) return null;
+
+            if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
+              numVal *= 10;
+            }
+
+            return { rawCountry: String(rawCountry).trim(), cleanKey: cleanedName, val: numVal };
+          })
+          .filter(item => item !== null && item.cleanKey !== '')
+          .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+
+        prevList.forEach((item, idx) => {
+          prevRankMap.set(item.cleanKey, idx + 1);
+        });
+      }
+    }
+  }
+
+  let listData = currentList.map((item, idx) => {
+    const currentRank = idx + 1;
+    const prevRank = prevRankMap.get(item.cleanKey);
+
+    return {
+      country: item.country,
+      cleanKey: item.cleanKey,
+      val: item.val,
+      currentRank: currentRank,
+      prevRank: prevRank || null,
+      isWorld: false,
+      isUnion: false
+    };
+  });
+
+  // === 연합 데이터 집계 및 계산 (중복 쉼표 분리 반영) ===
+  const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
+  const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
+  const isPerCapGdpKey = (key === '1인당GDP');
+
+  if (isGdpKey || isDefKey || isPerCapGdpKey) {
+    const unionTotals = new Map(); // { gdp, def, pop }
+
+    mainData.forEach(item => {
+      const rawUnionStr = String(item['소속연합'] || item['연합'] || '').trim();
+      if (!rawUnionStr || rawUnionStr === '-' || rawUnionStr === 'N/A' || rawUnionStr === '무소속') return;
+
+      // 쉼표(,) 기준 분할 및 공백 제거
+      const unions = rawUnionStr.split(',').map(u => u.trim()).filter(Boolean);
+
+      const gdpVal = parseNumber(item['GDP'] || item['GDP(10억달러)']) * 10;
+      const defVal = parseNumber(item['국방비'] || item['국방비(10억달러)']) * 10;
+      const popVal = parseNumber(item['인구'] || item['인구(만명)']) * 10000;
+
+      // 분리된 모든 연합에 해당 국가 수치 가산
+      unions.forEach(unionName => {
+        if (!unionTotals.has(unionName)) {
+          unionTotals.set(unionName, { gdp: 0, def: 0, pop: 0 });
+        }
+
+        const uData = unionTotals.get(unionName);
+        uData.gdp += gdpVal;
+        uData.def += defVal;
+        uData.pop += popVal;
+      });
     });
-  };
+
+    unionTotals.forEach((uData, unionName) => {
+      let unionVal = 0;
+
+      if (isGdpKey) {
+        unionVal = uData.gdp;
+      } else if (isDefKey) {
+        unionVal = uData.def;
+      } else if (isPerCapGdpKey) {
+        // 평균 1인당 GDP = 총 GDP(달러) / 총 인구(명)
+        unionVal = uData.pop > 0 ? (uData.gdp * 100000000) / uData.pop : 0;
+      }
+
+      if (unionVal > 0) {
+        listData.push({
+          country: `[연합] ${unionName}`,
+          cleanKey: unionName,
+          val: unionVal,
+          currentRank: null,
+          prevRank: null,
+          isWorld: false,
+          isUnion: true
+        });
+      }
+    });
+
+    listData.sort((a, b) => b.val - a.val);
+  }
+
+  if (key === '1인당GDP') {
+    listData.push({
+      country: '전세계',
+      cleanKey: '전세계',
+      val: worldTotals.cap,
+      currentRank: null,
+      prevRank: null,
+      isWorld: true,
+      isUnion: false
+    });
+    listData.sort((a, b) => b.val - a.val);
+  }
+
+  const maxValInList = listData.length > 0 ? listData[0].val : 1;
+  let rankCounter = 1;
+
+  listData.forEach((item) => {
+    let formattedVal = "";
+    if (unitType === '달러') {
+      formattedVal = formatMoney(item.val);
+    } else if (unitType === '명') {
+      formattedVal = formatPopulation(item.val);
+    } else if (unitType === '달러_직접') {
+      formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
+    }
+
+    let rankDiffHtml = "";
+    let rankDisplay = "";
+
+    if (item.isWorld || item.isUnion) {
+      rankDisplay = "-";
+    } else {
+      rankDisplay = `${rankCounter}.`;
+      rankCounter++;
+
+      if (key === '인구(만명)' || key === '인구') {
+        rankDiffHtml = "";
+      } else if (!item.prevRank) {
+        rankDiffHtml = `<span class="rank-diff new">NEW</span>`;
+      } else {
+        const diff = item.prevRank - item.currentRank;
+        if (diff > 0) rankDiffHtml = `<span class="rank-diff up">▲${diff}</span>`;
+        else if (diff < 0) rankDiffHtml = `<span class="rank-diff down">▼${Math.abs(diff)}</span>`;
+        else rankDiffHtml = `<span class="rank-diff same">-</span>`;
+      }
+    }
+
+    let flagHtml = "";
+    const flagUrl = flagMap.get(item.cleanKey);
+    if (flagUrl && !item.isWorld && !item.isUnion) {
+      flagHtml = `<img src="${flagUrl}" class="rank-flag" alt="${item.country} 국기" style="width: 22px; height: 15px; object-fit: cover; border-radius: 2px; margin-right: 2px; vertical-align: middle;">`;
+    }
+
+    let percent = 0;
+    if (key === '1인당GDP') {
+      percent = (item.val / maxValInList) * 100;
+    } else {
+      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
+    }
+    percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
+
+    const li = document.createElement('li');
+    li.className = `rank-item ${item.isWorld ? 'world-item' : ''} ${item.isUnion ? 'union-item' : ''}`;
+    
+    const countryClickableAttr = (item.isWorld || item.isUnion) ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
+
+    li.innerHTML = `
+      <div class="rank-bar" style="width: ${percent}%; ${item.isUnion ? 'background: rgba(255, 193, 7, 0.25);' : ''}"></div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="rank-num">${rankDisplay}</span>
+        ${rankDiffHtml}
+        <span class="clickable-country" ${countryClickableAttr} style="display: flex; align-items: center; gap: 6px; ${item.isUnion ? 'font-weight: bold; color: #ffca28;' : ''}">
+          ${flagHtml}
+          <span class="rank-country">${item.country}</span>
+        </span>
+      </div>
+      <span class="rank-val">${formattedVal}</span>
+    `;
+    listEl.appendChild(li);
+  });
+};
 
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
