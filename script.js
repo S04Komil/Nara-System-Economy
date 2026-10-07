@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const welfareEl = document.getElementById('modal-welfare');
     const welfareE2 = document.getElementById('modal-welfare-budget');
-    const welfare_budget = (parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || getPropByCleanKey(item, '복지지출비')) || 0) * 10;
+    const welfare_budget = formatMoney((parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10);
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
     if (welfareEl) welfareEl.innerText = formatMoney(welfare_budget) || '-';
 
@@ -1208,7 +1208,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     const welfarebudget = document.getElementById('welfare-budget-display')
     const investRateInput = document.getElementById('edit-invest-rate');
     if (welfareSelect) welfareSelect.value = myObj['복지수준'] || '복지없음';
-    if (welfarebudget) welfarebudget.value = formatMoney(parseNumber(myObj['복지지출비(10억달러)'] || myObj['복지지출비'])*10);
+    if (welfarebudget) welfarebudget.value = formatMoney(parseNumber(myObj['복지지출비(10억달러)'])*10);
     if (investRateInput) investRateInput.value = parseFloat(myObj['경제투자율'] || 0).toFixed(2);
 
     const treasuryEl = document.getElementById('my-treasury-display');
