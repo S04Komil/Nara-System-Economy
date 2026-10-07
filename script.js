@@ -1206,10 +1206,10 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     });
 
     const welfareSelect = document.getElementById('edit-welfare');
-    const welfarebudget = document.getElementById('welfare-budget-display')
+    const welfareBudget = document.getElementById('welfare-budget-display')
     const investRateInput = document.getElementById('edit-invest-rate');
     if (welfareSelect) welfareSelect.value = myObj['복지수준'] || '복지없음';
-    if (welfarebudget) welfarebudget.value = formatMoney(parseNumber(myObj['복지지출비(10억달러)'])*10) || formatMoney(0);
+    if (welfareBudget) welfareBudget.innerText = formatMoney(parseNumber(myObj['복지지출비(10억달러)'] || myObj['복지지출비'])*10);
     if (investRateInput) investRateInput.value = parseFloat(myObj['경제투자율'] || 0).toFixed(2);
 
     const treasuryEl = document.getElementById('my-treasury-display');
