@@ -1946,7 +1946,7 @@ async function loadEquipmentData() {
 // 수출입 로그 불러오기 (data-importLogs.json)
 async function loadImportLogsData() {
   try {
-    const response = await fetch("data-importLogs.json");
+    const response = await fetch(`data-importLogs.json?v=${new Date().getTime()}`);
     importLogsList = await response.json();
     renderImportLogsTable();
     
