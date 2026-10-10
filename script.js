@@ -2051,12 +2051,6 @@ function populateEquipmentDropdown() {
   equipmentList.forEach((item, index) => {
     const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
 
-    // 자국이 수출국인 장비는 제외[cite: 2]
-    const cleanExporter = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
-    if (myCountry && cleanExporter === myCountry) {
-      return;
-    }
-
     const name = item["장비이름"] || item.name || "미지정";
     const category = item["장비유형"] || item.category || "";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
