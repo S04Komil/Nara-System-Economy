@@ -740,9 +740,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     let defRatioDisplay = "-";
     if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
       let numRatio = parseFloat(rawDefRatio);
-      if (numRatio > 0 && numRatio < 1 && String(rawDefRatio).includes(".")) {
-        numRatio = numRatio * 100;
-      }
       defRatioDisplay = `${numRatio.toFixed(2)}%`;
     } else if (rawGdp > 0) {
       defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
@@ -785,9 +782,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     if (rndRatioEl) {
       if (rawRndRatio !== undefined && rawRndRatio !== '' && !isNaN(parseFloat(rawRndRatio))) {
         let numRatio = parseFloat(rawRndRatio);
-        if (numRatio > 0 && numRatio < 1 && String(rawRndRatio).includes(".")) {
-          numRatio = numRatio * 100;
-        }
         rndRatioEl.innerText = `${numRatio.toFixed(2)}%`;
       } else {
         rndRatioEl.innerText = '-';
