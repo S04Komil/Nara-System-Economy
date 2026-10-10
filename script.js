@@ -2400,15 +2400,23 @@ if (importForm) {
 
     const selectedItem = equipmentList[SelectEquipmentIndex];
     const selectedName = selectedItem["장비이름"] || selectedItem.name;
+    const exporterValue = document.getElementById("importExporter").value;
+    const quantityVal = parseInt(document.getElementById("importQuantity").value, 10);
+    const unitPriceVal = parseFloat(document.getElementById("importUnitPrice").value);
+    const totalPriceVal = parseFloat(document.getElementById("importTotalPrice").value);
+    const categoryVal = document.getElementById("importCategory").value;
+
+    // 수출국과 수입국이 같은지 확인 (자국 구매 여부)
+    const isSelfImport = (exporterValue === myCountry);
 
     const payload = {
-      action: "importLog",
-      exporter: document.getElementById("importExporter").value,
+      action: isSelfImport ? "selfImportLog" : "importLog",
+      exporter: exporterValue,
       name: selectedName,
-      category: document.getElementById("importCategory").value,
-      price: parseFloat(document.getElementById("importUnitPrice").value),
-      quantity: parseInt(document.getElementById("importQuantity").value, 10),
-      totalPrice: parseFloat(document.getElementById("importTotalPrice").value),
+      category: categoryVal,
+      price: unitPriceVal,
+      quantity: quantityVal,
+      totalPrice: totalPriceVal,
       importer: myCountry
     };
 
@@ -2422,11 +2430,17 @@ if (importForm) {
       const result = await response.json();
 
       if (result.result === "success" || result.status === "success") {
-        alert("수입 기록이 성공적으로 제출되었습니다!\n사이트에 반영되기까지 약간의 시간이 필요합니다.");
+        if (isSelfImport) {
+          alert("자국 장비 구매가 성공적으로 완료되었습니다!");
+        } else {
+          alert("수입 기록이 성공적으로 제출되었습니다!\n사이트에 반영되기까지 약간의 시간이 필요합니다.");
+        }
+
         closeImportModal();
         if (typeof loadImportLogsData === "function") loadImportLogsData();
+        if (typeof loadMainData === "function") loadMainData();
       } else {
-        alert("수입 기록 실패: " + (result.message || "알 수 없는 오류"));
+        alert("처리 실패: " + (result.message || "알 수 없는 오류"));
       }
     } catch (error) {
       console.error("수입 신청 처리 중 오류 발생:", error);
