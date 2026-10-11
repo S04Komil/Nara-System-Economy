@@ -298,5 +298,11 @@
     "장비이름": "RBY Mk 1 Light Armoured Reconnaissance Vehicle",
     "장비유형": "전차/장갑차",
     "1대당 가격": 6
+  },
+  {
+    "수출국": "이스라엘",
+    "장비이름": "AIL M325 Command Car",
+    "장비유형": "전차/장갑차",
+    "1대당 가격": 0.6
   }
 ]
