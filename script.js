@@ -1636,21 +1636,46 @@ async function openStandardModal() {
     const rows = await res.json(); // 2차원 배열 [[A1, B1, ...], [A2, B2, ...]]
 
     if (rows && rows.length > 0) {
-      tbody.innerHTML = rows.map(row => {
-        // 행 전체가 비어 있는 경우 여백 줄 처리
-        const isEmptyRow = row.every(cell => String(cell).trim() === '');
-        if (isEmptyRow) {
-          return `<tr style="height: 12px;"><td colspan="100%" style="border:none;"></td></tr>`;
+      let html = '';
+      
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        
+        // 현재 행이 N-0(첫 번째 칸)에만 값이 있고 나머지가 비어있는지 확인
+        const isTitleRow = String(row[0] || '').trim() !== '' && 
+                           row.slice(1).every(cell => String(cell || '').trim() === '');
+        
+        // 다음 행(N+1)이 존재하고, 다음 행이 완전히 비어있는지 확인
+        const nextRow = rows[i + 1];
+        const isNextRowEmpty = nextRow && nextRow.every(cell => String(cell || '').trim() === '');
+
+        // 1. N-0에만 글자가 있고 다음 행이 비어있는 경우 -> 두 행을 하나로 합병하여 섹션 제목(th 등)으로 처리
+        if (isTitleRow && isNextRowEmpty) {
+          const titleText = row[0];
+          html += `<tr class="table-section-header">
+                     <td colspan="100%" style="font-weight: bold; background-color: rgba(0,0,0,0.04); padding: 10px; text-align: left;">${titleText}</td>
+                   </tr>`;
+          i++; // 빈 다음 행은 이미 합쳐서 처리했으므로 건너뜀(스킵)
+          continue;
         }
 
-        // 셀 단위 출력
+        // 2. 일반적인 빈 행인 경우 여백 처리
+        const isEmptyRow = row.every(cell => String(cell || '').trim() === '');
+        if (isEmptyRow) {
+          html += `<tr style="height: 12px;"><td colspan="100%" style="border:none;"></td></tr>`;
+          continue;
+        }
+
+        // 3. 일반 데이터 행 출력
         const colsHtml = row.map(cell => {
           const val = (cell !== null && cell !== undefined) ? cell : '';
           return `<td>${val}</td>`;
         }).join('');
 
-        return `<tr>${colsHtml}</tr>`;
-      }).join('');
+        html += `<tr>${colsHtml}</tr>`;
+      }
+
+      tbody.innerHTML = html;
     } else {
       tbody.innerHTML = '<tr><td colspan="100%">기준표 데이터가 없습니다.</td></tr>';
     }
