@@ -1,18 +1,22 @@
 document.addEventListener("DOMContentLoaded", function() {
-  // 1. GitHub Actions가 구글 시트에서 추출하여 저장하는 JSON 파일 경로
-  const API_URL = "data-main.json";  // 메인 시트
-  const API_OEI = "data-OEI.json";  // 해외경제투자 시트
+  // =============================================================
+  // [수정] Firebase Realtime Database 경로 설정 (공개 URL 기준)
+  // =============================================================
+  const FIREBASE_DB_URL = "https://narasystemeconomy-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
+  const API_URL = `${FIREBASE_DB_URL}/nara_economy/main_city.json`;  // 본연도시트
+  const API_OEI = `${FIREBASE_DB_URL}/nara_economy/overseas_investment.json`;  // 해외경제투자 시트
   
   // 1-1. 수정 전용 구글 api (Apps Script 유지)
   const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
 
-  // 2. 항목별 전체 연도 시계열 JSON 경로
-  const API_URL_GDP = "data-GDPRank.json"; // GDP순위
-  const API_URL_DEF = "data-DefenceRank.json"; // 국방비순위
-  const API_URL_CAP = "data-GDP-per-capiaRank.json"; // 1인당GDP순위
+  // 2. 항목별 전체 연도 시계열 JSON 경로 (파이어베이스 경로에 맞게 매핑)
+  const API_URL_GDP = `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`; // GDP순위
+  const API_URL_DEF = `${FIREBASE_DB_URL}/nara_rank/defense.json`; // 국방비순위
+  const API_URL_CAP = `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`; // 1인당GDP순위
 
   // 3. 세계 통계 성장률 API
-  const API_URL_GROWTH = "data-WorldStas.json"; //세계 통계 성장률
+  const API_URL_GROWTH = `${FIREBASE_DB_URL}/nara_rank/global.json`; //세계 통계 성장률
 
   // 4. 회원가입/로그인 및 데이터 업데이트 전용 Apps Script 웹 앱 URL
   const LOGIN_GAS_URL = "https://script.google.com/macros/s/AKfycbzEdyNoBaRzsz5puqJup02WA6dEmUp-3BLU7ULgqxeGZUrvGx_Xcf68imojU9oFFCFk/exec"; 
@@ -98,12 +102,8 @@ document.addEventListener("DOMContentLoaded", function() {
       const dashboardEl = document.getElementById('dashboard');
       if (dashboardEl) dashboardEl.style.display = 'block';
 
-      // -------------------------------------------------------------
-      // [수정] 데이터에서 최신 연도 자동 감지 및 반영 로직 추가
-      // -------------------------------------------------------------
       let detectedYear = null;
 
-      // 1. mainData 내 항목의 '연도' 또는 'sheetName' 필드 탐색
       if (mainData[0]) {
         const rawYear = mainData[0]['연도'] || mainData[0]['sheetName'] || mainData[0]['Year'];
         if (rawYear) {
@@ -112,7 +112,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 2. 발견되지 않았다면 GDP 시계열 데이터의 가장 최근 연도 키 탐색
       if (!detectedYear && globalGdpData.length > 0) {
         const yearKeys = getSortedYearKeys(globalGdpData);
         if (yearKeys.length > 0) {
@@ -122,7 +121,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      // 연도가 추출되었으면 currentSheetYear 및 화면 엘리먼트 업데이트
       if (detectedYear) {
         currentSheetYear = detectedYear;
       }
@@ -131,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function() {
       if (dataYearEl) {
         dataYearEl.innerText = `${currentSheetYear}년 데이터 기준`;
       }
-      // -------------------------------------------------------------
 
       calculateWorldTotals(mainData);
       renderMainCards(mainData);
@@ -145,6 +142,9 @@ document.addEventListener("DOMContentLoaded", function() {
       if (loadingEl) loadingEl.innerText = '데이터를 불러오는 데 실패했습니다.';
     }
   }
+
+  // 데이터 로드 실행
+  loadMainData();
 
   // 데이터 로드 실행
   loadMainData();
@@ -2001,13 +2001,15 @@ document.addEventListener("DOMContentLoaded", () => {
 // 1. 장비 데이터 불러오기 함수
 async function loadEquipmentData() {
   try {
-    const response = await fetch("data-equipment.json");
+    // 파이어베이스 Realtime Database 경로 지정
+    const response = await fetch(`${FIREBASE_DB_URL}/nara_military/equipment.json?_t=${Date.now()}`);
     
     if (!response.ok) {
       throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
     }
 
-    equipmentList = await response.json();
+    const data = await response.json();
+    equipmentList = Array.isArray(data) ? data : [];
     
     populateEquipmentDropdown();
   } catch (error) {
@@ -2015,18 +2017,24 @@ async function loadEquipmentData() {
   }
 }
 
-// 수출입 로그 불러오기 (data-importLogs.json)
+// 수출입 로그 불러오기
 async function loadImportLogsData() {
   try {
-    const response = await fetch(`data-importLogs.json?v=${new Date().getTime()}`);
-    importLogsList = await response.json();
+    // 파이어베이스 Realtime Database 경로 지정
+    const response = await fetch(`${FIREBASE_DB_URL}/nara_military/export_import_log.json?_t=${Date.now()}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP 에러! 상태 코드: ${response.status}`);
+    }
+
+    const data = await response.json();
+    importLogsList = Array.isArray(data) ? data : [];
     renderImportLogsTable();
     
   } catch (error) {
     console.error("수출입 로그를 불러오는 중 오류 발생:", error);
   }
 }
-
 // ==========================================
 // 2. UI 동적 연동 (드롭다운 & 표 렌더링)
 // ==========================================
