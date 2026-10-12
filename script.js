@@ -2505,13 +2505,6 @@ function filterEquipmentOptions(keyword) {
 
   equipmentList.forEach((item, index) => {
     const exporter = item["수출국"] || item.exporter || item.producer || "";
-    
-    // 자국명이 정규화 함수(cleanName)를 거친 것과 동일하면 제외
-    const cleanExporter = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
-    if (myCountry && cleanExporter === myCountry) {
-      return; // 자신의 국가가 수출국인 장비는 제외
-    }
-
     const name = item["장비이름"] || item.name || "";
     const category = item["장비유형"] || item.category || "";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
