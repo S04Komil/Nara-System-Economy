@@ -1331,8 +1331,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
       if (result.success || result.result === 'success') {
         alert('자국 경제 설정이 정상적으로 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.');
-        if (typeof loadMainData === 'function') {
-          await loadMainData();
+        showMyEconomyView();
         }
       } else {
         alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
@@ -1457,7 +1456,7 @@ function renderMyInvestments(investments) {
 
       if (result.result === "success" || result.success) {
         alert("해외투자 정보가 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
-        
+        showMyEconomyView();
         if (typeof closeInvestmentModal === "function") {
           closeInvestmentModal();
         }
