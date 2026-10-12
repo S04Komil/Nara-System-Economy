@@ -2659,7 +2659,7 @@ window.loadImportLogsData = loadImportLogsData;
   // ========================================== //
 // 모든 파이어베이스 JSON 파일 실시간 변경 감지 및 자동 새로고침
 // ========================================== //
-(function() {
+function() {
   // 감시할 주요 파이어베이스 경로 리스트
   const watchPaths = [
     `${FIREBASE_DB_URL}/nara_economy/main_city.json`,
@@ -2705,5 +2705,5 @@ window.loadImportLogsData = loadImportLogsData;
 
   // 3초마다 파이어베이스 파일들의 변화를 체크 (원하시는 주기로 조절 가능)
   setInterval(checkFirebaseChanges, 3000);
-);
+};
 });
