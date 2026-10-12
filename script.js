@@ -457,7 +457,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     let numVal = parseFloat(rawVal);
     if (isNaN(numVal) || numVal <= 0) return null;
 
-    if (key === 'GDP(10억달러)' || key === '국방비(10억달러)') {
+    if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
       numVal *= 10;
     }
 
