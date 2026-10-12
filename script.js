@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // 2. 항목별 전체 연도 시계열 JSON 경로 (파이어베이스 경로에 맞게 매핑)
   const API_URL_GDP = `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`; // GDP순위
-  const API_URL_DEF = `${FIREBASE_DB_URL}/nara_rank/defense.json`; // 국방비순위
+  const API_URL_DEF = `${FIREBASE_DB_URL}/nara_rank/defence.json`; // 국방비순위
   const API_URL_CAP = `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`; // 1인당GDP순위
 
   // 3. 세계 통계 성장률 API
@@ -142,9 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
       if (loadingEl) loadingEl.innerText = '데이터를 불러오는 데 실패했습니다.';
     }
   }
-
-  // 데이터 로드 실행
-  loadMainData();
 
   // 데이터 로드 실행
   loadMainData();
@@ -777,7 +774,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     if (budgetEl) budgetEl.innerText = rawBudget !== 0 ? formatMoney(rawBudget) : '-';
 
     // R&D 및 기술 정보 연동
-    const rawRndRatio = getPropByCleanKey(item, 'GDP대비R&D예산');
+    const rawRndRatio = getPropByCleanKey(item, 'GDP대비RD예산');
     const rndRatioEl = document.getElementById('modal-rnd-ratio');
     if (rndRatioEl) {
       if (rawRndRatio !== undefined && rawRndRatio !== '' && !isNaN(parseFloat(rawRndRatio))) {
@@ -788,7 +785,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       }
     }
 
-    const rawRndBudget = parseFloat(getPropByCleanKey(item, 'R&D예산')) || 0;
+    const rawRndBudget = parseFloat(getPropByCleanKey(item, 'RD예산')) || 0;
     const rndBudgetEl = document.getElementById('modal-rnd-budget');
     if (rndBudgetEl) {
       rndBudgetEl.innerText = rawRndBudget !== 0 ? formatMoney(rawRndBudget * 10) : '-';
@@ -1248,8 +1245,8 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const rndRateInput = document.getElementById('edit-rnd-ratio');
     const rndgetEl = document.getElementById('my-rnd-budget-display');
-    if (rndRateInput) rndRateInput.value = parseFloat(myObj['GDP대비R&D예산'] || 0).toFixed(2);
-    if (rndgetEl) rndgetEl.innerText = formatMoney(parseNumber(myObj['R&D예산']) * 10);
+    if (rndRateInput) rndRateInput.value = parseFloat(myObj['GDP대비RD예산'] || 0).toFixed(2);
+    if (rndgetEl) rndgetEl.innerText = formatMoney(parseNumber(myObj['RD예산']) * 10);
     // 기술개발정도 및 미래기술적용 추가
     const techLevelEl = document.getElementById('my-tech-level-display');
     const futureTechEl = document.getElementById('my-future-tech-display');
