@@ -1632,7 +1632,7 @@ async function openStandardModal() {
   if (thead) thead.innerHTML = ''; // 별도 헤더 영역 초기화
 
   try {
-    const res = await fetch(`${FIREBASE_DB_URL}/nara_economy/main_city.json`);
+    const res = await fetch(`${FIREBASE_DB_URL}/nara_economy/standard.json`);
     const rows = await res.json(); // 2차원 배열 [[A1, B1, ...], [A2, B2, ...]]
 
     if (rows && rows.length > 0) {
