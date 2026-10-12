@@ -1332,6 +1332,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       if (result.success || result.result === 'success') {
         alert('자국 경제 설정이 정상적으로 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.');
         showMyEconomyView();
+        checkFirebaseChanges();
       } else {
         alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
       }
@@ -1459,6 +1460,7 @@ function renderMyInvestments(investments) {
         if (typeof closeInvestmentModal === "function") {
           closeInvestmentModal();
         }
+        checkFirebaseChanges();
       } else {
         alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
       }
@@ -1558,6 +1560,7 @@ function closeInvestmentModal() {
 
       if (result.result === "success") {
         alert("성공적으로 삭제되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
+        checkFirebaseChanges();
       } else {
         alert("삭제 실패: " + result.message);
       }
@@ -1781,6 +1784,7 @@ async function submitRemittance() {
       closeRemittanceModal();
       
       if (typeof loadData === "function") loadData();
+      checkFirebaseChanges();
     } else {
       alert("송금 실패: " + (result.message || "오류가 발생했습니다."));
     }
@@ -2282,10 +2286,9 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
 
       alert(`수출 허가가 성공적으로 [${status}] 처리되었습니다.`);
       closeLogModal();
-      
       if (typeof loadImportLogsData === "function") loadImportLogsData();
       if (typeof loadMainData === "function") loadMainData();
-
+      checkFirebaseChanges();
     } else {
       alert("처리 실패: " + (result.message || "알 수 없는 오류"));
     }
@@ -2406,6 +2409,7 @@ if (equipmentForm) {
         alert("장비가 성공적으로 등록되었습니다!");
         equipmentForm.reset();
         closeEquipmentModal();
+        checkFirebaseChanges();
         if (typeof loadEquipmentData === "function") loadEquipmentData();
       } else {
         alert("장비 등록 실패: " + (result.message || "알 수 없는 오류"));
@@ -2473,10 +2477,11 @@ if (importForm) {
         } else {
           alert("수입 기록이 성공적으로 제출되었습니다!\n사이트에 반영되기까지 약간의 시간이 필요합니다.");
         }
-
+        
         closeImportModal();
         if (typeof loadImportLogsData === "function") loadImportLogsData();
         if (typeof loadMainData === "function") loadMainData();
+        checkFirebaseChanges();
       } else {
         alert("처리 실패: " + (result.message || "알 수 없는 오류"));
       }
@@ -2623,6 +2628,7 @@ async function deleteMyEquipment(name) {
       if (typeof loadEquipmentData === "function") {
         await loadEquipmentData();
         renderMyEquipmentTable();
+        checkFirebaseChanges();
       }
     } else {
       alert("삭제 실패: " + (result.message || "알 수 없는 오류"));
@@ -2688,9 +2694,20 @@ async function checkFirebaseChanges() {
       } else {
         // 이전 상태와 현재 상태가 다르면 데이터가 변경된 것으로 판단!
         if (initialDataSnapshots[url] !== textData) {
-          console.log(`🔄 파이어베이스 데이터 변경 감지 (${url})! 새로고침합니다...`);
-          alert("데이터가 업데이트되었습니다. 최신 화면으로 새로고침합니다!");
-          location.reload();
+          console.log(`🔄 파이어베이스 데이터 변경 감지 (${url})! 2초 후 화면을 최신화합니다.`);
+          initialDataSnapshots[url] = textData; // 최신 상태로 갱신
+
+          // 💡 서버 동기화 시간을 고려하여 2초(2000ms) 동안 대기한 후 화면 갱신 함수 실행
+          setTimeout(() => {
+            if (typeof loadMainData === 'function') {
+              loadMainData();
+            }
+            if (typeof showMyEconomyView === 'function') {
+              showMyEconomyView();
+            }
+            console.log("✨ 최신 데이터 반영 완료!");
+          }, 2000);
+          
           return;
         }
       }
@@ -2700,7 +2717,4 @@ async function checkFirebaseChanges() {
     console.warn("데이터 변경 감지 중 통신 오류:", err);
   }
 }
-
-// 3초마다 파이어베이스 파일들의 변화를 체크
-setInterval(checkFirebaseChanges, 1500);
 });
