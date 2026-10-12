@@ -1638,39 +1638,56 @@ async function openStandardModal() {
     if (rows && rows.length > 0) {
       let html = '';
       
+      // 1. 전체 행 중에서 실제 데이터가 들어있는 가장 오른쪽(마지막) 열의 인덱스를 계산
+      let maxColIdx = 0;
+      rows.forEach(row => {
+        if (Array.isArray(row)) {
+          for (let c = row.length - 1; c >= 0; c--) {
+            if (row[c] !== null && row[c] !== undefined && String(row[c]).trim() !== '') {
+              if (c > maxColIdx) maxColIdx = c;
+              break;
+            }
+          }
+        }
+      });
+
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        
-        // 현재 행이 N-0(첫 번째 칸)에만 값이 있고 나머지가 비어있는지 확인
-        const isTitleRow = String(row[0] || '').trim() !== '' && 
-                           row.slice(1).every(cell => String(cell || '').trim() === '');
-        
-        // 다음 행(N+1)이 존재하고, 다음 행이 완전히 비어있는지 확인
-        const nextRow = rows[i + 1];
-        const isNextRowEmpty = nextRow && nextRow.every(cell => String(cell || '').trim() === '');
+        if (!Array.isArray(row)) continue;
 
-        // 1. N-0에만 글자가 있고 다음 행이 비어있는 경우 -> 두 행을 하나로 합병하여 섹션 제목(th 등)으로 처리
+        // 현재 행이 N-0(첫 번째 칸)에만 값이 있고 나머지 열이 비어있는지 확인
+        const isTitleRow = String(row[0] || '').trim() !== '' && 
+                           row.slice(1, maxColIdx + 1).every(cell => String(cell || '').trim() === '');
+        
+        // 다음 행(N+1)이 존재하고, 그 다음 행이 완전히 비어있는지 확인
+        const nextRow = rows[i + 1];
+        const isNextRowEmpty = nextRow && nextRow.slice(0, maxColIdx + 1).every(cell => String(cell || '').trim() === '');
+
+        // 2. [가로 병합] N-0에만 글자가 있고 다음 행이 비어있는 경우 -> 두 행을 하나로 합병하여 섹션 제목(th 스타일)으로 처리
         if (isTitleRow && isNextRowEmpty) {
           const titleText = row[0];
           html += `<tr class="table-section-header">
-                     <td colspan="100%" style="font-weight: bold; background-color: rgba(0,0,0,0.04); padding: 10px; text-align: left;">${titleText}</td>
+                     <td colspan="${maxColIdx + 1}" style="font-weight: bold; background-color: rgba(0,0,0,0.06); padding: 10px; text-align: left; border: 1px solid #ddd;">${titleText}</td>
                    </tr>`;
-          i++; // 빈 다음 행은 이미 합쳐서 처리했으므로 건너뜀(스킵)
+          i++; // 빈 다음 행은 이미 합쳐서 처리했으므로 건너뜀
           continue;
         }
 
-        // 2. 일반적인 빈 행인 경우 여백 처리
-        const isEmptyRow = row.every(cell => String(cell || '').trim() === '');
+        // 3. 일반적인 빈 행인 경우 여백 처리
+        const isEmptyRow = row.slice(0, maxColIdx + 1).every(cell => String(cell || '').trim() === '');
         if (isEmptyRow) {
-          html += `<tr style="height: 12px;"><td colspan="100%" style="border:none;"></td></tr>`;
+          html += `<tr style="height: 12px;"><td colspan="${maxColIdx + 1}" style="border:none;"></td></tr>`;
           continue;
         }
 
-        // 3. 일반 데이터 행 출력
-        const colsHtml = row.map(cell => {
-          const val = (cell !== null && cell !== undefined) ? cell : '';
-          return `<td>${val}</td>`;
-        }).join('');
+        // 4. 일반 데이터 행 출력 (값이 존재하는 최대 열까지만 잘라서 렌더링)
+        let colsHtml = '';
+        for (let j = 0; j <= maxColIdx; j++) {
+          const val = (row[j] !== null && row[j] !== undefined) ? row[j] : '';
+          
+          // 셀이 비어있지 않거나 기본 출력인 경우 <td> 생성
+          colsHtml += `<td>${val}</td>`;
+        }
 
         html += `<tr>${colsHtml}</tr>`;
       }
@@ -1686,7 +1703,6 @@ async function openStandardModal() {
 
   modal.style.display = 'block';
 }
-
 // 기준표 모달 닫기
 function closeStandardModal() {
   document.getElementById('standard-modal').style.display = 'none';
