@@ -749,7 +749,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const defEl = document.getElementById('modal-def');
     if (defEl) defEl.innerText = formatMoney(rawDef);
     const defRankEl = document.getElementById('modal-def-rank');
-    if (defRankEl) defRankEl.innerText = getCountryRank('국방비, cleanKey);
+    if (defRankEl) defRankEl.innerText = getCountryRank('국방비', cleanKey);
 
     const popEl = document.getElementById('modal-pop');
     if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)') || getPropByCleanKey(item, '인구'));
