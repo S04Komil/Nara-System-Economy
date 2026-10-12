@@ -729,7 +729,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const gdpEl = document.getElementById('modal-gdp');
     if (gdpEl) gdpEl.innerText = formatMoney(rawGdp);
     const gdpRankEl = document.getElementById('modal-gdp-rank');
-    if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP(10억달러)', cleanKey);
+    if (gdpRankEl) gdpRankEl.innerText = getCountryRank('GDP', cleanKey);
 
     const rawDef = (parseFloat(getPropByCleanKey(item, '국방비(10억달러)') || getPropByCleanKey(item, '국방비')) || 0) * 10;
     const rawDefRatio = getPropByCleanKey(item, 'GDP대비국방비');
@@ -749,12 +749,12 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const defEl = document.getElementById('modal-def');
     if (defEl) defEl.innerText = formatMoney(rawDef);
     const defRankEl = document.getElementById('modal-def-rank');
-    if (defRankEl) defRankEl.innerText = getCountryRank('국방비(10억달러)', cleanKey);
+    if (defRankEl) defRankEl.innerText = getCountryRank('국방비, cleanKey);
 
     const popEl = document.getElementById('modal-pop');
     if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)') || getPropByCleanKey(item, '인구'));
     const popRankEl = document.getElementById('modal-pop-rank');
-    if (popRankEl) popRankEl.innerText = getCountryRank('인구(만명)', cleanKey);
+    if (popRankEl) popRankEl.innerText = getCountryRank('인구', cleanKey);
 
     const capVal = parseFloat(getPropByCleanKey(item, '1인당GDP')) || 0;
     const capEl = document.getElementById('modal-cap');
@@ -812,7 +812,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
     const welfareEl = document.getElementById('modal-welfare');
     const welfareE2 = document.getElementById('modal-welfare-budget');
-    const welfare_budget = parseFloat(getPropByCleanKey(item, '복지지출비(10억달러)') || 0) * 10;
+    const welfare_budget = parseFloat(getPropByCleanKey(item, '복지지출비') || 0) * 10;
     if (welfareEl) welfareEl.innerText = getPropByCleanKey(item, '복지수준') || '-';
     if (welfareE2) welfareE2.innerText = formatMoney(welfare_budget) || '-';
 
@@ -1284,7 +1284,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     if(profitE1) profitE1.innerText = formatMoney(parseNumber(myObj['최종순이익'] || myObj['순이익'])*10);
     if (treasuryEl) treasuryEl.innerText = formatMoney(parseNumber(myObj['국고'])*10);
     if (growthRateEl) growthRateEl.innerText = `${parseNumber(myObj['최종경제성장률'] || myObj['경제성장률']).toFixed(2)}%`;
-    if (nextGDP) nextGDP.innerText = formatMoney(parseNumber(myObj['다음연도 GDP'])*10);
+    if (nextGDP) nextGDP.innerText = formatMoney(parseNumber(myObj['다음연도GDP'])*10);
 
     if (typeof loadMyInvestments === 'function') {
       loadMyInvestments();
