@@ -2655,4 +2655,55 @@ window.closeLogModal = closeLogModal;
 window.loadEquipmentData = loadEquipmentData;
 window.filterEquipmentOptions = filterEquipmentOptions;
 window.loadImportLogsData = loadImportLogsData;
+
+  // ========================================== //
+// 모든 파이어베이스 JSON 파일 실시간 변경 감지 및 자동 새로고침
+// ========================================== //
+(function() {
+  // 감시할 주요 파이어베이스 경로 리스트
+  const watchPaths = [
+    `${FIREBASE_DB_URL}/nara_economy/main_city.json`,
+    `${FIREBASE_DB_URL}/nara_economy/overseas_investment.json`,
+    `${FIREBASE_DB_URL}/nara_economy/standard.json`,
+    `${FIREBASE_DB_URL}/nara_military/equipment.json`,
+    `${FIREBASE_DB_URL}/nara_military/export_import_log.json`,
+    `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`,
+    `${FIREBASE_DB_URL}/nara_rank/defence.json`,
+    `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`
+  ];
+
+  // 각 경로의 최초 데이터 상태(Etag 또는 JSON 문자열)를 저장할 객체
+  const initialDataSnapshots = {};
+  let isInitialized = false;
+
+  async function checkFirebaseChanges() {
+    try {
+      for (const url of watchPaths) {
+        // 캐시를 방지하기 위해 타임스탬프 추가
+        const res = await fetch(`${url}?_t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) continue;
+        const textData = await res.text();
+
+        if (!isInitialized) {
+          // 최초 실행 시점의 데이터 상태를 기억
+          initialDataSnapshots[url] = textData;
+        } else {
+          // 이전 상태와 현재 상태가 다르면 데이터가 변경된 것으로 판단!
+          if (initialDataSnapshots[url] !== textData) {
+            console.log(`🔄 파이어베이스 데이터 변경 감지 (${url})! 새로고침합니다...`);
+            alert("데이터가 업데이트되었습니다. 최신 화면으로 새로고침합니다!");
+            location.reload();
+            return;
+          }
+        }
+      }
+      isInitialized = true;
+    } catch (err) {
+      console.warn("데이터 변경 감지 중 통신 오류:", err);
+    }
+  }
+
+  // 3초마다 파이어베이스 파일들의 변화를 체크 (원하시는 주기로 조절 가능)
+  setInterval(checkFirebaseChanges, 3000);
+);
 });
