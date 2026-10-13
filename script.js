@@ -1919,7 +1919,7 @@ function closeChangelogModal() {
   const modal = document.getElementById('changelog-modal');
   if (modal) modal.style.display = 'none';
 }
-
+window.loadChangelog = loadChangelog;
 // JSON 파일 읽어서 화면에 뿌려주는 함수
 // 패치노트를 불러오는 함수 (탭 구분 기능 추가)
 async function loadChangelog(type = 'economy') {
