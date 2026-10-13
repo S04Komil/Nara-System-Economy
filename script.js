@@ -2756,4 +2756,18 @@ async function checkFirebaseChanges() {
     console.warn("데이터 변경 감지 중 통신 오류:", err);
   }
 }
+  // 페이지 내 모든 폼의 제출(submit)을 감지하여 자동으로 버튼을 잠금
+document.addEventListener("submit", function (e) {
+  // 실제 제출 버튼(type="submit") 가져오기
+  const submitBtn = e.submitter || e.target.querySelector("button[type='submit']");
+  
+  if (submitBtn) {
+    // 중복 클릭 방지를 위해 비활성화
+    submitBtn.disabled = true;
+
+    // 만약 서버 통신 에러나 취소 등으로 버튼을 다시 살려야 할 상황을 대비해 
+    // 일정 시간(예: 5초) 뒤에 자동으로 풀리게 안전장치를 둘 수도 있습니다. (선택사항)
+    setTimeout(() => { submitBtn.disabled = false; }, 5000);
+  }
+});
 });
