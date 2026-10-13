@@ -743,7 +743,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
     
     const rawEquip = (parseFloat(getPropByCleanKey(item, '총장비구입비')) || 0) * 10;
-    const rawequipRatio = getPropByCleanKey(item, 'GDP대비국방비');
+    const rawequipRatio = getPropByCleanKey(item, '국방비대비장비구입비');
     let equipRatioDisplay = "-";
     if (rawequipRatio !== undefined && rawequipRatio !== '' && !isNaN(parseFloat(rawequipRatio))) {
       let numRatio = parseFloat(rawequipRatio);
@@ -1244,9 +1244,9 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     const equipRateInput = document.getElementById('edit-equip-rate');
     const equipValEl = document.getElementById('my-equip-display');
     const equipRankEl = document.getElementById('my-equip-rank');
-    if (equipRateInput) defRateInput.value = parseFloat(myObj['국방비대비장비구입비'] || 0).toFixed(2);
-    if (equipValEl) defValEl.innerText = formatMoney(parseNumber(myObj['총장비구입비']) * 10);
-    if (equipRankEl) defRankEl.innerText = formatMoney(parseNumber(myObj['장비구입비']) * 10);
+    if (equipRateInput) equipRateInput.value = parseFloat(myObj['국방비대비장비구입비'] || 0).toFixed(2);
+    if (equipValEl) equipValEl.innerText = formatMoney(parseNumber(myObj['총장비구입비']) * 10);
+    if (equipRankEl) equipRankEl.innerText = formatMoney(parseNumber(myObj['장비구입비']) * 10);
 
     const popValEl = document.getElementById('my-pop-display');
     const popRankEl = document.getElementById('my-pop-rank');
