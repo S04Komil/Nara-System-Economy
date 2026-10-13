@@ -2117,18 +2117,23 @@ function populateEquipmentDropdown() {
 
   if (!equipmentList || equipmentList.length === 0) return;
 
-  const myCountry = getMyCountry(); // 자국명 가져오기[cite: 2]
+  const myCountry = getMyCountry(); // 자국명 가져오기
 
   equipmentList.forEach((item, index) => {
     const exporter = item["수출국"] || item.exporter || item.producer || "미지정";
-
     const name = item["장비이름"] || item.name || "미지정";
     const category = item["장비유형"] || item.category || "";
-    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+    const rawPrice = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+    const price = Number(rawPrice);
+
+    // 1만 이상이면 억 단위로 환산, 미만이면 만$ 유지
+    const formattedPrice = price >= 10000 
+      ? (price / 10000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + '억$' 
+      : price.toLocaleString('en-US') + '만$';
 
     const option = document.createElement("option");
-    option.value = index; // 원본 인덱스 유지[cite: 2]
-    option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
+    option.value = index; // 원본 인덱스 유지
+    option.textContent = `[${exporter}] ${name} (${category}) - ${formattedPrice}`;
     selectEl.appendChild(option);
   });
 }
@@ -2530,14 +2535,20 @@ function filterEquipmentOptions(keyword) {
     const exporter = item["수출국"] || item.exporter || item.producer || "";
     const name = item["장비이름"] || item.name || "";
     const category = item["장비유형"] || item.category || "";
-    const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+    const rawPrice = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
+    const price = Number(rawPrice);
+
+    // 1만 이상이면 억 단위로 환산, 미만이면 만$ 유지
+    const formattedPrice = price >= 10000 
+      ? (price / 10000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + '억$' 
+      : price.toLocaleString('en-US') + '만$';
 
     const fullText = `[${exporter}] ${name} (${category})`.toLowerCase();
 
     if (fullText.includes(cleanKeyword)) {
       const option = document.createElement("option");
       option.value = index;
-      option.textContent = `[${exporter}] ${name} (${category}) - ${price}만$`;
+      option.textContent = `[${exporter}] ${name} (${category}) - ${formattedPrice}`;
       selectEl.appendChild(option);
     }
   });
@@ -2603,11 +2614,16 @@ function renderMyEquipmentTable() {
     const category = item["장비유형"] || item.category || "-";
     const price = item["1대당 가격"] || item["1대당가격"] || item.price || 0;
 
+    // 1만 이상이면 억 단위로 환산, 미만이면 만$ 유지
+    const formattedPrice = price >= 10000 
+      ? (price / 10000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + '억$' 
+      : price.toLocaleString('en-US') + '만$';
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>${name}</strong></td>
       <td style="padding: 8px; border-bottom: 1px solid #ddd;">${category}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #ddd;">${price}만$</td>
+      <td style="padding: 8px; border-bottom: 1px solid #ddd;">${formattedPrice}</td>
       <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">
         <button onclick="deleteMyEquipment('${name}')" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">삭제</button>
       </td>
