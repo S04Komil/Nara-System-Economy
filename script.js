@@ -1921,18 +1921,43 @@ function closeChangelogModal() {
 }
 
 // JSON 파일 읽어서 화면에 뿌려주는 함수
-async function loadChangelog() {
+// 패치노트를 불러오는 함수 (탭 구분 기능 추가)
+async function loadChangelog(type = 'economy') {
   const container = document.getElementById('changelog-list');
+  if (!container) return;
+
+  // 불러올 JSON 파일 결정 ('economy' 또는 'website')
+  const filename = type === 'website' ? 'web-changelog.json' : 'changelog.json';
   
+  // 버튼 활성화 상태 스타일 업데이트 (버튼 ID가 각각 btn-economy, btn-website 라고 가정)
+  const btnEconomy = document.getElementById('btn-economy');
+  const btnWebsite = document.getElementById('btn-website');
+  
+  if (btnEconomy && btnWebsite) {
+    if (type === 'website') {
+      btnWebsite.style.background = '#007bff';
+      btnWebsite.style.color = '#fff';
+      btnEconomy.style.background = '#f8f9fa';
+      btnEconomy.style.color = '#333';
+    } else {
+      btnEconomy.style.background = '#007bff';
+      btnEconomy.style.color = '#fff';
+      btnWebsite.style.background = '#f8f9fa';
+      btnWebsite.style.color = '#333';
+    }
+  }
+
+  container.innerHTML = '<p style="text-align: center; color: #666;">불러오는 중...</p>';
+
   try {
-    const response = await fetch('changelog.json');
+    const response = await fetch(filename);
     if (!response.ok) throw new Error('패치노트를 불러오는데 실패했습니다.');
     
-    changelogData = await response.json();
+    const changelogData = await response.json();
 
     let html = '';
     changelogData.forEach((item, index) => {
-      // 가장 최근 패치노트(첫 번째 항목)만 기본으로 열어두고 싶다면 open 속성을 부여합니다.
+      // 가장 최근 패치노트(첫 번째 항목)만 기본으로 열어두기
       const isOpen = index === 0 ? 'open' : '';
 
       html += `
