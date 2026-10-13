@@ -748,8 +748,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     if (rawequipRatio !== undefined && rawequipRatio !== '' && !isNaN(parseFloat(rawequipRatio))) {
       let numRatio = parseFloat(rawequipRatio);
       equipRatioDisplay = `${numRatio.toFixed(2)}%`;
-    } else if (rawDef > 0) {
-      equipRatioDisplay = `${((rawEquip / rawDef) * 100).toFixed(2)}%`;
     }
     
 
@@ -761,7 +759,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     if (defRankEl) defRankEl.innerText = getCountryRank('국방비', cleanKey);
 
     const equipRatioEl = document.getElementById('modal-equip-ratio');
-    if (equipRatioEl) equipRatioEl.innerText = defRatioDisplay;
+    if (equipRatioEl) equipRatioEl.innerText = equipRatioDisplay;
     const equipEl = document.getElementById('modal-equip-global');
     if (equipEl) equipEl.innerText = formatMoney(rawEquip);
     const equipRankEl = document.getElementById('modal-equip');
