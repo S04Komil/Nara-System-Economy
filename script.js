@@ -742,14 +742,30 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
     }
     
+    const rawEquip = (parseFloat(getPropByCleanKey(item, '총장비구입비')) || 0) * 10;
+    const rawequipRatio = getPropByCleanKey(item, 'GDP대비국방비');
+    let equipRatioDisplay = "-";
+    if (rawequipRatio !== undefined && rawequipRatio !== '' && !isNaN(parseFloat(rawequipRatio))) {
+      let numRatio = parseFloat(rawequipRatio);
+      equipRatioDisplay = `${numRatio.toFixed(2)}%`;
+    } else if (rawDef > 0) {
+      equipRatioDisplay = `${((rawEquip / rawDef) * 100).toFixed(2)}%`;
+    }
+    
 
     const defRatioEl = document.getElementById('modal-def-ratio');
     if (defRatioEl) defRatioEl.innerText = defRatioDisplay;
-
     const defEl = document.getElementById('modal-def');
     if (defEl) defEl.innerText = formatMoney(rawDef);
     const defRankEl = document.getElementById('modal-def-rank');
     if (defRankEl) defRankEl.innerText = getCountryRank('국방비', cleanKey);
+
+    const equipRatioEl = document.getElementById('modal-equip-ratio');
+    if (equipRatioEl) equipRatioEl.innerText = defRatioDisplay;
+    const equipEl = document.getElementById('modal-equip-global');
+    if (equipEl) equipEl.innerText = formatMoney(rawEquip);
+    const equipRankEl = document.getElementById('modal-equip');
+    if (equipRankEl) equipRankEl.innerText = formatMoney('장비구입비', cleanKey);
 
     const popEl = document.getElementById('modal-pop');
     if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)') || getPropByCleanKey(item, '인구'));
@@ -1225,6 +1241,13 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     if (defValEl) defValEl.innerText = formatMoney(parseNumber(myObj['국방비'] || myObj['국방비(10억달러)']) * 10);
     if (defRankEl) defRankEl.innerText = getRankStr(defSorted);
 
+    const equipRateInput = document.getElementById('edit-equip-rate');
+    const equipValEl = document.getElementById('my-equip-display');
+    const equipRankEl = document.getElementById('my-equip-rank');
+    if (equipRateInput) defRateInput.value = parseFloat(myObj['국방비대비장비구입비'] || 0).toFixed(2);
+    if (equipValEl) defValEl.innerText = formatMoney(parseNumber(myObj['총장비구입비']) * 10);
+    if (equipRankEl) defRankEl.innerText = formatMoney(parseNumber(myObj['장비구입비']) * 10);
+
     const popValEl = document.getElementById('my-pop-display');
     const popRankEl = document.getElementById('my-pop-rank');
     if (popValEl) popValEl.innerText = formatPopulation(parseNumber(myObj['인구'] || myObj['인구(만명)']));
@@ -1301,6 +1324,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
     const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
     const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
+    const equipRate = parseFloat(document.getElementById('edit-equip-rate')?.value || 0);
     const rndRate = parseFloat(document.getElementById('edit-rnd-ratio')?.value || 0); // GDP대비 R&D 예산 추가
     const economicSystem = document.getElementById('edit-economic-system')?.value || '';
     const welfare = document.getElementById('edit-welfare')?.value || '';
@@ -1316,6 +1340,7 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       defRate: defRate,
       taxRate: taxRate,
       investRate: investRate,
+      equipRate: equipRate,
       rndRate: rndRate, // payload에 추가
       economicSystem: economicSystem,
       welfare: welfare,
