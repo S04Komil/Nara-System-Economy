@@ -2177,6 +2177,7 @@ function calculateTotalPrice() {
 }
 
 // 수출입 로그 테이블 렌더링
+// 수출입 로그 테이블 렌더링
 function renderImportLogsTable() {
   const tbody = document.getElementById("import-logs-tbody") || document.getElementById("log-table-body");
   if (!tbody) return;
@@ -2213,8 +2214,14 @@ function renderImportLogsTable() {
     const name = log["장비이름"] || log.name || "-";
     const category = log["장비유형"] || log.category || "-";
     const quantity = parseInt(log["수량"] || log.quantity || 1, 10);
-    const totalPrice = parseFloat(log["총 금액"] || log["총금액"] || log.totalPrice || 0);
+    const rawTotalPrice = parseFloat(log["총 금액"] || log["총금액"] || log.totalPrice || 0);
+    const totalPrice = Number(rawTotalPrice);
     const status = log["상태"] || "승인 대기";
+
+    // 1만 이상이면 억 단위로 환산, 미만이면 만$ 유지
+    const formattedTotalPrice = totalPrice >= 10000 
+      ? (totalPrice / 10000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + '억$' 
+      : totalPrice.toLocaleString('en-US') + '만$';
 
     const cleanExp = typeof cleanName === "function" ? cleanName(exporter) : exporter.trim();
 
@@ -2242,7 +2249,7 @@ function renderImportLogsTable() {
       <td>${name}</td>
       <td>${category}</td>
       <td>${quantity}</td>
-      <td>${totalPrice}만$</td>
+      <td>${formattedTotalPrice}</td>
       <td>${statusHtml}</td>
     `;
     tbody.appendChild(tr);
