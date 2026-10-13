@@ -763,7 +763,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     const equipEl = document.getElementById('modal-equip-global');
     if (equipEl) equipEl.innerText = formatMoney(rawEquip);
     const equipRankEl = document.getElementById('modal-equip');
-    if (equipRankEl) equipRankEl.innerText = formatMoney('장비구입비', cleanKey);
+    if (equipRankEl) equipRankEl.innerText = formatMoney((parseFloat(getPropByCleanKey(item, '장비구입비')) || 0) * 10);
 
     const popEl = document.getElementById('modal-pop');
     if (popEl) popEl.innerText = formatPopulation(getPropByCleanKey(item, '인구(만명)') || getPropByCleanKey(item, '인구'));
