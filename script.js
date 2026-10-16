@@ -1385,8 +1385,14 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       const dataArr = await response.json();
 
       if (Array.isArray(dataArr)) {
-        // 투자국이 현재 로그인한 사용자 국가와 같은 데이터만 필터링
-        const myInvestments = dataArr.filter(item => cleanName(item['투자국']) === cleanName(currentUser.country));
+        const userCountry = cleanName(currentUser.country);
+        
+        // 수정: 투자국이 내 국가이거나, 피투자국이 내 국가인 데이터 모두 필터링
+        const myInvestments = dataArr.filter(item => 
+          cleanName(item['투자국']) === userCountry || 
+          cleanName(item['피투자국']) === userCountry
+        );
+        
         renderMyInvestments(myInvestments);
       } else {
         if (retryCount < maxRetries) {
