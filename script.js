@@ -2459,6 +2459,10 @@ if (equipmentForm) {
   equipmentForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
+    if(parseFloat(document.getElementById("eq-price").value) <0){
+      alert('대당 달러가 0달러 미만입니다. 이상으로 올려주세요');
+    }
+
     const payload = {
       action: "addEquipment",
       exporter: document.getElementById("eq-exporter").value,
