@@ -1319,10 +1319,10 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       return;
     }
 
-    const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0);
-    const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0);
-    const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0);
-    const equipRate = parseFloat(document.getElementById('edit-equip-rate')?.value || 0);
+    const defRate = parseFloat(document.getElementById('edit-def-rate')?.value || 0); // GDP대비국방비
+    const taxRate = parseFloat(document.getElementById('edit-tax-rate')?.value || 0); // 세율
+    const investRate = parseFloat(document.getElementById('edit-invest-rate')?.value || 0); // 경제투자율
+    const equipRate = parseFloat(document.getElementById('edit-equip-rate')?.value || 0); // GDP대비 장비구입비
     const rndRate = parseFloat(document.getElementById('edit-rnd-ratio')?.value || 0); // GDP대비 R&D 예산 추가
     const economicSystem = document.getElementById('edit-economic-system')?.value || '';
     const welfare = document.getElementById('edit-welfare')?.value || '';
@@ -1331,6 +1331,11 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
     document.querySelectorAll('input[name="industry"]:checked').forEach(cb => {
       selectedJobs.push(cb.value);
     });
+
+    if (defRate < 0 || taxRate < 10 || investRate < 0 || equipRate <0 || rndRate <0) {
+        alert('GDP대비국방비 혹은 세율(최소10%) 혹은 경제투자율 혹은 국방비대비장비구입비 혹은 GDP대비R&D예산 중 최소값 이하인 것이 있습니다.');
+        return;
+    }
 
     const payload = {
       action: 'updateMyEconomy',
@@ -1456,7 +1461,7 @@ function renderMyInvestments(investments) {
     }
 
     const targetCountry = document.getElementById("invest-target-country")?.value;
-    const amount = parseFloat(document.getElementById("invest-amount")?.value || 0);
+    const amount = parseFloat(document.getElementById("invest-amount")?.value || 0); //투자금액
     const profitStatus = document.getElementById("invest-return-option")?.value || "X";
 
     if (!targetCountry) {
