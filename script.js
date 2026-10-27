@@ -1430,16 +1430,24 @@ function renderMyInvestments(investments) {
       return;
     }
 
+    // 현재 로그인한 유저의 국가 정제
     const userCountry = currentUser ? cleanName(currentUser.country) : '';
 
+    // JSON 한글 키 명칭 매핑
     tbody.innerHTML = investments.map(item => {
       const invCountry = item['투자국'] || '-';
       const targetCountry = item['피투자국'] || '-';
       
+      // 피투자국이 내 국가인지 확인
       const isTargetMyCountry = userCountry && cleanName(targetCountry) === userCountry;
-      
-      // 피투자국이 내 국가이면 '투자국 (투자국)'으로 표시, 아니면 원래 피투자국 표시
+
+      // 1. 화면에 표시될 국가명 설정 (피투자국이 내 국가면 '투자국명 (투자국)', 아니면 기존 피투자국)
       const displayCountry = isTargetMyCountry ? `${invCountry} (투자국)` : targetCountry;
+
+      // 2. 자신이 피투자국일 때는 삭제 버튼을 숨기거나 '-' 처리 (원하시면 비활성화 버튼으로 변경 가능)
+      const actionButton = isTargetMyCountry 
+        ? '-' 
+        : `<button type="button" class="btn-delete" onclick="deleteInvestment('${targetCountry}')">삭제</button>`;
 
       const pGrade = item['피투자국 등급'] || '-';
       const amount = parseFloat(item['투자금액(10억달러)']) || 0;
@@ -1447,11 +1455,6 @@ function renderMyInvestments(investments) {
       const exchangeRate = item['환수율(%)'] !== undefined ? `${item['환수율(%)']}%` : '-';
       const growthRate = item['성장률(%p)'] !== undefined ? `${item['성장률(%p)']}%p` : '-';
       const profitGain = parseFloat(item['투자국의 차익금']) || 0;
-
-      // 자신이 피투자국일 때는 삭제 버튼 대신 '-' 표시 (삭제 불가)
-      const actionButton = isTargetMyCountry 
-        ? '-' 
-        : `<button type="button" class="btn-delete" onclick="deleteInvestment('${targetCountry}')">삭제</button>`;
 
       return `
         <tr>
