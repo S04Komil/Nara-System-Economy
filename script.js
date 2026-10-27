@@ -1430,9 +1430,22 @@ function renderMyInvestments(investments) {
       return;
     }
 
+    const userCountry = currentUser ? cleanName(currentUser.country) : '';
+
     // JSON 한글 키 명칭 매핑
     tbody.innerHTML = investments.map(item => {
-      const pCountry = item['피투자국'] || '-';
+      const invCountry = item['투자국'] || '-';
+      const targetCountry = item['피투자국'] || '-';
+      
+      // 내 국가가 피투자국인 경우 투자국 이름을 표시하고 뒤에 '(투자국)' 붙이기
+      let displayCountry = targetCountry;
+      let deleteTargetName = targetCountry; // 삭제 버튼 등에 사용할 기준 이름
+
+      if (userCountry && cleanName(targetCountry) === userCountry) {
+        displayCountry = `${invCountry} (투자국)`;
+        deleteTargetName = invCountry; // 필요에 따라 삭제 로직에 맞게 조정 가능
+      }
+
       const pGrade = item['피투자국 등급'] || '-';
       const amount = parseFloat(item['투자금액(10억달러)']) || 0;
       const profitStatus = item['수익여부'] || '-';
@@ -1442,14 +1455,14 @@ function renderMyInvestments(investments) {
 
       return `
         <tr>
-          <td>${pCountry}</td>
+          <td>${displayCountry}</td>
           <td>${pGrade}</td>
           <td>${formatMoney(amount * 10)}</td>
           <td>${profitStatus}</td>
           <td>${exchangeRate}</td>
           <td>${growthRate}</td>
           <td>${formatMoney(profitGain * 10)}</td>
-          <td><button type="button" class="btn-delete" onclick="deleteInvestment('${pCountry}')">삭제</button></td>
+          <td><button type="button" class="btn-delete" onclick="deleteInvestment('${deleteTargetName}')">삭제</button></td>
         </tr>
       `;
     }).join('');
