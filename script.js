@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function() {
   
   // 1-1. 수정 전용 구글 api (Apps Script 유지)
   const API_EDIT = "https://script.google.com/macros/s/AKfycbwzCrizZQcL3x4aL_0qLm3JfprRCvqoHro5agto1ish_FjAGjPeeWn_-dC6DW1zN9Cl/exec";
+  const MIL_API_EDIT = "https://script.google.com/macros/s/AKfycby34j_Pyq7atkRRcYAUXnjb3O31rQQa4NDrg7uZa2ADpi0g7Za6rUCVPIb0LkEyFrvg/exec";
 
   // 2. 항목별 전체 연도 시계열 JSON 경로 (파이어베이스 경로에 맞게 매핑)
   const API_URL_GDP = `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`; // GDP순위
@@ -2910,7 +2911,7 @@ function updateThemeButtonUI(isDark) {
 
 // 전역 함수 등록
 window.toggleDarkMode = toggleDarkMode;
-  function validateAndSubmitArmyData() {
+function validateAndSubmitArmyData() {
   // 1. DOM에서 현재 보유수와 입력된 증감값 매핑
   const items = [
     { name: "전차(3.5세대)", curId: "cur-tank-35", inputId: "edit-tank-35" },
@@ -2964,7 +2965,7 @@ async function sendArmyDataToServer(items) {
   };
 
   try {
-    const response = await fetch(API_EDIT, {
+    const response = await fetch(MIL_API_EDIT, {
       method: "POST",
       body: JSON.stringify(payload)
     });
