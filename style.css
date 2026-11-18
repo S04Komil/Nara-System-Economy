@@ -71,21 +71,22 @@ body {
   color: #f7fafc;
 }
 
-/* 상단 네비게이션 바 반응형 최적화 */
+/* ==========================================
+   🌐 PC 기준 상단 네비게이션바 레이아웃
+   ========================================== */
 nav {
   background-color: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
   padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양 끝과 중앙 공간 배분 */
+  justify-content: space-between; /* 양 끝과 중앙 공간 배분으로 겹침 원천 차단 */
+  position: relative;
   height: 70px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  position: relative;
   box-sizing: border-box;
 }
 
-/* 로고 영역 (절대 위치 제거하여 겹침 방지) */
 .logo-container {
   display: flex;
   align-items: center;
@@ -99,11 +100,11 @@ nav {
   object-fit: contain;
 }
 
-/* 네비게이션 메뉴 (PC에서는 중앙 정렬) */
+/* 네비게이션 메뉴 (PC에서는 중앙 자동 정렬) */
 .nav-menu {
   display: flex;
   list-style: none;
-  margin: 0 auto; /* 좌우 자동으로 중앙에 위치 */
+  margin: 0 auto;
   padding: 0;
   gap: 8px;
   align-items: center;
@@ -203,7 +204,7 @@ nav {
   display: block !important;
 }
 
-/* 컨테이너 및 카드 레이아웃 */
+/* 컨테이너 및 기타 공통 스타일 */
 .container {
   max-width: 900px;
   margin: 16px auto;
@@ -1010,8 +1011,9 @@ nav {
   background: #2b6cb0 !important;
 }
 
+
 /* ==========================================
-   📱 햄버거 버튼 및 반응형 모바일 통합 스타일 (768px 이하)
+   📱 햄버거 버튼 및 모바일 반응형 전용 스타일 (768px 이하)
    ========================================== */
 .mobile-menu-toggle {
   display: none;
@@ -1061,34 +1063,85 @@ nav {
 
 @media (max-width: 768px) {
   nav {
-    height: 60px;
-    padding: 0 12px !important;
-    display: flex;
-    align-items: center;
+    height: 60px !important;
+    padding: 0 10px !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+    position: relative !important;
   }
 
+  /* 1. 햄버거 버튼 맨 왼쪽 고정 */
+  .mobile-menu-toggle {
+    display: flex !important;
+    order: 1 !important;
+    margin-right: 6px !important;
+    flex-shrink: 0 !important;
+    z-index: 100001 !important;
+  }
+
+  /* 2. 로고는 햄버거 버튼 바로 옆 */
   .logo-container {
-    margin-right: 4px;
+    position: static !important;
+    order: 2 !important;
+    margin-right: auto !important;
+    flex-shrink: 1 !important;
+    overflow: hidden !important;
   }
 
   .logo-img {
-    height: 28px !important;
+    height: 26px !important;
+    width: auto !important;
   }
 
-  /* 햄버거 버튼 강제 노출 및 터치 보장 */
-  .mobile-menu-toggle {
-    display: flex !important;
-    margin-left: 6px;
-    z-index: 100001;
-  }
-
+  /* 3. 우측 프로필 영역 맨 오른쪽 고정 */
   .auth-area-wrapper {
-    margin-left: auto;
-    margin-right: 6px;
+    order: 3 !important;
+    margin-left: 6px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
-  /* 📱 사이드 메뉴 기본 상태: 화면 우측 밖으로 숨김 */
+  /* 모바일 프로필 뱃지 압축 (긴 이메일 숨김 처리로 겹침 방지) */
+  .user-profile-badge {
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+    max-width: 130px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    gap: 4px !important;
+  }
+
+  .user-profile-badge span:not(#user-country-name) {
+    display: none !important; 
+  }
+
+  #user-country-name {
+    max-width: 70px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+  }
+
+  .user-flag-img {
+    width: 14px !important;
+    height: 10px !important;
+  }
+
+  .btn-logout {
+    padding: 2px 4px !important;
+    font-size: 10px !important;
+    min-height: 22px !important;
+    margin-left: 2px !important;
+  }
+
+  /* 📱 사이드 메뉴: 평소에는 화면 오른쪽 밖으로 완전히 숨김 */
   .nav-menu {
     position: fixed !important;
     top: 0 !important;
@@ -1102,59 +1155,59 @@ nav {
     box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3) !important;
     transition: right 0.3s ease-in-out !important;
     z-index: 100000 !important;
-    margin: 0 !important;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
     display: flex !important;
+    margin: 0 !important;
   }
 
-  /* 📱 버튼을 눌러 .active가 붙으면 right: 0으로 화면에 나타남 */
+  /* 햄버거 버튼을 누르면 화면 안으로 슬라이드인 */
   .nav-menu.active {
     right: 0 !important;
   }
 
   .mobile-menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
-    border-bottom: 2px solid var(--border-color, #e2e8f0);
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding-bottom: 15px !important;
+    margin-bottom: 15px !important;
+    border-bottom: 2px solid var(--border-color, #e2e8f0) !important;
   }
 
   .mobile-menu-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--text-color, #1a202c);
+    font-size: 1.1rem !important;
+    font-weight: bold !important;
+    color: var(--text-color, #1a202c) !important;
   }
 
   .mobile-menu-close {
-    background: none;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: var(--text-color, #666);
+    background: none !important;
+    border: none !important;
+    font-size: 28px !important;
+    cursor: pointer !important;
+    color: var(--text-color, #666) !important;
   }
 
   .nav-item {
-    width: 100%;
-    margin-bottom: 6px;
+    width: 100% !important;
+    margin-bottom: 6px !important;
   }
 
   .nav-item button, 
   .nav-item .drop-btn {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 12px 14px;
-    font-size: 1rem;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding: 12px 14px !important;
+    font-size: 1rem !important;
   }
 
   .nav-item.dropdown .dropdown-content {
-    position: static;
-    box-shadow: none;
-    border: none;
-    background: transparent;
-    padding-left: 15px;
-    width: 100%;
+    position: static !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding-left: 15px !important;
+    width: 100% !important;
   }
 }
