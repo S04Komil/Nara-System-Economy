@@ -501,18 +501,48 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   const listEl = document.getElementById('rank-list');
   listEl.innerHTML = '';
 
+  // 1. 탭별 데이터 소스, 점수 컬럼 키, 시계열 데이터 및 기준 총합 분기 설정 (군사력 로직 원복)
+  let rawDataSource = mainData;
+  let targetScoreKey = key;
+  let targetSeriesData = [];
   let totalBaseVal = 0;
-  if (key === 'GDP(10억달러)' || key === 'GDP') totalBaseVal = worldTotals.gdp;
-  else if (key === '인구(만명)' || key === '인구') totalBaseVal = worldTotals.pop;
-  else if (key === '국방비(10억달러)' || key === '국방비') totalBaseVal = worldTotals.def;
 
-  let currentList = mainData.map(item => {
+  if (key === '육군') {
+    rawDataSource = globalTotalMilitaryData;
+    targetScoreKey = '육군점수';
+    targetSeriesData = globalArmyChangeData;
+  } else if (key === '공군') {
+    rawDataSource = globalTotalMilitaryData;
+    targetScoreKey = '공군점수';
+    targetSeriesData = globalAirChangeData;
+  } else if (key === '해군') {
+    rawDataSource = globalTotalMilitaryData;
+    targetScoreKey = '해군점수';
+    targetSeriesData = globalNavyChangeData;
+  } else if (key === '군사력종합' || key === '종합군사력' || key === '총점수') {
+    rawDataSource = globalTotalMilitaryData;
+    targetScoreKey = '총점수';
+    targetSeriesData = globalMilitaryChangeData;
+  } else if (key === 'GDP(10억달러)' || key === 'GDP') {
+    targetSeriesData = globalGdpData;
+    totalBaseVal = worldTotals.gdp;
+  } else if (key === '국방비(10억달러)' || key === '국방비') {
+    targetSeriesData = globalDefData;
+    totalBaseVal = worldTotals.def;
+  } else if (key === '1인당GDP') {
+    targetSeriesData = globalCapData;
+  } else if (key === '인구(만명)' || key === '인구') {
+    totalBaseVal = worldTotals.pop;
+  }
+
+  // 2. 현재 연도 기준 점수 리스트 생성
+  let currentList = rawDataSource.map(item => {
     let rawCountry = extractCountryFromRow(item);
     let cleanedName = cleanName(rawCountry);
 
     if (cleanedName === '전세계') return null;
 
-    let rawVal = item[key];
+    let rawVal = item[targetScoreKey] !== undefined ? item[targetScoreKey] : item[key];
     if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
       return null;
     }
@@ -529,13 +559,9 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   .filter(item => item !== null && item.country !== '')
   .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
 
-  let targetSeriesData = [];
-  if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
-  else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
-  else if (key === '1인당GDP') targetSeriesData = globalCapData;
-
   const prevRankMap = new Map();
 
+  // 3. 전년도 순위 비교 맵 생성
   if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
     const yearKeys = getSortedYearKeys(targetSeriesData);
 
@@ -546,7 +572,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
     if (validYearKeys.length > 0) {
       const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
-
+      
       let prevYearKey = null;
       if (exactIdx > 0) {
         prevYearKey = validYearKeys[exactIdx - 1];
@@ -565,6 +591,10 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
             if (cleanedName === '전세계') return null;
 
             let rawVal = item[prevYearKey];
+            if ((rawVal === undefined || rawVal === null || String(rawVal).trim() === '') && targetScoreKey) {
+              rawVal = item[targetScoreKey];
+            }
+
             if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
               return null;
             }
@@ -612,7 +642,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     ['SCO', 'https://upload.wikimedia.org/wikipedia/ko/7/7b/SCO.svg?utm_source=ko.wikipedia.org&utm_campaign=index&utm_content=original']
   ]);
 
-  // === 연합 데이터 집계 및 계산 (과거 원본 로직 복원) ===
+  // === 💡 경제 부문(GDP, 국방비, 1인당 GDP)에서만 연합 데이터 집계 및 추가 ===
   const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
   const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
   const isPerCapGdpKey = (key === '1인당GDP');
@@ -693,6 +723,8 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       formattedVal = formatPopulation(item.val);
     } else if (unitType === '달러_직접') {
       formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
+    } else if (unitType === '점수') {
+      formattedVal = `${Math.round(item.val).toLocaleString()} 점`;
     }
 
     let rankDiffHtml = "";
@@ -730,16 +762,16 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
 
     let percent = 0;
-    if (key === '1인당GDP') {
+    if (unitType === '점수' || key === '1인당GDP' || totalBaseVal === 0) {
       percent = (item.val / maxValInList) * 100;
     } else {
-      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
+      percent = (item.val / totalBaseVal) * 100;
     }
     percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
 
     const li = document.createElement('li');
     li.className = `rank-item ${item.isWorld ? 'world-item' : ''} ${item.isUnion ? 'union-item' : ''}`;
-
+    
     const countryClickableAttr = (item.isWorld || item.isUnion) ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
 
     li.innerHTML = `
@@ -757,6 +789,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     listEl.appendChild(li);
   });
 };
+```[cite: [script.js](https://github.com/S04Komil/Nara-System-Economy/blob/main/script.js)]
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
 
