@@ -6,7 +6,16 @@
   --text-color: #2d3748;
 }
 
-/* 모바일 기본 렌더링 최적화 */
+/* 🌙 다크모드 색상 변수 정의 */
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --primary-color: #63b3ed; /* 다크모드에서 잘 보이는 밝은 파란색 계열 */
+  --border-color: #2d3748;
+  --text-color: #e2e8f0;
+}
+
+/* body 전역에 부드러운 전환 효과 추가 */
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   margin: 0;
@@ -14,7 +23,24 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   -webkit-text-size-adjust: 100%;
-  word-break: keep-all; /* 모바일 단어 줄바꿈 가독성 개선 */
+  word-break: keep-all;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 다크모드에서 역전될 여지가 있는 카드/모달 내부의 기본 배경색 보정 */
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .notice-modal-content {
+  background-color: #1e1e1e;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .info-box {
+  background: #25282c;
+  border-color: #2d3748;
+}
+
+[data-theme="dark"] .info-val {
+  color: #f7fafc;
 }
 
 /* 상단 네비게이션 바 반응형 최적화 */
