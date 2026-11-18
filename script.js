@@ -2931,8 +2931,6 @@ function validateAndSubmitArmyData() {
   // 3. 검증 통과 시 서버(Apps Script)로 전송
   sendArmyDataToServer(items);
 }
-
-async function sendArmyDataToServer(items) {
 async function sendArmyDataToServer(items) {
   const payloadData = {};
 
