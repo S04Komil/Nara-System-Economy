@@ -3531,4 +3531,34 @@ window.openNavyEditModal = openNavyEditModal;
 window.closeNavyEditModal = closeNavyEditModal;
 window.checkAndFillNavyClassData = checkAndFillNavyClassData;
 window.validateAndSubmitNavyData = validateAndSubmitNavyData;
+document.addEventListener('DOMContentLoaded', () => {
+  const menuBtn = document.getElementById('mobileMenuBtn');
+  const closeBtn = document.getElementById('mobileMenuClose');
+  const navMenu = document.getElementById('navMenu');
+  const overlay = document.getElementById('menuOverlay');
+
+  // 햄버거 버튼 클릭 시 메뉴 열기
+  if (menuBtn && navMenu && overlay) {
+    menuBtn.addEventListener('click', () => {
+      navMenu.classList.add('active');
+      overlay.classList.add('active');
+    });
+  }
+
+  // 닫기 버튼 클릭 시 메뉴 닫기
+  if (closeBtn && navMenu && overlay) {
+    closeBtn.addEventListener('click', () => {
+      navMenu.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+  }
+
+  // 어두운 백그라운드 오버레이 클릭 시 메뉴 닫기
+  if (overlay && navMenu) {
+    overlay.addEventListener('click', () => {
+      navMenu.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+  }
+});
 });
