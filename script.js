@@ -2982,6 +2982,18 @@ async function sendArmyDataToServer(items) {
     alert("서버 통신 중 오류가 발생했습니다.");
   }
 }
+function openArmyEditModal() {
+  const modal = document.getElementById('army-edit-modal');
+  if (modal) modal.style.display = 'flex';
+  // 모달을 열 때 현재 보유수 데이터를 폼에 동기화하는 함수 호출 가능
+}
 
+function closeArmyEditModal() {
+  const modal = document.getElementById('army-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+window.openArmyEditModal = openArmyEditModal;
+window.openArmyEditModal = closeArmyEditModal;
 window.validateAndSubmitArmyData = validateAndSubmitArmyData;
 });
