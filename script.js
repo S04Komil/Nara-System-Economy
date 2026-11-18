@@ -2986,6 +2986,8 @@ function openArmyEditModal() {
   const modal = document.getElementById('army-edit-modal');
   if (modal) modal.style.display = 'flex';
   // 모달을 열 때 현재 보유수 데이터를 폼에 동기화하는 함수 호출 가능
+  loadAndDisplayMyArmyEquipment();
+  
 }
 function loadAndDisplayMyArmyEquipment() {
   if (!currentUser || !currentUser.country) {
