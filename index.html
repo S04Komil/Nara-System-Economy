@@ -1003,6 +1003,80 @@
     </div>
   </div>
 </div>
+<!-- ⚓ 해군 전력 상세 관리 모달 -->
+<div id="navy-edit-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="background: var(--bg-card, #fff); padding: 24px; border-radius: 12px; width: 700px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; text-align: center;">⚓ 해군 함정 전력 상세 등록 및 수정</h3>
+    
+    <form id="navy-edit-form" onsubmit="event.preventDefault(); validateAndSubmitNavyData();">
+      <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+          <thead>
+            <tr style="background-color: rgba(0,0,0,0.04); border-bottom: 2px solid var(--border-color, #cbd5e1); position: sticky; top: 0; background: #fff; z-index: 1;">
+              <th style="padding: 10px; width: 25%;">항목</th>
+              <th style="padding: 10px; width: 75%;">입력 및 선택</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1행: 함급명 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">함급명</td>
+              <td style="padding: 12px;">
+                <input type="text" id="edit-navy-class-name" placeholder="예: 알레이버크급 배치3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+
+            <!-- 2행: 함종 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">함종</td>
+              <td style="padding: 12px;">
+                <select id="select-navy-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                  <option value="구축함">구축함 (순양함 포함)</option>
+                  <option value="호위함">호위함</option>
+                  <option value="전함">전함</option>
+                  <option value="잠수함">잠수함</option>
+                  <option value="항공모함">항공모함</option>
+                </select>
+              </td>
+            </tr>
+
+            <!-- 3행: 톤수 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">톤수 (배수량)</td>
+              <td style="padding: 12px;">
+                <input type="number" id="edit-navy-tons" placeholder="예: 9500 (숫자만 입력)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+
+            <!-- 4행: 특수 시스템 체크형 (이지스, 핵추진, VLS) -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">특수 체계 여부</td>
+              <td style="padding: 12px; display: flex; gap: 20px; align-items: center;">
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-aegis" style="margin-right: 6px;"> 이지스 시스템</label>
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-nuclear" style="margin-right: 6px;"> 핵추진</label>
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-vls" style="margin-right: 6px;"> VLS (수직발사대)</label>
+              </td>
+            </tr>
+
+            <!-- 5행: 대수 -->
+            <tr>
+              <td style="padding: 12px; font-weight: bold;">보유 대수</td>
+              <td style="padding: 12px;">
+                <input type="number" id="edit-navy-count" value="1" placeholder="보유 대수 입력" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 모달 버튼 영역 -->
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">저장하기</button>
+        <button type="button" onclick="closeNavyEditModal()" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
   <script src="script.js"></script>
 </body>
 </html>
