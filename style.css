@@ -14,6 +14,42 @@
   --border-color: #2d3748;
   --text-color: #e2e8f0;
 }
+/* 🌙 다크모드 세부 텍스트 및 컨테이너 가독성 보완 */
+[data-theme="dark"] .edit-economy-container {
+  background-color: #1e1e1e !important;
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .edit-economy-container h2,
+[data-theme="dark"] .edit-economy-container h3,
+[data-theme="dark"] .edit-economy-container h4 {
+  color: #f7fafc !important;
+}
+
+[data-theme="dark"] .info-box {
+  background-color: #25282c !important;
+  border: 1px solid #2d3748 !important;
+}
+
+[data-theme="dark"] .info-label {
+  color: #a0aec0 !important;
+}
+
+[data-theme="dark"] .info-val {
+  color: #ffffff !important;
+}
+
+/* 입력창(input, select) 다크모드 스타일 보완 */
+[data-theme="dark"] input,
+[data-theme="dark"] select {
+  background-color: #2d3748 !important;
+  color: #ffffff !important;
+  border-color: #4a5568 !important;
+}
+
+[data-theme="dark"] input::placeholder {
+  color: #a0aec0 !important;
+}
 
 /* body 전역에 부드러운 전환 효과 추가 */
 body {
