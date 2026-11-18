@@ -3323,4 +3323,221 @@ window.openAirEditModal = openAirEditModal;
 window.closeAirEditModal = closeAirEditModal;
 window.updateAirCurrentDisplay = updateAirCurrentDisplay;
 window.validateAndSubmitAirData = validateAndSubmitAirData;
+
+  // ⚓ 해군 모달 열기/닫기
+function openNavyEditModal() {
+  const modal = document.getElementById('navy-edit-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeNavyEditModal() {
+  const modal = document.getElementById('navy-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ⚓ 함급명 입력(포커스 아웃) 시 기존 데이터 자동 채우기 기능
+function checkAndFillNavyClassData() {
+  const classNameInput = document.getElementById('edit-navy-class-name');
+  if (!classNameInput) return;
+  
+  const searchClassName = classNameInput.value.trim();
+  if (!searchClassName) return;
+
+  // 전역에 저장된 해군 데이터 배열 (없으면 빈 배열)
+  const navyArray = Array.isArray(globalNavyData) ? globalNavyData : [];
+  
+  // 로그인된 유저의 국가명과 일치하고, 함급명도 일치하는 데이터를 탐색
+  const myCountryName = currentUser ? currentUser.country : "";
+  const matchedShip = navyArray.find(d => {
+    const rowCountry = cleanName(d['국가명'] || d['국가'] || '');
+    const rowClass = String(d['함급명'] || '').trim();
+    return rowCountry === cleanName(myCountryName) && rowClass === searchClassName;
+  });
+
+  if (matchedShip) {
+    // 1. 함종 선택
+    const shipTypeEl = document.getElementById('select-navy-type');
+    if (shipTypeEl && matchedShip['함종']) {
+      shipTypeEl.value = String(matchedShip['함종']).trim();
+    }
+
+    // 2. 톤수 입력
+    const tonsEl = document.getElementById('edit-navy-tons');
+    if (tonsEl) {
+      tonsEl.value = matchedShip['톤수'] || '';
+    }
+
+    // 3. 이지스 체계 체크박스 ('O' 또는 'TRUE'인 경우 체크)
+    const aegisEl = document.getElementById('check-navy-aegis');
+    if (aegisEl) {
+      const val = String(matchedShip['이지스'] || '').trim().toUpperCase();
+      aegisEl.checked = (val === 'O' || val === 'TRUE' || val === 'Y');
+    }
+
+    // 4. 핵추진 체크박스
+    const nuclearEl = document.getElementById('check-navy-nuclear');
+    if (nuclearEl) {
+      const val = String(matchedShip['핵추진'] || '').trim().toUpperCase();
+      nuclearEl.checked = (val === 'O' || val === 'TRUE' || val === 'Y');
+    }
+
+    // 5. VLS 체크박스
+    const vlsEl = document.getElementById('check-navy-vls');
+    if (vlsEl) {
+      const val = String(matchedShip['VLS'] || '').trim().toUpperCase();
+      vlsEl.checked = (val === 'O' || val === 'TRUE' || val === 'Y');
+    }
+
+    // 6. 보유 대수 입력 (현재 보유량 표시)
+    const countEl = document.getElementById('edit-navy-count');
+    if (countEl) {
+      countEl.value = matchedShip['대수'] || 0;
+    }
+
+    console.log("⚓ 기존 함급 데이터 자동 로드 성공:", searchClassName);
+  }
+}
+
+// ⚓ 해군 전력 데이터 검증 및 서버 전송
+async function validateAndSubmitNavyData() {
+  const className = document.getElementById('edit-navy-class-name')?.value.trim();
+  if (!className) {
+    alert("함급명을 정확히 입력해주세요!");
+    document.getElementById('edit-navy-class-name')?.focus();
+    return;
+  }
+
+  const shipType = document.getElementById('select-navy-type')?.value || '구축함';
+  const tons = parseFloat(document.getElementById('edit-navy-tons')?.value) || 0;
+  
+  // 체크형 항목은 시트 양식에 맞춰 'O' 또는 'X'로 변환
+  const isAegis = document.getElementById('check-navy-aegis')?.checked ? 'O' : 'X';
+  const isNuclear = document.getElementById('check-navy-nuclear')?.checked ? 'O' : 'X';
+  const isVls = document.getElementById('check-navy-vls')?.checked ? 'O' : 'X';
+  
+  const count = parseInt(document.getElementById('edit-navy-count')?.value) || 0;
+
+  const payloadData = {
+    '함급명': className,
+    '함종': shipType,
+    '톤수': tons,
+    '이지스': isAegis,
+    '핵추진': isNuclear,
+    'VLS': isVls,
+    '대수': count
+  };
+
+  const payload = {
+    action: "updateNavyEquipment",
+    country: currentUser ? currentUser.country : "",
+    changes: payloadData
+  };
+
+  console.log("⚓ [해군 전송 데이터 Payload]:", JSON.stringify(payload, null, 2));
+
+  try {
+    const response = await fetch(MIL_API_EDIT, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+
+    console.log("⚓ [해군 서버 응답 Result]:", result);
+
+    if (result.success || result.result === "success") {
+      alert("해군 함정 전력이 성공적으로 업데이트되었습니다!");
+      closeNavyEditModal();
+      if (typeof showMyEconomyView === 'function') showMyEconomyView();
+      if (typeof checkFirebaseChanges === 'function') checkFirebaseChanges();
+    } else {
+      alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
+    }
+  } catch (err) {
+    console.error("해군 전력 수정 오류:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+// 전역 함수 등록
+window.openNavyEditModal = openNavyEditModal;
+window.closeNavyEditModal = closeNavyEditModal;
+window.checkAndFillNavyClassData = checkAndFillNavyClassData;
+window.validateAndSubmitNavyData = validateAndSubmitNavyData;
+```[cite: [Editing Nara-System-Economy/script.js at main · S04Komil/Nara-System-Economy](https://github.com/S04Komil/Nara-System-Economy/blob/main/script.js)]
+
+---
+
+### 2. 백엔드 Apps Script 코드 (`Code.gs`에 추가할 내용)
+
+함급명이 이미 존재할 경우 기존 행을 **덮어쓰기(업데이트)** 하고, 없으면 새로 추가하는 백엔드 로직입니다[cite: 1].
+
+#### ① `doPost` 함수 안의 액션 분기 추가
+```javascript
+    // 해군 전력 수정/추가 액션
+    if (action === "updateNavyEquipment") {
+      return ContentService.createTextOutput(JSON.stringify(updateNavyEquipmentOnSheet(data)))
+                           .setMimeType(ContentService.MimeType.JSON);
+    }
+```[cite: 1]
+
+#### ② `updateNavyEquipmentOnSheet` 함수 신규 추가
+```javascript
+function updateNavyEquipmentOnSheet(data) {
+  const countryName = data.country;
+  const changes = data.changes; 
+  
+  if (!countryName) return { success: false, message: "국가 정보가 없습니다." };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const navySheet = ss.getSheetByName("해군");
+  if (!navySheet) return { success: false, message: "'해군' 시트를 찾을 수 없습니다." };
+
+  const rows = navySheet.getDataRange().getValues();
+  const headers = rows[0];
+  
+  let colCountry = 0, colClassName = 1;
+  for (let j = 0; j < headers.length; j++) {
+    const h = String(headers[j]).trim();
+    if (h === "국가" || h === "국가명") colCountry = j;
+    if (h === "함급명") colClassName = j;
+  }
+
+  const targetClassName = String(changes['함급명'] || '').trim();
+  let targetRowIdx = -1;
+
+  // 동일한 국가 및 동일한 함급명이 이미 존재하는지 검사
+  for (let i = 1; i < rows.length; i++) {
+    const rowCountry = String(rows[i][colCountry]).trim();
+    const rowClass = String(rows[i][colClassName]).trim();
+    if (rowCountry === String(countryName).trim() && rowClass === targetClassName) {
+      targetRowIdx = i + 1; // 1-based index
+      break;
+    }
+  }
+
+  const rowValues = [
+    countryName,
+    targetClassName,
+    changes['함종'] || '',
+    changes['톤수'] || 0,
+    changes['이지스'] || 'X',
+    changes['핵추진'] || 'X',
+    changes['VLS'] || 'X',
+    changes['대수'] || 0
+  ];
+
+  if (targetRowIdx !== -1) {
+    // 💡 이미 존재한다면 해당 행 통째로 덮어쓰기 (업데이트)
+    navySheet.getRange(targetRowIdx, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    // 💡 새로운 함급이면 맨 아래 행에 추가
+    navySheet.appendRow(rowValues);
+  }
+
+  if (typeof syncMilitaryDataToFirebase === 'function') {
+    syncMilitaryDataToFirebase();
+  }
+
+  return { success: true, message: "해군 전력이 성공적으로 반영되었습니다." };
+}
 });
