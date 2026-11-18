@@ -1072,7 +1072,7 @@ nav {
     align-items: center;
     justify-content: space-between !important;
     flex-wrap: nowrap !important;
-    overflow: hidden; /* 상단바 밖으로 튀어나가는 메뉴가 보이지 않도록 숨김 */
+    overflow: hidden;
   }
 
   .logo-container {
@@ -1131,25 +1131,26 @@ nav {
     margin-left: 2px !important;
   }
 
-  /* 📱 모바일 사이드 메뉴 기본 상태: 화면 오른쪽 밖으로 완전히 숨김 */
+  /* 📱 평소에는 화면 오른쪽 바깥으로 100% 숨김 (절대 안 보이게 처리) */
   .nav-menu {
     position: fixed !important;
     top: 0 !important;
-    right: -280px !important; /* 평소에는 완전히 숨겨짐 */
-    width: 280px !important;
+    right: -100% !important; /* 화면 오른쪽 밖으로 완전히 퇴장 */
+    width: 100% !important;   /* 모바일 화면 전체 너비 활용 */
+    max-width: 300px !important; /* 최대 너비 제한 (원하시면 100%로 풀 수도 있음) */
     height: 100vh !important;
     background-color: var(--card-bg, #ffffff) !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     padding: 20px !important;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
-    transition: right 0.3s ease-in-out !important;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3) !important;
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
     z-index: 10000 !important;
-    max-width: none !important;
+    box-sizing: border-box;
     display: flex !important;
   }
 
-  /* 📱 햄버거 버튼을 눌러서 active가 붙었을 때만 화면 안으로 슬라이드 오픈 */
+  /* 📱 햄버거 버튼을 눌러 .active가 붙었을 때만 right: 0으로 화면 안으로 슬라이드인 */
   .nav-menu.active {
     right: 0 !important;
   }
@@ -1181,7 +1182,7 @@ nav {
 
   .nav-item {
     width: 100%;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .nav-item button, 
