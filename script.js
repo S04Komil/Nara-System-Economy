@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_ARMY = `${FIREBASE_DB_URL}/nara_rank/army.json`; // 육군순위
   const API_URL_NAVY = `${FIREBASE_DB_URL}/nara_rank/navy.json`; // 해군순위
   const API_URL_AIR  = `${FIREBASE_DB_URL}/nara_rank/air.json`;  // 공군순위
+  const API_URL_MILITARY_CHANGE = `${FIREBASE_DB_URL}/nara_rank/military_rank_change.json`; // 군사력순위변화 시계열
+  const API_URL_TOTAL_MILITARY  = `${FIREBASE_DB_URL}/nara_rank/total_military.json`;   // 종합 군사력 순위
 
   // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = `${FIREBASE_DB_URL}/nara_rank/global.json`; //세계 통계 성장률
@@ -38,6 +40,8 @@ document.addEventListener("DOMContentLoaded", function() {
   let globalArmyData = [];
   let globalNavyData = [];
   let globalAirData = [];
+  let globalMilitaryChangeData = [];
+  let globalTotalMilitaryData = [];
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -101,6 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
       globalArmyData = Array.isArray(armyRes) ? armyRes : [];
       globalNavyData = Array.isArray(navyRes) ? navyRes : [];
       globalAirData  = Array.isArray(airRes) ? airRes : [];
+      globalTotalMilitaryData = Array.isArray(totalRes) ? totalRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -489,6 +494,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   else if (key === '육군') targetSeriesData = globalArmyData;
   else if (key === '해군') targetSeriesData = globalNavyData;
   else if (key === '공군') targetSeriesData = globalAirData;
+  else if (key === '총점수' || key === '종합군사력') targetSeriesData = globalTotalMilitaryData;
 
   const prevRankMap = new Map();
 
