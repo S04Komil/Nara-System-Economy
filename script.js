@@ -88,6 +88,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   async function loadMainData() {
     try {
+      // 1. 모든 API 요청 정의
       const apiRequests = [
         { url: API_URL, name: "메인 API" },
         { url: API_URL_GDP, name: "GDP 시계열 API" },
@@ -97,7 +98,25 @@ document.addEventListener("DOMContentLoaded", function() {
         { url: API_URL_NAVY, name: "해군 시계열 API" },
         { url: API_URL_AIR, name: "공군 시계열 API" }
       ];
-      
+
+      // 2. Promise.allSettled를 사용해 개별 요청 실패가 전체 실패로 이어지지 않도록 분기 처리
+      const results = await Promise.allSettled(
+        apiRequests.map(req => fetchWithSmartRetry(req.url, req.name))
+      );
+
+      // 각 응답 결과를 안전하게 추출 (성공하면 데이터, 실패하면 빈 배열)
+      const getDataOrEmpty = (index) => {
+        return (results[index].status === 'fulfilled') ? results[index].value : [];
+      };
+
+      const mainRes = getDataOrEmpty(0);
+      const gdpRes  = getDataOrEmpty(1);
+      const defRes  = getDataOrEmpty(2);
+      const capRes  = getDataOrEmpty(3);
+      const armyRes = getDataOrEmpty(4);
+      const navyRes = getDataOrEmpty(5);
+      const airRes  = getDataOrEmpty(6);
+
       mainData = Array.isArray(mainRes) ? mainRes : [];
       globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
       globalDefData = Array.isArray(defRes) ? defRes : [];
@@ -105,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
       globalArmyData = Array.isArray(armyRes) ? armyRes : [];
       globalNavyData = Array.isArray(navyRes) ? navyRes : [];
       globalAirData  = Array.isArray(airRes) ? airRes : [];
-      globalTotalMilitaryData = Array.isArray(totalRes) ? totalRes : [];
+      globalTotalMilitaryData = []; // 필요시 추가
 
       extractFlags(globalDefData, defRes);
 
