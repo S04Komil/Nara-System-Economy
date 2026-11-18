@@ -14,6 +14,10 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_GDP = `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`; // GDP순위
   const API_URL_DEF = `${FIREBASE_DB_URL}/nara_rank/defence.json`; // 국방비순위
   const API_URL_CAP = `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`; // 1인당GDP순위
+  // 기존 시계열 경로 아래에 추가
+  const API_URL_ARMY = `${FIREBASE_DB_URL}/nara_rank/army.json`; // 육군순위
+  const API_URL_NAVY = `${FIREBASE_DB_URL}/nara_rank/navy.json`; // 해군순위
+  const API_URL_AIR  = `${FIREBASE_DB_URL}/nara_rank/air.json`;  // 공군순위
 
   // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = `${FIREBASE_DB_URL}/nara_rank/global.json`; //세계 통계 성장률
@@ -31,6 +35,9 @@ document.addEventListener("DOMContentLoaded", function() {
   let flagMap = new Map(); // 국방비 시계열 국기링크 URL 저장용
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
+  let globalArmyData = [];
+  let globalNavyData = [];
+  let globalAirData = [];
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -77,14 +84,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
   async function loadMainData() {
     try {
-      const [mainRes, gdpRes, defRes, capRes] = await Promise.all(
-        apiRequests.map(req => fetchWithSmartRetry(req.url, req.name))
-      );
+      const apiRequests = [
+        { url: API_URL, name: "메인 API" },
+        { url: API_URL_GDP, name: "GDP 시계열 API" },
+        { url: API_URL_DEF, name: "국방비 시계열 API" },
+        { url: API_URL_CAP, name: "1인당 GDP 시계열 API" },
+        { url: API_URL_ARMY, name: "육군 시계열 API" },
+        { url: API_URL_NAVY, name: "해군 시계열 API" },
+        { url: API_URL_AIR, name: "공군 시계열 API" }
+      ];
       
       mainData = Array.isArray(mainRes) ? mainRes : [];
       globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
       globalDefData = Array.isArray(defRes) ? defRes : [];
       globalCapData = Array.isArray(capRes) ? capRes : [];
+      globalArmyData = Array.isArray(armyRes) ? armyRes : [];
+      globalNavyData = Array.isArray(navyRes) ? navyRes : [];
+      globalAirData  = Array.isArray(airRes) ? airRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -470,6 +486,9 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
   else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
   else if (key === '1인당GDP') targetSeriesData = globalCapData;
+  else if (key === '육군') targetSeriesData = globalArmyData;
+  else if (key === '해군') targetSeriesData = globalNavyData;
+  else if (key === '공군') targetSeriesData = globalAirData;
 
   const prevRankMap = new Map();
 
@@ -630,6 +649,8 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       formattedVal = formatPopulation(item.val);
     } else if (unitType === '달러_직접') {
       formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
+    } else if (unitType === '점수') {
+      formattedVal = `${Math.round(item.val).toLocaleString()} 점`;
     }
 
     let rankDiffHtml = "";
@@ -2768,7 +2789,10 @@ const watchPaths = [
   `${FIREBASE_DB_URL}/nara_military/export_import_log.json`,
   `${FIREBASE_DB_URL}/nara_rank/gdp_per.json`,
   `${FIREBASE_DB_URL}/nara_rank/defence.json`,
-  `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`
+  `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`,
+  `${FIREBASE_DB_URL}/nara_rank/army.json`,
+  `${FIREBASE_DB_URL}/nara_rank/navy.json`,
+  `${FIREBASE_DB_URL}/nara_rank/air.json`
 ];
 
 // 각 경로의 최초 데이터 상태를 저장할 객체
