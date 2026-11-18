@@ -2891,4 +2891,78 @@ function updateThemeButtonUI(isDark) {
 
 // 전역 함수 등록
 window.toggleDarkMode = toggleDarkMode;
+  function validateAndSubmitArmyData() {
+  // 1. DOM에서 현재 보유수와 입력된 증감값 매핑
+  const items = [
+    { name: "전차(3.5세대)", curId: "cur-tank-35", inputId: "edit-tank-35" },
+    { name: "전차(3세대)", curId: "cur-tank-30", inputId: "edit-tank-30" },
+    { name: "전차(2세대)", curId: "cur-tank-20", inputId: "edit-tank-20" },
+    { name: "전차(1세대)", curId: "cur-tank-10", inputId: "edit-tank-10" },
+    { name: "전차(1세대미만)", curId: "cur-tank-00", inputId: "edit-tank-00" },
+    { name: "경전차(3.5세대)", curId: "cur-lighttank-35", inputId: "edit-lighttank-35" },
+    { name: "경전차(3세대)", curId: "cur-lighttank-30", inputId: "edit-lighttank-30" },
+    { name: "경전차(2세대)", curId: "cur-lighttank-20", inputId: "edit-lighttank-20" },
+    { name: "경전차(1세대)", curId: "cur-lighttank-10", inputId: "edit-lighttank-10" },
+    { name: "경전차(1세대미만)", curId: "cur-lighttank-00", inputId: "edit-lighttank-00" },
+    { name: "차량", curId: "cur-vehicle", inputId: "edit-vehicle" },
+    { name: "견인포(105mm미만)", curId: "cur-howitzer-under", inputId: "edit-howitzer-under" },
+    { name: "견인포(105mm이상)", curId: "cur-howitzer-over", inputId: "edit-howitzer-over" },
+    { name: "자주포(사거리20km미만)", curId: "cur-sph-under", inputId: "edit-sph-under" },
+    { name: "자주포(사거리20km이상)", curId: "cur-sph-over", inputId: "edit-sph-over" },
+    { name: "장갑차(APC)", curId: "cur-apc", inputId: "edit-apc" },
+    { name: "장갑차(IFV)", curId: "cur-ifv", inputId: "edit-ifv" },
+    { name: "헬기", curId: "cur-heli", inputId: "edit-heli" },
+    { name: "공격헬기", curId: "cur-attack-heli", inputId: "edit-attack-heli" }
+  ];
+
+  // 2. 각 항목별 마이너스 초과 감소 여부 검증
+  for (let item of items) {
+    const currentVal = parseInt(document.getElementById(item.curId)?.innerText) || 0;
+    const changeVal = parseInt(document.getElementById(item.inputId)?.value) || 0;
+
+    // 마이너스(-) 입력값이 현재 보유수보다 클 경우 (예: 보유 5대인데 -6 입력)
+    if (changeVal < 0 && Math.abs(changeVal) > currentVal) {
+      alert(`[오류] ${item.name}의 감소 수치(${Math.abs(changeVal)}대)가 현재 보유수(${currentVal}대)보다 클 수 없습니다!`);
+      document.getElementById(item.inputId).focus();
+      return; // 즉시 중단
+    }
+  }
+
+  // 3. 검증 통과 시 서버(Apps Script)로 전송
+  sendArmyDataToServer(items);
+}
+
+async function sendArmyDataToServer(items) {
+  const payloadData = {};
+  items.forEach(item => {
+    payloadData[item.inputId] = parseInt(document.getElementById(item.inputId)?.value) || 0;
+  });
+
+  const payload = {
+    action: "updateArmyEquipment",
+    country: currentUser ? currentUser.country : "",
+    changes: payloadData
+  };
+
+  try {
+    const response = await fetch(API_EDIT, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+
+    if (result.success || result.result === "success") {
+      alert("육군 전력이 성공적으로 업데이트되었습니다!");
+      showMyEconomyView(); // 화면 갱신
+      checkFirebaseChanges();
+    } else {
+      alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
+    }
+  } catch (err) {
+    console.error("육군 전력 수정 오류:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+window.validateAndSubmitArmyData = validateAndSubmitArmyData;
 });
