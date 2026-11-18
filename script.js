@@ -2933,6 +2933,7 @@ function validateAndSubmitArmyData() {
 }
 
 async function sendArmyDataToServer(items) {
+async function sendArmyDataToServer(items) {
   const payloadData = {};
 
   items.forEach(item => {
@@ -2940,21 +2941,19 @@ async function sendArmyDataToServer(items) {
     if (val !== 0) {
       let sheetHeader = "";
 
-      // 💡 육군 시트의 실제 1행 헤더명과 모달 인풋 ID/선택값을 1:1로 정확히 맵핑
       if (item.inputId === 'edit-val-tank') {
-        const gen = document.getElementById('select-tank-gen')?.value; // '3.5', '3.0', '2.0', '1.0', '0.0'
+        const gen = document.getElementById('select-tank-gen')?.value;
         if (gen === '3.5') sheetHeader = "전차35";
         else if (gen === '3.0') sheetHeader = "전차3";
         else if (gen === '2.0') sheetHeader = "전차2";
         else if (gen === '1.0') sheetHeader = "전차1";
-        else if (gen === '0.0') sheetHeader = "전차"; // 1세대미만 전차
+        else if (gen === '0.0') sheetHeader = "전차";
       } else if (item.inputId === 'edit-val-lighttank') {
         const gen = document.getElementById('select-lighttank-gen')?.value;
         if (gen === '3.5') sheetHeader = "경전차35";
         else if (gen === '3.0') sheetHeader = "경전차3";
         else if (gen === '2.0') sheetHeader = "경전차2";
         else if (gen === '1.0') sheetHeader = "경전차1";
-        else if (gen === '0.0') sheetHeader = "경전차";
       } else if (item.inputId === 'edit-val-vehicle') {
         sheetHeader = "차량";
       } else if (item.inputId === 'edit-val-howitzer') {
@@ -2983,12 +2982,17 @@ async function sendArmyDataToServer(items) {
     changes: payloadData
   };
 
+  // 🔍 디버깅용 콘솔 출력
+  console.log("🛡️ [육군 전송 데이터 확인 Payload]:", JSON.stringify(payload, null, 2));
+
   try {
     const response = await fetch(MIL_API_EDIT, {
       method: "POST",
       body: JSON.stringify(payload)
     });
     const result = await response.json();
+
+    console.log("🛡️ [육군 서버 응답 Result]:", result);
 
     if (result.success || result.result === "success") {
       alert("육군 전력이 성공적으로 업데이트되었습니다!");
