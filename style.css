@@ -1162,3 +1162,70 @@ th {
     flex: 1;
   }
 }
+/* ==========================================
+   상단 내비게이션바 드롭다운 (경제 통계 / 국방 전력) 스타일
+   ========================================== */
+
+/* 드롭다운 부모 요소 위치 기준 설정 */
+.nav-item.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* 드롭다운 메인 카테고리 버튼 디자인 */
+.nav-item.dropdown .drop-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-color, #2d3748);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.nav-item.dropdown:hover .drop-btn {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 마우스를 올렸을 때 나타나는 하위 메뉴 박스 */
+.nav-item.dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-card, #ffffff);
+  min-width: 170px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  z-index: 1000;
+  padding: 8px 0;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* 하위 메뉴 내부 항목 (링크) 디자인 */
+.nav-item.dropdown .dropdown-content a {
+  color: var(--text-color, #2d3748) !important;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* 하위 항목 호버 효과 */
+.nav-item.dropdown .dropdown-content a:hover {
+  background-color: var(--primary-color, #007bff);
+  color: #ffffff !important;
+}
+
+/* 마우스 커서가 올라갔을 때 드롭다운 박스 활성화 (열림) */
+.nav-item.dropdown:hover .dropdown-content {
+  display: block !important;
+}
