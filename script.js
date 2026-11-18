@@ -494,24 +494,54 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   const listEl = document.getElementById('rank-list');
   listEl.innerHTML = '';
 
+  // 💡 탭별 데이터 소스, 점수 컬럼 키, 시계열 데이터 및 기준 총합 분기 설정
+  let rawDataSource = mainData;
+  let targetScoreKey = key;
+  let targetSeriesData = [];
   let totalBaseVal = 0;
-  if (key === 'GDP(10억달러)' || key === 'GDP') totalBaseVal = worldTotals.gdp;
-  else if (key === '인구(만명)' || key === '인구') totalBaseVal = worldTotals.pop;
-  else if (key === '국방비(10억달러)' || key === '국방비') totalBaseVal = worldTotals.def;
 
-  let currentList = mainData.map(item => {
+  if (key === '육군') {
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
+    targetScoreKey = '육군점수';             // C열
+    targetSeriesData = globalArmyChangeData;  // 육군 순위 변화 시계열
+  } else if (key === '공군') {
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
+    targetScoreKey = '공군점수';             // D열
+    targetSeriesData = globalAirChangeData;   // 공군 순위 변화 시계열
+  } else if (key === '해군') {
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
+    targetScoreKey = '해군점수';             // E열
+    targetSeriesData = globalNavyChangeData;  // 해군 순위 변화 시계열
+  } else if (key === '군사력종합' || key === '종합군사력') {
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
+    targetScoreKey = '총점수';               // F열
+    targetSeriesData = globalMilitaryChangeData; // 종합 군사력 순위 변화 시계열
+  } else if (key === 'GDP(10억달러)' || key === 'GDP') {
+    targetSeriesData = globalGdpData;
+    totalBaseVal = worldTotals.gdp;
+  } else if (key === '국방비(10억달러)' || key === '국방비') {
+    targetSeriesData = globalDefData;
+    totalBaseVal = worldTotals.def;
+  } else if (key === '1인당GDP') {
+    targetSeriesData = globalCapData;
+  } else if (key === '인구(만명)' || key === '인구') {
+    totalBaseVal = worldTotals.pop;
+  }
+
+  // 💡 현재 점수 리스트 생성 (군사력 부문은 종합 군사력 시트에서, 나머지는 mainData에서 추출)
+  let currentList = rawDataSource.map(item => {
     let rawCountry = extractCountryFromRow(item);
     let cleanedName = cleanName(rawCountry);
 
     if (cleanedName === '전세계') return null;
 
-    let rawVal = item[key];
+    let rawVal = item[targetScoreKey] !== undefined ? item[targetScoreKey] : item[key];
     if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
       return null;
     }
 
-    let numVal = parseFloat(rawVal);
-    if (isNaN(numVal) || numVal <= 0) return null;
+    let numVal = parseFloat(String(rawVal).replace(/,/g, ''));
+    if (isNaN(numVal) || numVal < 0) return null;
 
     if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
       numVal *= 10;
@@ -521,15 +551,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   })
   .filter(item => item !== null && item.country !== '')
   .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
-
-  let targetSeriesData = [];
-  if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
-  else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
-  else if (key === '1인당GDP') targetSeriesData = globalCapData;
-  else if (key === '육군') targetSeriesData = globalArmyChangeData;  // 💡 육군 순위 변화 시계열 연결
-  else if (key === '해군') targetSeriesData = globalNavyChangeData;  // 💡 해군 순위 변화 시계열 연결
-  else if (key === '공군') targetSeriesData = globalAirChangeData;   // 💡 공군 순위 변화 시계열 연결
-  else if (key === '군사력종합' || key === '종합군사력') targetSeriesData = globalTotalMilitaryData;
 
   const prevRankMap = new Map();
 
@@ -566,8 +587,8 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
               return null;
             }
 
-            let numVal = parseFloat(rawVal);
-            if (isNaN(numVal) || numVal <= 0) return null;
+            let numVal = parseFloat(String(rawVal).replace(/,/g, ''));
+            if (isNaN(numVal) || numVal < 0) return null;
 
             if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
               numVal *= 10;
