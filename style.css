@@ -1038,3 +1038,145 @@ nav {
 [data-theme="dark"] .rank-item.world-item .rank-bar {
   background: #2b6cb0 !important; /* 전세계 항목 바도 어두운 블루 톤으로 조화롭게 보정 */
 }
+
+/* 햄버거 버튼 기본 숨김 (PC에서는 안 보임) */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  z-index: 1001;
+}
+
+.mobile-menu-toggle span {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background-color: var(--text-color, #2d3748);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .mobile-menu-toggle span {
+  background-color: #e2e8f0;
+}
+
+/* 모바일 메뉴 헤더 (닫기 버튼 등) 기본 숨김 */
+.mobile-menu-header {
+  display: none;
+}
+
+/* 배경 어둡게 하는 오버레이 */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  backdrop-filter: blur(2px);
+}
+
+.menu-overlay.active {
+  display: block;
+}
+
+
+/* ==========================================
+   📱 모바일 화면 반응형 스타일 (768px 이하)
+   ========================================== */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex; /* 모바일에서 햄버거 버튼 표시 */
+  }
+
+  /* 네비게이션 메뉴를 화면 오른쪽에서 슬라이드되는 사이드바로 변경 */
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    right: -280px; /* 평소에는 화면 오른쪽 밖에 숨김 */
+    width: 280px;
+    height: 100vh;
+    background-color: var(--card-bg, #ffffff);
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 999;
+    overflow-y: auto;
+    max-width: none;
+  }
+
+  /* 사이드바가 열렸을 때 (active 클래스 추가 시) */
+  .nav-menu.active {
+    right: 0;
+  }
+
+  /* 모바일 메뉴 상단 헤더 표시 */
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--border-color, #e2e8f0);
+  }
+
+  .mobile-menu-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-color, #1a202c);
+  }
+
+  .mobile-menu-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-color, #666);
+    line-height: 1;
+  }
+
+  /* 메뉴 항목들을 모바일 세로 배치에 맞게 확장 */
+  .nav-item {
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  .nav-item button, 
+  .nav-item .drop-btn {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
+
+  /* 모바일에서 드롭다운 메뉴 처리 방식 (사이드바 안에서 자연스럽게 펼쳐지도록) */
+  .nav-item.dropdown .dropdown-content {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    padding-left: 15px;
+    width: 100%;
+  }
+  
+  .nav-item.dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  /* 우측 로그인 영역 컨테이너 정돈 */
+  .auth-area-wrapper {
+    margin-left: auto;
+    margin-right: 8px;
+  }
+}
