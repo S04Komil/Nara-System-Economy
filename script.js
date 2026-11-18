@@ -789,7 +789,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     listEl.appendChild(li);
   });
 };
-```[cite: [script.js](https://github.com/S04Komil/Nara-System-Economy/blob/main/script.js)]
+[cite: [script.js](https://github.com/S04Komil/Nara-System-Economy/blob/main/script.js)]
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
 
@@ -833,7 +833,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     let defRatioDisplay = "-";
     if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
       let numRatio = parseFloat(rawDefRatio);
-      defRatioDisplay = numRatio.toFixed(2) + "%"; // ✔️ 공백 없이 붙이기
+      defRatioDisplay = `${numRatio.toFixed(2)}%`; // ✔️ 공백 없이 붙이기
     } else if (rawGdp > 0) {
       defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`; // ✔️ 공백 없이 붙이기
     }
