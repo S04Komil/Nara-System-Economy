@@ -2931,48 +2931,68 @@ function validateAndSubmitArmyData() {
   // 3. 검증 통과 시 서버(Apps Script)로 전송
   sendArmyDataToServer(items);
 }
-async function sendArmyDataToServer(items) {
+async function sendArmyDataToServer() {
   const payloadData = {};
 
-  items.forEach(item => {
-    const val = parseInt(document.getElementById(item.inputId)?.value) || 0;
-    if (val !== 0) {
-      let sheetHeader = "";
+  // 1. 전차 (세대별 select 값과 edit-val-tank 입력값 조합)
+  const tankVal = parseInt(document.getElementById('edit-val-tank')?.value) || 0;
+  if (tankVal !== 0) {
+    const gen = document.getElementById('select-tank-gen')?.value; // '3.5', '3.0', '2.0', '1.0', '0.0'
+    let header = "전차";
+    if (gen === '3.5') header = "전차35";
+    else if (gen === '3.0') header = "전차3";
+    else if (gen === '2.0') header = "전차2";
+    else if (gen === '1.0') header = "전차1";
+    else if (gen === '0.0') header = "전차";
+    payloadData[header] = tankVal;
+  }
 
-      if (item.inputId === 'edit-val-tank') {
-        const gen = document.getElementById('select-tank-gen')?.value;
-        if (gen === '3.5') sheetHeader = "전차35";
-        else if (gen === '3.0') sheetHeader = "전차3";
-        else if (gen === '2.0') sheetHeader = "전차2";
-        else if (gen === '1.0') sheetHeader = "전차1";
-        else if (gen === '0.0') sheetHeader = "전차";
-      } else if (item.inputId === 'edit-val-lighttank') {
-        const gen = document.getElementById('select-lighttank-gen')?.value;
-        if (gen === '3.5') sheetHeader = "경전차35";
-        else if (gen === '3.0') sheetHeader = "경전차3";
-        else if (gen === '2.0') sheetHeader = "경전차2";
-        else if (gen === '1.0') sheetHeader = "경전차1";
-      } else if (item.inputId === 'edit-val-vehicle') {
-        sheetHeader = "차량";
-      } else if (item.inputId === 'edit-val-howitzer') {
-        const type = document.getElementById('select-howitzer-type')?.value;
-        sheetHeader = (type === 'under') ? "105견인포" : "155견인포";
-      } else if (item.inputId === 'edit-val-sph') {
-        const type = document.getElementById('select-sph-type')?.value;
-        sheetHeader = (type === 'under') ? "단거리자주포" : "자주포";
-      } else if (item.inputId === 'edit-val-apc') {
-        const type = document.getElementById('select-apc-type')?.value;
-        sheetHeader = (type === 'apc') ? "장갑차" : "IFV";
-      } else if (item.inputId === 'edit-val-heli') {
-        const type = document.getElementById('select-heli-type')?.value;
-        sheetHeader = (type === 'transport') ? "헬기" : "공격헬기";
-      }
+  // 2. 경전차 (세대별 select 값과 edit-val-lighttank 입력값 조합)
+  const lightVal = parseInt(document.getElementById('edit-val-lighttank')?.value) || 0;
+  if (lightVal !== 0) {
+    const gen = document.getElementById('select-lighttank-gen')?.value;
+    let header = "경전차";
+    if (gen === '3.5') header = "경전차35";
+    else if (gen === '3.0') header = "경전차3";
+    else if (gen === '2.0') header = "경전차2";
+    else if (gen === '1.0') header = "경전차1";
+    else if (gen === '0.0') header = "경전차";
+    payloadData[header] = lightVal;
+  }
 
-      if (sheetHeader) {
-        payloadData[sheetHeader] = val;
-      }
-    }
-  });
+  // 3. 차량 (일반 차량)
+  const vehicleVal = parseInt(document.getElementById('edit-val-vehicle')?.value) || 0;
+  if (vehicleVal !== 0) {
+    payloadData["차량"] = vehicleVal;
+  }
+
+  // 4. 견인포 (select 타입에 따라 105견인포 / 155견인포 분기)
+  const howitzerVal = parseInt(document.getElementById('edit-val-howitzer')?.value) || 0;
+  if (howitzerVal !== 0) {
+    const type = document.getElementById('select-howitzer-type')?.value; // 'under' 또는 'over'
+    payloadData[type === 'under' ? "105견인포" : "155견인포"] = howitzerVal;
+  }
+
+  // 5. 자주포 (select 타입에 따라 단거리자주포 / 자주포 분기)
+  const sphVal = parseInt(document.getElementById('edit-val-sph')?.value) || 0;
+  if (sphVal !== 0) {
+    const type = document.getElementById('select-sph-type')?.value; // 'under' 또는 'over'
+    payloadData[type === 'under' ? "단거리자주포" : "자주포"] = sphVal;
+  }
+
+  // 6. 장갑차 (select 타입에 따라 장갑차 / IFV 분기)
+  const apcVal = parseInt(document.getElementById('edit-val-apc')?.value) || 0;
+  if (apcVal !== 0) {
+    const type = document.getElementById('select-apc-type')?.value; // 'apc' 또는 'ifv'
+    payloadData[type === 'apc' ? "장갑차" : "IFV"] = apcVal;
+  }
+
+  // 7. 헬기 (select 타입에 따라 헬기 / 공격헬기 분기)
+  const heliVal = parseInt(document.getElementById('edit-val-heli')?.value) || 0;
+  if (heliVal !== 0) {
+    const type = document.getElementById('select-heli-type')?.value; // 'transport' 또는 'attack'
+    payloadData[type === 'transport' ? "헬기" : "공격헬기"] = heliVal;
+  }
 
   const payload = {
     action: "updateArmyEquipment",
@@ -2980,7 +3000,7 @@ async function sendArmyDataToServer(items) {
     changes: payloadData
   };
 
-  // 🔍 디버깅용 콘솔 출력
+  // 🔍 콘솔에서 changes 객체에 값이 잘 담기는지 확인
   console.log("🛡️ [육군 전송 데이터 확인 Payload]:", JSON.stringify(payload, null, 2));
 
   try {
