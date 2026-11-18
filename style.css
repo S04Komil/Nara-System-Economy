@@ -1061,93 +1061,55 @@ nav {
 
 @media (max-width: 768px) {
   nav {
-    height: auto !important;
-    min-height: 60px;
-    padding: 8px 12px !important;
+    height: 60px;
+    padding: 0 12px !important;
     display: flex;
     align-items: center;
     justify-content: space-between !important;
-    flex-wrap: nowrap !important;
-    overflow: hidden;
   }
 
   .logo-container {
-    position: static !important;
     margin-right: 4px;
-    flex-shrink: 1;
   }
 
   .logo-img {
     height: 28px !important;
-    width: auto;
   }
 
+  /* 햄버거 버튼 강제 노출 및 터치 보장 */
   .mobile-menu-toggle {
     display: flex !important;
     margin-left: 6px;
-    flex-shrink: 0;
+    z-index: 100001;
   }
 
   .auth-area-wrapper {
     margin-left: auto;
     margin-right: 6px;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
   }
 
-  .user-profile-badge {
-    padding: 3px 6px !important;
-    font-size: 11px !important;
-    max-width: 130px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    gap: 4px !important;
-  }
-
-  #user-country-name {
-    max-width: 70px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .user-flag-img {
-    width: 14px !important;
-    height: 10px !important;
-  }
-
-  .btn-logout {
-    padding: 2px 5px !important;
-    font-size: 10px !important;
-    min-height: 24px !important;
-    margin-left: 2px !important;
-  }
-
-  /* 📱 평소에는 화면 오른쪽 바깥으로 100% 숨김 (절대 안 보이게 처리) */
+  /* 📱 사이드 메뉴 기본 상태: 화면 우측 밖으로 숨김 */
   .nav-menu {
     position: fixed !important;
     top: 0 !important;
-    right: -300px !important; /* 화면 오른쪽 밖으로 완전히 밀어냄 */
+    right: -100% !important;
     width: 280px !important;
     height: 100vh !important;
     background-color: var(--card-bg, #ffffff) !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     padding: 20px !important;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
-    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    z-index: 10000 !important;
-    display: flex !important;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3) !important;
+    transition: right 0.3s ease-in-out !important;
+    z-index: 100000 !important;
+    margin: 0 !important;
     box-sizing: border-box;
+    display: flex !important;
   }
 
-  /* 📱 햄버거 버튼을 눌러 .active가 붙었을 때만 right: 0으로 화면 안으로 슬라이드인 */
+  /* 📱 버튼을 눌러 .active가 붙으면 right: 0으로 화면에 나타남 */
   .nav-menu.active {
-    left: 0 !important;
+    right: 0 !important;
   }
 
   .mobile-menu-header {
@@ -1172,12 +1134,11 @@ nav {
     font-size: 28px;
     cursor: pointer;
     color: var(--text-color, #666);
-    line-height: 1;
   }
 
   .nav-item {
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .nav-item button, 
