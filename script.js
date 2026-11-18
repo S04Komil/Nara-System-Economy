@@ -3007,7 +3007,7 @@ function loadAndDisplayMyArmyEquipment() {
   const armyArray = Array.isArray(globalArmyData) ? globalArmyData : [];
   const myObjArmy = armyArray.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
   
-  console.log("현재 내 국가 육군 전력 데이터 매칭:", myObj);
+  console.log("현재 내 국가 육군 전력 데이터 매칭:", myObjArmy);
 
   // 💡 시트의 새로운 헤더 명칭(전차1, 전차2, 105견인포 등)과 정확히 일치하도록 매칭
   window.modalArmyCache = {
