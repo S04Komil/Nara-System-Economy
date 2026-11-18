@@ -2982,13 +2982,19 @@ async function sendArmyDataToServer(items) {
     alert("서버 통신 중 오류가 발생했습니다.");
   }
 }
+// 🛡️ 육군 전력 관리 모달 열기 및 데이터 연동
 function openArmyEditModal() {
   const modal = document.getElementById('army-edit-modal');
   if (modal) modal.style.display = 'flex';
-  // 모달을 열 때 현재 보유수 데이터를 폼에 동기화하는 함수 호출 가능
-  loadAndDisplayMyArmyEquipment();
-  
+  loadAndDisplayMyArmyEquipment(); // 모달을 열 때 보유수 동기화 함수 호출
 }
+
+function closeArmyEditModal() {
+  const modal = document.getElementById('army-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// 자국의 육군 장비 보유량을 불러와서 모달 UI에 채워주는 함수 (충돌 방지 고유 변수명 사용)
 function loadAndDisplayMyArmyEquipment() {
   if (!currentUser || !currentUser.country) {
     console.warn("로그인된 유저 또는 국가 정보가 없습니다.");
@@ -2998,40 +3004,39 @@ function loadAndDisplayMyArmyEquipment() {
   const myCountryName = currentUser.country;
   const cleanMyCountry = cleanName(myCountryName);
   
-  // mainData에서 현재 로그인한 국가의 데이터를 정확히 찾기
-  const myObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
+  const armyArray = Array.isArray(globalArmyData) ? globalArmyData : [];
+  const myObj = armyArray.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
   
-  // 데이터가 잘 찾아졌는지 콘솔에서 확인 (디버깅용)
-  console.log("현재 내 국가 육군 데이터 매칭:", myObj);
+  console.log("현재 내 국가 육군 전력 데이터 매칭:", myObj);
 
-  // 시트의 헤더 명칭("전차(3.5세대)" 등)과 일치하도록 캐시 객체에 담기
-  window.myArmyDataCache = {
+  // 💡 다른 변수명과 충돌하지 않도록 고유한 전역 캐시 변수명 사용 (modalArmyCache)
+  window.modalArmyCache = {
     tank: {
-      '3.5': parseNumber(myObj['전차35)'] || 0),
-      '3.0': parseNumber(myObj['전차3'] || 0),
-      '2.0': parseNumber(myObj['전차2'] || 0),
-      '1.0': parseNumber(myObj['전차1'] || 0),
-      '0.0': parseNumber(myObj['전차'] || 0)
+      '3.5': parseNumber(myObj['전차(3.5세대)'] || myObj['전차35세대'] || 0),
+      '3.0': parseNumber(myObj['전차(3세대)'] || myObj['전차3세대'] || 0),
+      '2.0': parseNumber(myObj['전차(2세대)'] || myObj['전차2세대'] || 0),
+      '1.0': parseNumber(myObj['전차(1세대)'] || myObj['전차1세대'] || 0),
+      '0.0': parseNumber(myObj['전차(1세대미만)'] || myObj['전차1세대미만'] || 0)
     },
     lighttank: {
-      '3.5': parseNumber(myObj['경전차35'] || 0),
-      '3.0': parseNumber(myObj['경전차3'] || 0),
-      '2.0': parseNumber(myObj['경전차2'] || 0),
-      '1.0': parseNumber(myObj['경전차1'] || 0),
-      '0.0': parseNumber(myObj['경전차'] || 0)
+      '3.5': parseNumber(myObj['경전차(3.5세대)'] || myObj['경전차35세대'] || 0),
+      '3.0': parseNumber(myObj['경전차(3세대)'] || myObj['경전차3세대'] || 0),
+      '2.0': parseNumber(myObj['경전차(2세대)'] || myObj['경전차2세대'] || 0),
+      '1.0': parseNumber(myObj['경전차(1세대)'] || myObj['경전차1세대'] || 0),
+      '0.0': parseNumber(myObj['경전차(1세대미만)'] || myObj['경전차1세대미만'] || 0)
     },
     vehicle: parseNumber(myObj['차량'] || 0),
     howitzer: {
-      'under': parseNumber(myObj['105견인포'] || 0),
-      'over': parseNumber(myObj['155견인포'] || 0)
+      'under': parseNumber(myObj['견인포(105mm미만)'] || 0),
+      'over': parseNumber(myObj['견인포(105mm이상)'] || 0)
     },
     sph: {
-      'under': parseNumber(myObj['단거리자주포'] || 0),
-      'over': parseNumber(myObj['자주포'] || 0)
+      'under': parseNumber(myObj['자주포(사거리20km미만)'] || 0),
+      'over': parseNumber(myObj['자주포(사거리20km이상)'] || 0)
     },
     apc: {
-      'apc': parseNumber(myObj['장갑차'] || 0),
-      'ifv': parseNumber(myObj['IFV'] || 0)
+      'apc': parseNumber(myObj['장갑차(APC)'] || 0),
+      'ifv': parseNumber(myObj['장갑차(IFV)'] || 0)
     },
     heli: {
       'transport': parseNumber(myObj['헬기'] || 0),
@@ -3051,8 +3056,8 @@ function loadAndDisplayMyArmyEquipment() {
 
 // 드롭다운 변경 또는 초기화 시 보유수 텍스트를 화면에 반영하는 함수
 function updateArmyCurrentDisplay(category) {
-  if (!window.myArmyDataCache) return;
-  const cache = window.myArmyDataCache;
+  if (!window.modalArmyCache) return;
+  const cache = window.modalArmyCache;
   let val = 0;
 
   if (category === 'tank') {
@@ -3090,10 +3095,6 @@ function updateArmyCurrentDisplay(category) {
     const el = document.getElementById('cur-val-heli');
     if (el) el.innerText = val;
   }
-}
-function closeArmyEditModal() {
-  const modal = document.getElementById('army-edit-modal');
-  if (modal) modal.style.display = 'none';
 }
 
 window.openArmyEditModal = openArmyEditModal;
