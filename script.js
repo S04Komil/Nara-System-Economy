@@ -3100,6 +3100,5 @@ function updateArmyCurrentDisplay(category) {
 window.openArmyEditModal = openArmyEditModal;
 window.closeArmyEditModal = closeArmyEditModal;
 window.updateArmyCurrentDisplay = updateArmyCurrentDisplay;
-window.loadAndDisplayMyArmyEquipment = loadAndDisplayMyArmyEquipment;
 window.validateAndSubmitArmyData = validateAndSubmitArmyData;
 });
