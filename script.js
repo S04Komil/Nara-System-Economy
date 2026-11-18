@@ -16,11 +16,14 @@ document.addEventListener("DOMContentLoaded", function() {
   const API_URL_DEF = `${FIREBASE_DB_URL}/nara_rank/defence.json`; // 국방비순위
   const API_URL_CAP = `${FIREBASE_DB_URL}/nara_rank/gdp_per_capita.json`; // 1인당GDP순위
   // 기존 시계열 경로 아래에 추가
-  const API_URL_ARMY = `${FIREBASE_DB_URL}/nara_rank/army.json`; // 육군순위
-  const API_URL_NAVY = `${FIREBASE_DB_URL}/nara_rank/navy.json`; // 해군순위
-  const API_URL_AIR  = `${FIREBASE_DB_URL}/nara_rank/air.json`;  // 공군순위
+  const API_URL_ARMY = `${FIREBASE_DB_URL}/nara_military/army.json`; // 육군 실시간 전력
+  const API_URL_NAVY = `${FIREBASE_DB_URL}/nara_military/navy.json`; // 해군 실시간 전력
+  const API_URL_AIR  = `${FIREBASE_DB_URL}/nara_military/air.json`;  // 공군 실시간 전력
   const API_URL_MILITARY_CHANGE = `${FIREBASE_DB_URL}/nara_rank/military_rank_change.json`; // 군사력순위변화 시계열
   const API_URL_TOTAL_MILITARY  = `${FIREBASE_DB_URL}/nara_rank/total_military.json`;   // 종합 군사력 순위
+  const API_URL_ARMY_CHANGE = `${FIREBASE_DB_URL}/nara_rank/army_rank_change.json`; // 육군 순위 변화 시계열
+  const API_URL_NAVY_CHANGE = `${FIREBASE_DB_URL}/nara_rank/navy_rank_change.json`; // 해군 순위 변화 시계열
+  const API_URL_AIR_CHANGE  = `${FIREBASE_DB_URL}/nara_rank/air_rank_change.json`;  // 공군 순위 변화 시계열
 
   // 3. 세계 통계 성장률 API
   const API_URL_GROWTH = `${FIREBASE_DB_URL}/nara_rank/global.json`; //세계 통계 성장률
@@ -31,18 +34,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
   let currentUser = JSON.parse(localStorage.getItem('nara_user') || 'null');
 
-  let mainData = [];
-  let globalGdpData = [];
-  let globalDefData = [];
-  let globalCapData = [];
+  let mainData = []; //메인경제 데이터
+  let globalGdpData = []; //GDP순위 시계열 데이터
+  let globalDefData = []; //국방비순위 시계열 데이터
+  let globalCapData = []; //1인당GDP순위 시계열 데이터
   let flagMap = new Map(); // 국방비 시계열 국기링크 URL 저장용
   let worldTotals = { gdp: 0, pop: 0, def: 0, cap: 0 };
   let currentSheetYear = 1970;
-  let globalArmyData = [];
-  let globalNavyData = [];
-  let globalAirData = [];
-  let globalMilitaryChangeData = [];
-  let globalTotalMilitaryData = [];
+  let globalArmyData = []; //육군데이터
+  let globalNavyData = []; //해군데이터
+  let globalAirData = []; //공군데이터
+  let globalMilitaryChangeData = []; //종합군사력시계열 데이터
+  let globalTotalMilitaryData = []; //종합군사력데이터
+  let globalArmyChangeData = []; //육군 시계열 데이터
+  let globalNavyChangeData = []; //해군 시계열 데이터
+  let globalAirChangeData = []; // 공군 시계열 데이터
 
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -95,9 +101,12 @@ document.addEventListener("DOMContentLoaded", function() {
         { url: API_URL_GDP, name: "GDP 시계열 API" },
         { url: API_URL_DEF, name: "국방비 시계열 API" },
         { url: API_URL_CAP, name: "1인당 GDP 시계열 API" },
-        { url: API_URL_ARMY, name: "육군 시계열 API" },
-        { url: API_URL_NAVY, name: "해군 시계열 API" },
-        { url: API_URL_AIR, name: "공군 시계열 API" }
+        { url: API_URL_ARMY, name: "육군 실시간 전력" },
+        { url: API_URL_NAVY, name: "해군 실시간 전력" },
+        { url: API_URL_AIR, name: "공군 실시간 전력" },
+        { url: API_URL_ARMY_CHANGE, name: "육군 순위 변화 시계열" },
+        { url: API_URL_NAVY_CHANGE, name: "해군 순위 변화 시계열" },
+        { url: API_URL_AIR_CHANGE, name: "공군 순위 변화 시계열" }
       ];
 
       // 2. Promise.allSettled를 사용해 개별 요청 실패가 전체 실패로 이어지지 않도록 분기 처리
@@ -117,6 +126,9 @@ document.addEventListener("DOMContentLoaded", function() {
       const armyRes = getDataOrEmpty(4);
       const navyRes = getDataOrEmpty(5);
       const airRes  = getDataOrEmpty(6);
+      const armyChangeRes = getDataOrEmpty(7);
+      const navyChangeRes = getDataOrEmpty(8);
+      const airChangeRes  = getDataOrEmpty(9);
 
       mainData = Array.isArray(mainRes) ? mainRes : [];
       globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
@@ -126,6 +138,9 @@ document.addEventListener("DOMContentLoaded", function() {
       globalNavyData = Array.isArray(navyRes) ? navyRes : [];
       globalAirData  = Array.isArray(airRes) ? airRes : [];
       globalTotalMilitaryData = []; // 필요시 추가
+      globalArmyChangeData = Array.isArray(armyChangeRes) ? armyChangeRes : [];
+      globalNavyChangeData = Array.isArray(navyChangeRes) ? navyChangeRes : [];
+      globalAirChangeData  = Array.isArray(airChangeRes) ? airChangeRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -511,9 +526,9 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
   else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
   else if (key === '1인당GDP') targetSeriesData = globalCapData;
-  else if (key === '육군') targetSeriesData = globalArmyData;
-  else if (key === '해군') targetSeriesData = globalNavyData;
-  else if (key === '공군') targetSeriesData = globalAirData;
+  else if (key === '육군') targetSeriesData = globalArmyChangeData;  // 💡 육군 순위 변화 시계열 연결
+  else if (key === '해군') targetSeriesData = globalNavyChangeData;  // 💡 해군 순위 변화 시계열 연결
+  else if (key === '공군') targetSeriesData = globalAirChangeData;   // 💡 공군 순위 변화 시계열 연결
   else if (key === '군사력종합' || key === '종합군사력') targetSeriesData = globalTotalMilitaryData;
 
   const prevRankMap = new Map();
@@ -3013,17 +3028,17 @@ function loadAndDisplayMyArmyEquipment() {
   // 💡 시트의 새로운 헤더 명칭(전차1, 전차2, 105견인포 등)과 정확히 일치하도록 매칭
   window.modalArmyCache = {
     tank: {
-      '3.5': parseNumber(myObjArmy['전차35'] || myObjArmy['전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObjArmy['전차3'] || myObjArmy['전차(3세대)'] || 0),
-      '2.0': parseNumber(myObjArmy['전차2'] || myObjArmy['전차(2세대)'] || 0),
-      '1.0': parseNumber(myObjArmy['전차1'] || myObjArmy['전차(1세대)'] || 0),
-      '0.0': parseNumber(myObjArmy['전차'] || myObjArmy['전차1세대미만'] || 0)
+      '3.5': parseNumber(myObjArmy['전차35'] || 0),
+      '3.0': parseNumber(myObjArmy['전차3'] || 0),
+      '2.0': parseNumber(myObjArmy['전차2'] || 0),
+      '1.0': parseNumber(myObjArmy['전차1'] || 0),
+      '0.0': parseNumber(myObjArmy['전차'] || 0)
     },
     lighttank: {
-      '3.5': parseNumber(myObjArmy['경전차35'] || myObjArmy['경전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObjArmy['경전차3'] || myObjArmy['경전차(3세대)'] || 0),
-      '2.0': parseNumber(myObjArmy['경전차2'] || myObjArmy['경전차(2세대)'] || 0),
-      '1.0': parseNumber(myObjArmy['경전차1'] || myObjArmy['경전차(1세대)'] || 0),
+      '3.5': parseNumber(myObjArmy['경전차35'] || 0),
+      '3.0': parseNumber(myObjArmy['경전차3'] || 0),
+      '2.0': parseNumber(myObjArmy['경전차2'] || 0),
+      '1.0': parseNumber(myObjArmy['경전차1'] || 0),
       '0.0': parseNumber(myObjArmy['경전차'] || 0)
     },
     vehicle: parseNumber(myObjArmy['차량'] || 0),
