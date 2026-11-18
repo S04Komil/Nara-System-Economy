@@ -118,22 +118,22 @@ nav {
   margin-left: auto;
 }
 
-.nav-item button,
-.nav-item .drop-btn {
-  background: none;
+/* 드롭다운 메인 카테고리 버튼 디자인 */
+.nav-item.dropdown .drop-btn,
+.nav-item button {
+  background: transparent;
   border: none;
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  color: var(--text-color, #2d3748);
+  font-size: 0.95rem;
   font-weight: 500;
-  color: #4a5568;
+  padding: 10px 14px;
   cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-  min-height: 44px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  text-decoration: none;
+  gap: 6px;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+  min-height: 40px;
 }
 
 [data-theme="dark"] .nav-item button,
