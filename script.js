@@ -3005,42 +3005,42 @@ function loadAndDisplayMyArmyEquipment() {
   const cleanMyCountry = cleanName(myCountryName);
   
   const armyArray = Array.isArray(globalArmyData) ? globalArmyData : [];
-  const myObj = armyArray.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
+  const myObjArmy = armyArray.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
   
   console.log("현재 내 국가 육군 전력 데이터 매칭:", myObj);
 
   // 💡 시트의 새로운 헤더 명칭(전차1, 전차2, 105견인포 등)과 정확히 일치하도록 매칭
   window.modalArmyCache = {
     tank: {
-      '3.5': parseNumber(myObj['전차35'] || myObj['전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObj['전차3'] || myObj['전차(3세대)'] || 0),
-      '2.0': parseNumber(myObj['전차2'] || myObj['전차(2세대)'] || 0),
-      '1.0': parseNumber(myObj['전차1'] || myObj['전차(1세대)'] || 0),
-      '0.0': parseNumber(myObj['전차'] || myObj['전차1세대미만'] || 0)
+      '3.5': parseNumber(myObjArmy['전차35'] || myObjArmy['전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObjArmy['전차3'] || myObjArmy['전차(3세대)'] || 0),
+      '2.0': parseNumber(myObjArmy['전차2'] || myObjArmy['전차(2세대)'] || 0),
+      '1.0': parseNumber(myObjArmy['전차1'] || myObjArmy['전차(1세대)'] || 0),
+      '0.0': parseNumber(myObjArmy['전차'] || myObjArmy['전차1세대미만'] || 0)
     },
     lighttank: {
-      '3.5': parseNumber(myObj['경전차35'] || myObj['경전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObj['경전차3'] || myObj['경전차(3세대)'] || 0),
-      '2.0': parseNumber(myObj['경전차2'] || myObj['경전차(2세대)'] || 0),
-      '1.0': parseNumber(myObj['경전차1'] || myObj['경전차(1세대)'] || 0),
-      '0.0': parseNumber(myObj['경전차'] || 0)
+      '3.5': parseNumber(myObjArmy['경전차35'] || myObjArmy['경전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObjArmy['경전차3'] || myObjArmy['경전차(3세대)'] || 0),
+      '2.0': parseNumber(myObjArmy['경전차2'] || myObjArmy['경전차(2세대)'] || 0),
+      '1.0': parseNumber(myObjArmy['경전차1'] || myObjArmy['경전차(1세대)'] || 0),
+      '0.0': parseNumber(myObjArmy['경전차'] || 0)
     },
-    vehicle: parseNumber(myObj['차량'] || 0),
+    vehicle: parseNumber(myObjArmy['차량'] || 0),
     howitzer: {
-      'under': parseNumber(myObj['105견인포'] || 0),
-      'over': parseNumber(myObj['155견인포'] || 0)
+      'under': parseNumber(myObjArmy['105견인포'] || 0),
+      'over': parseNumber(myObjArmy['155견인포'] || 0)
     },
     sph: {
-      'under': parseNumber(myObj['단거리자주포'] || 0),
-      'over': parseNumber(myObj['자주포'] || 0)
+      'under': parseNumber(myObjArmy['단거리자주포'] || 0),
+      'over': parseNumber(myObjArmy['자주포'] || 0)
     },
     apc: {
-      'apc': parseNumber(myObj['장갑차'] || 0),
-      'ifv': parseNumber(myObj['IFV'] || 0)
+      'apc': parseNumber(myObjArmy['장갑차'] || 0),
+      'ifv': parseNumber(myObjArmy['IFV'] || 0)
     },
     heli: {
-      'transport': parseNumber(myObj['헬기'] || 0),
-      'attack': parseNumber(myObj['공격헬기'] || 0)
+      'transport': parseNumber(myObjArmy['헬기'] || 0),
+      'attack': parseNumber(myObjArmy['공격헬기'] || 0)
     }
   };
 
@@ -3099,5 +3099,7 @@ function updateArmyCurrentDisplay(category) {
 
 window.openArmyEditModal = openArmyEditModal;
 window.closeArmyEditModal = closeArmyEditModal;
+window.updateArmyCurrentDisplay = updateArmyCurrentDisplay;
+window.loadAndDisplayMyArmyEquipment = loadAndDisplayMyArmyEquipment;
 window.validateAndSubmitArmyData = validateAndSubmitArmyData;
 });
