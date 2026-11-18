@@ -104,6 +104,8 @@ document.addEventListener("DOMContentLoaded", function() {
         { url: API_URL_ARMY, name: "육군 실시간 전력" },
         { url: API_URL_NAVY, name: "해군 실시간 전력" },
         { url: API_URL_AIR, name: "공군 실시간 전력" },
+        { url: API_URL_TOTAL_MILITARY, name: "종합 군사력 순위" },         // 👈 추가
+        { url: API_URL_MILITARY_CHANGE, name: "군사력 순위 변화 시계열" },
         { url: API_URL_ARMY_CHANGE, name: "육군 순위 변화 시계열" },
         { url: API_URL_NAVY_CHANGE, name: "해군 순위 변화 시계열" },
         { url: API_URL_AIR_CHANGE, name: "공군 순위 변화 시계열" }
@@ -126,9 +128,11 @@ document.addEventListener("DOMContentLoaded", function() {
       const armyRes = getDataOrEmpty(4);
       const navyRes = getDataOrEmpty(5);
       const airRes  = getDataOrEmpty(6);
-      const armyChangeRes = getDataOrEmpty(7);
-      const navyChangeRes = getDataOrEmpty(8);
-      const airChangeRes  = getDataOrEmpty(9);
+      const totalMilRes   = getDataOrEmpty(7);  // 👈 추가
+      const milChangeRes  = getDataOrEmpty(8);  // 👈 추가
+      const armyChangeRes = getDataOrEmpty(9);  // 👈 추가
+      const navyChangeRes = getDataOrEmpty(10); // 👈 추가
+      const airChangeRes  = getDataOrEmpty(11); // 👈 추가
 
       mainData = Array.isArray(mainRes) ? mainRes : [];
       globalGdpData = Array.isArray(gdpRes) ? gdpRes : [];
@@ -137,10 +141,13 @@ document.addEventListener("DOMContentLoaded", function() {
       globalArmyData = Array.isArray(armyRes) ? armyRes : [];
       globalNavyData = Array.isArray(navyRes) ? navyRes : [];
       globalAirData  = Array.isArray(airRes) ? airRes : [];
-      globalTotalMilitaryData = []; // 필요시 추가
-      globalArmyChangeData = Array.isArray(armyChangeRes) ? armyChangeRes : [];
-      globalNavyChangeData = Array.isArray(navyChangeRes) ? navyChangeRes : [];
-      globalAirChangeData  = Array.isArray(airChangeRes) ? airChangeRes : [];
+      
+      // 💡 2. 가져온 군사력 데이터를 전역 변수에 쏙쏙 대입!
+      globalTotalMilitaryData  = Array.isArray(totalMilRes) ? totalMilRes : [];
+      globalMilitaryChangeData = Array.isArray(milChangeRes) ? milChangeRes : [];
+      globalArmyChangeData     = Array.isArray(armyChangeRes) ? armyChangeRes : [];
+      globalNavyChangeData     = Array.isArray(navyChangeRes) ? navyChangeRes : [];
+      globalAirChangeData      = Array.isArray(airChangeRes) ? airChangeRes : [];
 
       extractFlags(globalDefData, defRes);
 
@@ -501,19 +508,19 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   let totalBaseVal = 0;
 
   if (key === '육군') {
-    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (C열 육군점수)
+    rawDataSource = globalTotalMilitaryData; // C열 육군점수
     targetScoreKey = '육군점수';
     targetSeriesData = globalArmyChangeData;
   } else if (key === '공군') {
-    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (D열 공군점수)
+    rawDataSource = globalTotalMilitaryData; // D열 공군점수
     targetScoreKey = '공군점수';
     targetSeriesData = globalAirChangeData;
   } else if (key === '해군') {
-    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (E열 해군점수)
+    rawDataSource = globalTotalMilitaryData; // E열 해군점수
     targetScoreKey = '해군점수';
     targetSeriesData = globalNavyChangeData;
-  } else if (key === '군사력종합' || key === '종합군사력') {
-    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (F열 총점수)
+  } else if (key === '군사력종합' || key === '종합군사력' || key === '총점수') {
+    rawDataSource = globalTotalMilitaryData; // 💡 F열 '총점수'로 정확히 매핑!
     targetScoreKey = '총점수';
     targetSeriesData = globalMilitaryChangeData;
   } else if (key === 'GDP(10억달러)' || key === 'GDP') {
