@@ -2994,6 +2994,6 @@ function closeArmyEditModal() {
 }
 
 window.openArmyEditModal = openArmyEditModal;
-window.openArmyEditModal = closeArmyEditModal;
+window.closeArmyEditModal = closeArmyEditModal;
 window.validateAndSubmitArmyData = validateAndSubmitArmyData;
 });
