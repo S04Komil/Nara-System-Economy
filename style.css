@@ -119,8 +119,10 @@ nav {
 /* 로그인/프로필 구역을 오른쪽 끝으로 절대 위치 고정 */
 #auth-nav-area, 
 #user-profile-area {
-  position: absolute;
-  right: 20px;
+  position: static !important; /* 절대 위치 강제 해제 */
+  right: auto !important;
+  display: flex;
+  align-items: center;
 }
 
 /* 드롭다운 메인 카테고리 버튼 디자인 */
@@ -562,12 +564,12 @@ nav {
 .user-profile-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #f1f3f5;
-  padding: 4px 8px;
+  gap: 8px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
+  background-color: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .user-flag-img {
@@ -1176,7 +1178,10 @@ nav {
 
   /* 우측 로그인 영역 컨테이너 정돈 */
   .auth-area-wrapper {
-    margin-left: auto;
-    margin-right: 8px;
-  }
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto; /* 남은 공간을 밀어내어 가장 오른쪽에 딱 붙게 배치 */
+  position: relative; /* absolute 해제 */
 }
+
