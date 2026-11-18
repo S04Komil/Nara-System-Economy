@@ -925,24 +925,76 @@ nav {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ==========================================
+   📱 모바일 화면 (768px 이하) 최적화 스타일
+   ========================================== */
 @media (max-width: 768px) {
-  .form-row-2 {
-    grid-template-columns: 1fr;
+  /* 상단바 전체 높이를 모바일에 맞게 넉넉히 확보 */
+  nav {
+    height: auto !important;
+    min-height: 60px;
+    padding: 8px 12px !important;
+    flex-wrap: wrap; /* 공간이 부족하면 자동 줄바꿈 허용으로 겹침 방지 */
+    justify-content: space-between !important;
   }
-  .row-grid-2, .row-grid-3 {
-    grid-template-columns: 1fr;
+
+  /* 로고 크기 최적화 */
+  .logo-container {
+    margin-right: auto;
   }
-  .main-title {
-    font-size: 1.2rem;
+  .logo-img {
+    height: 32px !important;
+    width: auto;
   }
-  .edit-economy-container {
-    padding: 12px;
+
+  /* 모바일 햄버거 버튼 정렬 */
+  .mobile-menu-toggle {
+    display: flex !important;
+    margin-left: 10px;
+    order: 2;
   }
-  .modal-content {
-    padding: 20px 16px;
+
+  /* 우측 로그인 / 유저 프로필 영역이 줄바꿈 없이 깔끔하게 들어가도록 조정 */
+  .auth-area-wrapper {
+    order: 1;
+    margin-left: 0;
+    margin-right: 10px;
   }
-  .modal-buttons button {
-    flex: 1;
+
+  /* 유저 프로필 뱃지 모바일 크기 맞춤 (이메일 텍스트 숨기거나 줄이기) */
+  .user-profile-badge {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    max-width: 180px; /* 너무 길면 말줄임 처리 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-flag-img {
+    width: 16px !important;
+    height: 11px !important;
+  }
+
+  /* 사이드바 메뉴가 열렸을 때 화면 전체를 덮도록 수정 */
+  .nav-menu {
+    position: fixed !important;
+    top: 0 !important;
+    right: -280px !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background-color: var(--card-bg, #ffffff) !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 20px !important;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
+    transition: right 0.3s ease-in-out !important;
+    z-index: 10000 !important;
+    max-width: none !important;
+  }
+
+  .nav-menu.active {
+    right: 0 !important;
   }
 }
 /* 🌙 다크모드 유저 프로필 배지 보완 */
