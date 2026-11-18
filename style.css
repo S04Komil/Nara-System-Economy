@@ -1025,3 +1025,11 @@ nav {
   background: #1a365d !important;
   border-color: #3182ce !important;
 }
+/* 🌙 다크모드일 때 순위 바 색상을 어둡게 조정하여 가독성 향상 */
+[data-theme="dark"] .rank-bar {
+  background: #2d3748 !important; /* 어두운 다크 그레이 톤으로 변경 */
+}
+
+[data-theme="dark"] .rank-item.world-item .rank-bar {
+  background: #2b6cb0 !important; /* 전세계 항목 바도 어두운 블루 톤으로 조화롭게 보정 */
+}
