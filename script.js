@@ -514,7 +514,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   else if (key === '육군') targetSeriesData = globalArmyData;
   else if (key === '해군') targetSeriesData = globalNavyData;
   else if (key === '공군') targetSeriesData = globalAirData;
-  else if (key === '총점수' || key === '종합군사력') targetSeriesData = globalTotalMilitaryData;
+  else if (key === '군사력종합' || key === '종합군사력') targetSeriesData = globalTotalMilitaryData;
 
   const prevRankMap = new Map();
 
