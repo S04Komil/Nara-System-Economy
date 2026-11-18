@@ -2994,7 +2994,7 @@ function closeArmyEditModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// 자국의 육군 장비 보유량을 불러와서 모달 UI에 채워주는 함수 (충돌 방지 고유 변수명 사용)
+// 자국의 육군 장비 보유량을 불러와서 모달 UI에 채워주는 함수 (시트 헤더 형식 반영)
 function loadAndDisplayMyArmyEquipment() {
   if (!currentUser || !currentUser.country) {
     console.warn("로그인된 유저 또는 국가 정보가 없습니다.");
@@ -3009,34 +3009,34 @@ function loadAndDisplayMyArmyEquipment() {
   
   console.log("현재 내 국가 육군 전력 데이터 매칭:", myObj);
 
-  // 💡 다른 변수명과 충돌하지 않도록 고유한 전역 캐시 변수명 사용 (modalArmyCache)
+  // 💡 시트의 새로운 헤더 명칭(전차1, 전차2, 105견인포 등)과 정확히 일치하도록 매칭
   window.modalArmyCache = {
     tank: {
-      '3.5': parseNumber(myObj['전차(3.5세대)'] || myObj['전차35세대'] || 0),
-      '3.0': parseNumber(myObj['전차(3세대)'] || myObj['전차3세대'] || 0),
-      '2.0': parseNumber(myObj['전차(2세대)'] || myObj['전차2세대'] || 0),
-      '1.0': parseNumber(myObj['전차(1세대)'] || myObj['전차1세대'] || 0),
-      '0.0': parseNumber(myObj['전차(1세대미만)'] || myObj['전차1세대미만'] || 0)
+      '3.5': parseNumber(myObj['전차35'] || myObj['전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObj['전차3'] || myObj['전차(3세대)'] || 0),
+      '2.0': parseNumber(myObj['전차2'] || myObj['전차(2세대)'] || 0),
+      '1.0': parseNumber(myObj['전차1'] || myObj['전차(1세대)'] || 0),
+      '0.0': parseNumber(myObj['전차'] || myObj['전차1세대미만'] || 0)
     },
     lighttank: {
-      '3.5': parseNumber(myObj['경전차(3.5세대)'] || myObj['경전차35세대'] || 0),
-      '3.0': parseNumber(myObj['경전차(3세대)'] || myObj['경전차3세대'] || 0),
-      '2.0': parseNumber(myObj['경전차(2세대)'] || myObj['경전차2세대'] || 0),
-      '1.0': parseNumber(myObj['경전차(1세대)'] || myObj['경전차1세대'] || 0),
-      '0.0': parseNumber(myObj['경전차(1세대미만)'] || myObj['경전차1세대미만'] || 0)
+      '3.5': parseNumber(myObj['경전차35'] || myObj['경전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObj['경전차3'] || myObj['경전차(3세대)'] || 0),
+      '2.0': parseNumber(myObj['경전차2'] || myObj['경전차(2세대)'] || 0),
+      '1.0': parseNumber(myObj['경전차1'] || myObj['경전차(1세대)'] || 0),
+      '0.0': parseNumber(myObj['경전차'] || 0)
     },
     vehicle: parseNumber(myObj['차량'] || 0),
     howitzer: {
-      'under': parseNumber(myObj['견인포(105mm미만)'] || 0),
-      'over': parseNumber(myObj['견인포(105mm이상)'] || 0)
+      'under': parseNumber(myObj['105견인포'] || 0),
+      'over': parseNumber(myObj['155견인포'] || 0)
     },
     sph: {
-      'under': parseNumber(myObj['자주포(사거리20km미만)'] || 0),
-      'over': parseNumber(myObj['자주포(사거리20km이상)'] || 0)
+      'under': parseNumber(myObj['단거리자주포'] || 0),
+      'over': parseNumber(myObj['자주포'] || 0)
     },
     apc: {
-      'apc': parseNumber(myObj['장갑차(APC)'] || 0),
-      'ifv': parseNumber(myObj['장갑차(IFV)'] || 0)
+      'apc': parseNumber(myObj['장갑차'] || 0),
+      'ifv': parseNumber(myObj['IFV'] || 0)
     },
     heli: {
       'transport': parseNumber(myObj['헬기'] || 0),
