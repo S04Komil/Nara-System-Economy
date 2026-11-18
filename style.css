@@ -1135,24 +1135,23 @@ nav {
   .nav-menu {
     position: fixed !important;
     top: 0 !important;
-    right: -100% !important; /* 화면 오른쪽 밖으로 완전히 퇴장 */
-    width: 100% !important;   /* 모바일 화면 전체 너비 활용 */
-    max-width: 300px !important; /* 최대 너비 제한 (원하시면 100%로 풀 수도 있음) */
+    right: -300px !important; /* 화면 오른쪽 밖으로 완전히 밀어냄 */
+    width: 280px !important;
     height: 100vh !important;
     background-color: var(--card-bg, #ffffff) !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     padding: 20px !important;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3) !important;
-    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
+    transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
     z-index: 10000 !important;
-    box-sizing: border-box;
     display: flex !important;
+    box-sizing: border-box;
   }
 
   /* 📱 햄버거 버튼을 눌러 .active가 붙었을 때만 right: 0으로 화면 안으로 슬라이드인 */
   .nav-menu.active {
-    right: 0 !important;
+    left: 0 !important;
   }
 
   .mobile-menu-header {
