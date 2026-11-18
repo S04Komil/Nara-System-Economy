@@ -2940,7 +2940,7 @@ async function sendArmyDataToServer(items) {
     if (val !== 0) {
       let sheetHeader = "";
 
-      // 육군 시트 헤더명과 정확히 맵핑
+      // 💡 육군 시트의 실제 1행 헤더명과 모달 인풋 ID/선택값을 1:1로 정확히 맵핑
       if (item.inputId === 'edit-val-tank') {
         const gen = document.getElementById('select-tank-gen')?.value; // '3.5', '3.0', '2.0', '1.0', '0.0'
         if (gen === '3.5') sheetHeader = "전차35";
@@ -2954,11 +2954,12 @@ async function sendArmyDataToServer(items) {
         else if (gen === '3.0') sheetHeader = "경전차3";
         else if (gen === '2.0') sheetHeader = "경전차2";
         else if (gen === '1.0') sheetHeader = "경전차1";
+        else if (gen === '0.0') sheetHeader = "경전차";
       } else if (item.inputId === 'edit-val-vehicle') {
         sheetHeader = "차량";
       } else if (item.inputId === 'edit-val-howitzer') {
         const type = document.getElementById('select-howitzer-type')?.value;
-        sheetHeader = (type === 'under') ? "105견인포" : "155견인포"; // 시트 헤더 기준에 맞춤
+        sheetHeader = (type === 'under') ? "105견인포" : "155견인포";
       } else if (item.inputId === 'edit-val-sph') {
         const type = document.getElementById('select-sph-type')?.value;
         sheetHeader = (type === 'under') ? "단거리자주포" : "자주포";
