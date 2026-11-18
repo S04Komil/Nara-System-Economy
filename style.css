@@ -67,11 +67,6 @@ body {
   color: #e2e8f0;
 }
 
-[data-theme="dark"] .info-box {
-  background: #25282c;
-  border-color: #2d3748;
-}
-
 [data-theme="dark"] .info-val {
   color: #f7fafc;
 }
@@ -83,8 +78,8 @@ nav {
   padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: center; /* 전체 요소를 중앙으로 정렬 */
-  position: relative;     /* 로고를 좌측에 고정하기 위한 기준점 */
+  justify-content: center;
+  position: relative;
   height: 70px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
@@ -111,18 +106,26 @@ nav {
   padding: 0;
   gap: 8px;
   align-items: center;
-  justify-content: center; /* 메뉴 항목들도 가운데 정렬 */
+  justify-content: center;
   overflow-x: visible;
   white-space: nowrap;
 }
 
-/* 로그인/프로필 구역을 오른쪽 끝으로 절대 위치 고정 */
+/* 로그인/프로필 구역 */
 #auth-nav-area, 
 #user-profile-area {
-  position: static !important; /* 절대 위치 강제 해제 */
+  position: static !important;
   right: auto !important;
   display: flex;
   align-items: center;
+}
+
+.auth-area-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  position: relative;
 }
 
 /* 드롭다운 메인 카테고리 버튼 디자인 */
@@ -164,9 +167,7 @@ nav {
   color: white;
 }
 
-/* ==========================================
-   상단 내비게이션바 드롭다운 스타일 정돈
-   ========================================== */
+/* 드롭다운 스타일 */
 .nav-item.dropdown {
   position: relative;
   display: inline-block;
@@ -206,7 +207,7 @@ nav {
   display: block !important;
 }
 
-/* 메인 컨테이너 레이아웃 */
+/* 컨테이너 및 카드 레이아웃 */
 .container {
   max-width: 900px;
   margin: 16px auto;
@@ -925,94 +926,17 @@ nav {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================
-   📱 모바일 화면 (768px 이하) 최적화 스타일
-   ========================================== */
-@media (max-width: 768px) {
-  /* 상단바 전체 높이를 모바일에 맞게 넉넉히 확보 */
-  nav {
-    height: auto !important;
-    min-height: 60px;
-    padding: 8px 12px !important;
-    flex-wrap: wrap; /* 공간이 부족하면 자동 줄바꿈 허용으로 겹침 방지 */
-    justify-content: space-between !important;
-  }
-
-  /* 로고 크기 최적화 */
-  .logo-container {
-    margin-right: auto;
-  }
-  .logo-img {
-    height: 32px !important;
-    width: auto;
-  }
-
-  /* 모바일 햄버거 버튼 정렬 */
-  .mobile-menu-toggle {
-    display: flex !important;
-    margin-left: 10px;
-    order: 2;
-  }
-
-  /* 우측 로그인 / 유저 프로필 영역이 줄바꿈 없이 깔끔하게 들어가도록 조정 */
-  .auth-area-wrapper {
-    order: 1;
-    margin-left: 0;
-    margin-right: 10px;
-  }
-
-  /* 유저 프로필 뱃지 모바일 크기 맞춤 (이메일 텍스트 숨기거나 줄이기) */
-  .user-profile-badge {
-    padding: 4px 8px !important;
-    font-size: 11px !important;
-    max-width: 180px; /* 너무 길면 말줄임 처리 */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .user-flag-img {
-    width: 16px !important;
-    height: 11px !important;
-  }
-
-  /* 사이드바 메뉴가 열렸을 때 화면 전체를 덮도록 수정 */
-  .nav-menu {
-    position: fixed !important;
-    top: 0 !important;
-    right: -280px !important;
-    width: 280px !important;
-    height: 100vh !important;
-    background-color: var(--card-bg, #ffffff) !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    padding: 20px !important;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
-    transition: right 0.3s ease-in-out !important;
-    z-index: 10000 !important;
-    max-width: none !important;
-  }
-
-  .nav-menu.active {
-    right: 0 !important;
-  }
-}
-/* 🌙 다크모드 유저 프로필 배지 보완 */
+/* 🌙 다크모드 추가 보완 스타일 */
 [data-theme="dark"] .user-profile-badge {
-  background-color: #2d3748 !important; /* 어두운 카드 배경톤으로 변경 */
-  color: #e2e8f0 !important;             /* 밝은 텍스트 색상 */
-  border: 1px solid #4a5568;            /* 테두리 은은하게 추가 */
+  background-color: #2d3748 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #4a5568;
 }
 
 [data-theme="dark"] #user-country-name {
-  color: #f7fafc !important;             /* 국가명 텍스트 선명하게 */
+  color: #f7fafc !important;
 }
 
-/* ==========================================
-   🌙 다크모드 누락된 UI 컴포넌트 전체 일괄 보완
-   ========================================== */
-
-/* 1. 상단 내비게이션 드롭다운 메뉴 다크모드 대응 */
 [data-theme="dark"] .nav-item.dropdown .dropdown-content {
   background-color: #1e1e1e !important;
   border-color: #2d3748 !important;
@@ -1028,7 +952,6 @@ nav {
   color: #ffffff !important;
 }
 
-/* 2. 패치노트 및 일반 모달 창 다크모드 대응 */
 [data-theme="dark"] .notice-modal-content,
 [data-theme="dark"] .modal-content {
   background-color: #1e1e1e !important;
@@ -1045,7 +968,6 @@ nav {
   background-color: #2b6cb0 !important;
 }
 
-/* 3. 해외 경제 투자 테이블 및 일반 테이블 다크모드 대응 */
 [data-theme="dark"] .investment-table,
 [data-theme="dark"] table {
   background-color: #1e1e1e !important;
@@ -1065,7 +987,6 @@ nav {
   color: #e2e8f0 !important;
 }
 
-/* 4. 순위 리스트 항목 및 텍스트 다크모드 보완 */
 [data-theme="dark"] .rank-item {
   background: #25282c !important;
   border: 1px solid #2d3748;
@@ -1084,16 +1005,18 @@ nav {
   background: #1a365d !important;
   border-color: #3182ce !important;
 }
-/* 🌙 다크모드일 때 순위 바 색상을 어둡게 조정하여 가독성 향상 */
+
 [data-theme="dark"] .rank-bar {
-  background: #2d3748 !important; /* 어두운 다크 그레이 톤으로 변경 */
+  background: #2d3748 !important;
 }
 
 [data-theme="dark"] .rank-item.world-item .rank-bar {
-  background: #2b6cb0 !important; /* 전세계 항목 바도 어두운 블루 톤으로 조화롭게 보정 */
+  background: #2b6cb0 !important;
 }
 
-/* 햄버거 버튼 기본 숨김 (PC에서는 안 보임) */
+/* ==========================================
+   📱 햄버거 버튼 및 반응형 모바일 통합 스타일 (768px 이하)
+   ========================================== */
 .mobile-menu-toggle {
   display: none;
   background: none;
@@ -1120,12 +1043,10 @@ nav {
   background-color: #e2e8f0;
 }
 
-/* 모바일 메뉴 헤더 (닫기 버튼 등) 기본 숨김 */
 .mobile-menu-header {
   display: none;
 }
 
-/* 배경 어둡게 하는 오버레이 */
 .menu-overlay {
   display: none;
   position: fixed;
@@ -1142,39 +1063,72 @@ nav {
   display: block;
 }
 
-
-/* ==========================================
-   📱 모바일 화면 반응형 스타일 (768px 이하)
-   ========================================== */
 @media (max-width: 768px) {
+  nav {
+    height: auto !important;
+    min-height: 60px;
+    padding: 8px 12px !important;
+    flex-wrap: wrap;
+    justify-content: space-between !important;
+  }
+
+  .logo-container {
+    position: static !important;
+    margin-right: auto;
+  }
+
+  .logo-img {
+    height: 32px !important;
+    width: auto;
+  }
+
   .mobile-menu-toggle {
-    display: flex; /* 모바일에서 햄버거 버튼 표시 */
+    display: flex !important;
+    margin-left: 10px;
+    order: 2;
   }
 
-  /* 네비게이션 메뉴를 화면 오른쪽에서 슬라이드되는 사이드바로 변경 */
+  .auth-area-wrapper {
+    order: 1;
+    margin-left: 0;
+    margin-right: 10px;
+  }
+
+  .user-profile-badge {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-flag-img {
+    width: 16px !important;
+    height: 11px !important;
+  }
+
+  /* 사이드바 메뉴 */
   .nav-menu {
-    position: fixed;
-    top: 0;
-    right: -280px; /* 평소에는 화면 오른쪽 밖에 숨김 */
-    width: 280px;
-    height: 100vh;
-    background-color: var(--card-bg, #ffffff);
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
-    transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 999;
-    overflow-y: auto;
-    max-width: none;
+    position: fixed !important;
+    top: 0 !important;
+    right: -280px !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background-color: var(--card-bg, #ffffff) !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 20px !important;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2) !important;
+    transition: right 0.3s ease-in-out !important;
+    z-index: 10000 !important;
+    max-width: none !important;
   }
 
-  /* 사이드바가 열렸을 때 (active 클래스 추가 시) */
   .nav-menu.active {
-    right: 0;
+    right: 0 !important;
   }
 
-  /* 모바일 메뉴 상단 헤더 표시 */
   .mobile-menu-header {
     display: flex;
     justify-content: space-between;
@@ -1200,7 +1154,6 @@ nav {
     line-height: 1;
   }
 
-  /* 메뉴 항목들을 모바일 세로 배치에 맞게 확장 */
   .nav-item {
     width: 100%;
     margin-bottom: 6px;
@@ -1214,7 +1167,6 @@ nav {
     font-size: 1rem;
   }
 
-  /* 모바일에서 드롭다운 메뉴 처리 방식 (사이드바 안에서 자연스럽게 펼쳐지도록) */
   .nav-item.dropdown .dropdown-content {
     position: static;
     box-shadow: none;
@@ -1223,17 +1175,4 @@ nav {
     padding-left: 15px;
     width: 100%;
   }
-  
-  .nav-item.dropdown:hover .dropdown-content {
-    display: block;
-  }
-
-  /* 우측 로그인 영역 컨테이너 정돈 */
-  .auth-area-wrapper {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  margin-left: auto; /* 남은 공간을 밀어내어 가장 오른쪽에 딱 붙게 배치 */
-  position: relative; /* absolute 해제 */
 }
-
