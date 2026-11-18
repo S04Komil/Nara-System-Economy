@@ -83,15 +83,17 @@ nav {
   padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양 끝으로 여유있게 배치 */
+  justify-content: center; /* 전체 요소를 중앙으로 정렬 */
+  position: relative;     /* 로고를 좌측에 고정하기 위한 기준점 */
   height: 70px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .logo-container {
+  position: absolute;
+  left: 20px;
   display: flex;
   align-items: center;
-  margin-right: 16px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -107,15 +109,18 @@ nav {
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 8px; /* 메뉴 간격을 살짝 띄워줌 */
+  gap: 8px;
   align-items: center;
-  overflow-x: visible; /* 갇혀 보이는 현상 방지를 위해 visible로 변경 */
+  justify-content: center; /* 메뉴 항목들도 가운데 정렬 */
+  overflow-x: visible;
   white-space: nowrap;
 }
 
-#nav-my-country-item,
-#auth-nav-area {
-  margin-left: auto;
+/* 로그인/프로필 구역을 오른쪽 끝으로 절대 위치 고정 */
+#auth-nav-area, 
+#user-profile-area {
+  position: absolute;
+  right: 20px;
 }
 
 /* 드롭다운 메인 카테고리 버튼 디자인 */
