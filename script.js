@@ -789,7 +789,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     listEl.appendChild(li);
   });
 };
-[cite: [script.js](https://github.com/S04Komil/Nara-System-Economy/blob/main/script.js)]
   window.openCountryModal = function(cleanKey) {
     if (cleanKey === '전세계') return;
 
