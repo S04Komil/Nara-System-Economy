@@ -501,19 +501,19 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   let totalBaseVal = 0;
 
   if (key === '육군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (C열 육군점수)
+    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (C열 육군점수)
     targetScoreKey = '육군점수';
     targetSeriesData = globalArmyChangeData;
   } else if (key === '공군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (D열 공군점수)
+    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (D열 공군점수)
     targetScoreKey = '공군점수';
     targetSeriesData = globalAirChangeData;
   } else if (key === '해군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (E열 해군점수)
+    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (E열 해군점수)
     targetScoreKey = '해군점수';
     targetSeriesData = globalNavyChangeData;
   } else if (key === '군사력종합' || key === '종합군사력') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (F열 총점수)
+    rawDataSource = globalTotalMilitaryData; // 💡 종합 군사력 시트 (F열 총점수)
     targetScoreKey = '총점수';
     targetSeriesData = globalMilitaryChangeData;
   } else if (key === 'GDP(10억달러)' || key === 'GDP') {
@@ -528,7 +528,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     totalBaseVal = worldTotals.pop;
   }
 
-  // 2. 현재 연도 기준 점수 리스트 생성
+  // 2. 현재 연도 기준 점수 리스트 생성 (listData의 재료가 됨)
   let currentList = rawDataSource.map(item => {
     let rawCountry = extractCountryFromRow(item);
     let cleanedName = cleanName(rawCountry);
@@ -611,6 +611,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
   }
 
+  // 💡 군사력 데이터가 온전히 담긴 listData 완성
   let listData = currentList.map((item, idx) => {
     const currentRank = idx + 1;
     const prevRank = prevRankMap.get(item.cleanKey);
@@ -635,80 +636,10 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     ['SCO', 'https://upload.wikimedia.org/wikipedia/ko/7/7b/SCO.svg?utm_source=ko.wikipedia.org&utm_campaign=index&utm_content=original']
   ]);
 
-  // === 연합 데이터 집계 및 계산 ===
-  const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
-  const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
-  const isPerCapGdpKey = (key === '1인당GDP');
-
-  if (isGdpKey || isDefKey || isPerCapGdpKey) {
-    const unionTotals = new Map();
-
-    mainData.forEach(item => {
-      const rawUnionStr = String(item['소속연합'] || item['연합'] || '').trim();
-      if (!rawUnionStr || rawUnionStr === '-' || rawUnionStr === 'N/A' || rawUnionStr === '무소속') return;
-
-      const unions = rawUnionStr.split(',').map(u => u.trim()).filter(Boolean);
-
-      const gdpVal = parseNumber(item['GDP'] || item['GDP(10억달러)']) * 10;
-      const defVal = parseNumber(item['국방비'] || item['국방비(10억달러)']) * 10;
-      const popVal = parseNumber(item['인구'] || item['인구(만명)']) * 10000;
-
-      unions.forEach(unionName => {
-        if (!unionTotals.has(unionName)) {
-          unionTotals.set(unionName, { gdp: 0, def: 0, pop: 0 });
-        }
-
-        const uData = unionTotals.get(unionName);
-        uData.gdp += gdpVal;
-        uData.def += defVal;
-        uData.pop += popVal;
-      });
-    });
-
-    unionTotals.forEach((uData, unionName) => {
-      let unionVal = 0;
-
-      if (isGdpKey) {
-        unionVal = uData.gdp;
-      } else if (isDefKey) {
-        unionVal = uData.def;
-      } else if (isPerCapGdpKey) {
-        unionVal = uData.pop > 0 ? (uData.gdp * 100000000) / uData.pop : 0;
-      }
-
-      if (unionVal > 0) {
-        listData.push({
-          country: `[연합] ${unionName}`,
-          cleanKey: unionName,
-          val: unionVal,
-          currentRank: null,
-          prevRank: null,
-          isWorld: false,
-          isUnion: true
-        });
-      }
-    });
-
-    listData.sort((a, b) => b.val - a.val);
-  }
-
-  if (key === '1인당GDP') {
-    listData.push({
-      country: '전세계',
-      cleanKey: '전세계',
-      val: worldTotals.cap,
-      currentRank: null,
-      prevRank: null,
-      isWorld: true,
-      isUnion: false
-    });
-    listData.sort((a, b) => b.val - a.val);
-  }
-
   const maxValInList = listData.length > 0 ? listData[0].val : 1;
   let rankCounter = 1;
 
-  // 4. 화면 리스트 렌더링 파트 (점수 단위 및 바 그래프 지원)
+  // 4. 화면 리스트 렌더링 파트 (군사력 '점수' 단위 및 바 그래프 지원)
   listData.forEach((item) => {
     let formattedVal = "";
     if (unitType === '달러') {
