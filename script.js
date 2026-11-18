@@ -3005,31 +3005,31 @@ function loadAndDisplayMyArmyEquipment() {
   // 시트의 헤더 명칭("전차(3.5세대)" 등)과 일치하도록 캐시 객체에 담기
   window.myArmyDataCache = {
     tank: {
-      '3.5': parseNumber(myObj['전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObj['전차(3세대)'] || 0),
-      '2.0': parseNumber(myObj['전차(2세대)'] || 0),
-      '1.0': parseNumber(myObj['전차(1세대)'] || 0),
-      '0.0': parseNumber(myObj['전차(1세대미만)'] || 0)
+      '3.5': parseNumber(myObj['전차35)'] || 0),
+      '3.0': parseNumber(myObj['전차3'] || 0),
+      '2.0': parseNumber(myObj['전차2'] || 0),
+      '1.0': parseNumber(myObj['전차1'] || 0),
+      '0.0': parseNumber(myObj['전차'] || 0)
     },
     lighttank: {
-      '3.5': parseNumber(myObj['경전차(3.5세대)'] || 0),
-      '3.0': parseNumber(myObj['경전차(3세대)'] || 0),
-      '2.0': parseNumber(myObj['경전차(2세대)'] || 0),
-      '1.0': parseNumber(myObj['경전차(1세대)'] || 0),
-      '0.0': parseNumber(myObj['경전차(1세대미만)'] || 0)
+      '3.5': parseNumber(myObj['경전차35'] || 0),
+      '3.0': parseNumber(myObj['경전차3'] || 0),
+      '2.0': parseNumber(myObj['경전차2'] || 0),
+      '1.0': parseNumber(myObj['경전차1'] || 0),
+      '0.0': parseNumber(myObj['경전차'] || 0)
     },
     vehicle: parseNumber(myObj['차량'] || 0),
     howitzer: {
-      'under': parseNumber(myObj['견인포(105mm미만)'] || 0),
-      'over': parseNumber(myObj['견인포(105mm이상)'] || 0)
+      'under': parseNumber(myObj['105견인포'] || 0),
+      'over': parseNumber(myObj['155견인포'] || 0)
     },
     sph: {
-      'under': parseNumber(myObj['자주포(사거리20km미만)'] || 0),
-      'over': parseNumber(myObj['자주포(사거리20km이상)'] || 0)
+      'under': parseNumber(myObj['단거리자주포'] || 0),
+      'over': parseNumber(myObj['자주포'] || 0)
     },
     apc: {
-      'apc': parseNumber(myObj['장갑차(APC)'] || 0),
-      'ifv': parseNumber(myObj['장갑차(IFV)'] || 0)
+      'apc': parseNumber(myObj['장갑차'] || 0),
+      'ifv': parseNumber(myObj['IFV'] || 0)
     },
     heli: {
       'transport': parseNumber(myObj['헬기'] || 0),
