@@ -337,143 +337,7 @@
               <div class="info-box"><span class="info-label">다음연도GDP</span><span id="my-nextGDP" class="info-val">-</span></div>
             </div>
 
-            <!-- 🛡️ 제안하신 3열 테이블 형식의 육군 전력 상세 관리 섹션 -->
-            <div id="army-equipment-edit-section" style="background: var(--card-bg, #fff); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color, #cbd5e1); margin-top: 24px;">
-              <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.1rem; font-weight: bold;">🛡️ 육군 전력 상세 관리 및 증감 수정</h3>
-              
-              <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
-                  <thead>
-                    <tr style="background-color: rgba(0,0,0,0.04); border-bottom: 2px solid var(--border-color, #cbd5e1);">
-                      <th style="padding: 10px; width: 25%;">종류</th>
-                      <th style="padding: 10px; width: 35%;">세부 분류 / 선택</th>
-                      <th style="padding: 10px; width: 40%;">현재 보유수 및 증감 입력</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- 1행: 전차 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">전차</td>
-                      <td style="padding: 12px;">
-                        <select id="select-tank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('tank')">
-                          <option value="3.5">3.5세대 전차</option>
-                          <option value="3.0">3세대 전차</option>
-                          <option value="2.0">2세대 전차</option>
-                          <option value="1.0">1세대 전차</option>
-                          <option value="0.0">1세대미만 전차</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-tank">0</strong>대</span>
-                          <input type="number" id="edit-val-tank" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 2행: 경전차 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">경전차</td>
-                      <td style="padding: 12px;">
-                        <select id="select-lighttank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('lighttank')">
-                          <option value="3.5">3.5세대 경전차</option>
-                          <option value="3.0">3세대 경전차</option>
-                          <option value="2.0">2세대 경전차</option>
-                          <option value="1.0">1세대 경전차</option>
-                          <option value="0.0">1세대미만 경전차</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-lighttank">0</strong>대</span>
-                          <input type="number" id="edit-val-lighttank" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 3행: 차량 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">차량</td>
-                      <td style="padding: 12px; color: #666; font-style: italic;">일반 차량</td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-vehicle">0</strong>대</span>
-                          <input type="number" id="edit-val-vehicle" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 4행: 견인포 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">견인포</td>
-                      <td style="padding: 12px;">
-                        <select id="select-howitzer-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('howitzer')">
-                          <option value="under">105mm 미만</option>
-                          <option value="over">105mm 이상</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-howitzer">0</strong>문</span>
-                          <input type="number" id="edit-val-howitzer" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 5행: 자주포 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">자주포</td>
-                      <td style="padding: 12px;">
-                        <select id="select-sph-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('sph')">
-                          <option value="under">사거리 20km 미만</option>
-                          <option value="over">사거리 20km 이상</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-sph">0</strong>문</span>
-                          <input type="number" id="edit-val-sph" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 6행: 장갑차 -->
-                    <tr style="border-bottom: 1px solid var(--border-color, #eee);">
-                      <td style="padding: 12px; font-weight: bold;">장갑차</td>
-                      <td style="padding: 12px;">
-                        <select id="select-apc-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('apc')">
-                          <option value="apc">APC (병력수송장갑차)</option>
-                          <option value="ifv">IFV (보병전투차)</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-apc">0</strong>대</span>
-                          <input type="number" id="edit-val-apc" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- 7행: 헬기 및 공격헬기 -->
-                    <tr>
-                      <td style="padding: 12px; font-weight: bold;">헬기</td>
-                      <td style="padding: 12px;">
-                        <select id="select-heli-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('heli')">
-                          <option value="transport">기동 헬기</option>
-                          <option value="attack">공격 헬기</option>
-                        </select>
-                      </td>
-                      <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-heli">0</strong>대</span>
-                          <input type="number" id="edit-val-heli" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            
 
             <!-- 버튼 그룹 (왼쪽: 장비 및 로그 버튼 / 오른쪽: 기준표 & 자국 경제 저장하기) -->
             <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -484,6 +348,9 @@
                 <button type="button" class="btn-secondary" onclick="openMyEquipmentModal()" style="background-color: #ffc107; color: #212529; border: none;">📋 내 장비 관리</button>
                 <button type="button" class="btn-secondary" onclick="openImportModal()" style="background-color: #17a2b8; color: white; border: none;">📦 장비 수입</button>
                 <button type="button" class="btn-secondary" onclick="openLogModal()" style="background-color: #6c757d; color: white; border: none;">📋 수출입 로그</button>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="openArmyEditModal()" style="background-color: #4a5568; color: white; border: none;">🛡️ 육군 전력 관리</button>
               </div>
             
               <!-- 👉 [오른쪽] 기존 버튼 그룹 -->
@@ -917,7 +784,153 @@
     </div>
   </div>
 </div>
+<!-- 육군 전력 상세 관리 모달 -->
+<div id="army-edit-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 700px; width: 90%;">
+    <button class="modal-close" onclick="closeArmyEditModal()">&times;</button>
+    <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; text-align: center;">🛡️ 육군 전력 상세 관리 및 증감 수정</h3>
+    
+    <form id="army-edit-form" onsubmit="event.preventDefault(); validateAndSubmitArmyData();">
+      <div style="overflow-x: auto; max-height: 450px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+          <thead>
+            <tr style="background-color: rgba(0,0,0,0.04); border-bottom: 2px solid var(--border-color, #cbd5e1); position: sticky; top: 0; background: #fff; z-index: 1;">
+              <th style="padding: 10px; width: 25%;">종류</th>
+              <th style="padding: 10px; width: 35%;">세부 분류 / 선택</th>
+              <th style="padding: 10px; width: 40%;">현재 보유수 및 증감 입력</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1행: 전차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">전차</td>
+              <td style="padding: 12px;">
+                <select id="select-tank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('tank')">
+                  <option value="3.5">3.5세대 전차</option>
+                  <option value="3.0">3세대 전차</option>
+                  <option value="2.0">2세대 전차</option>
+                  <option value="1.0">1세대 전차</option>
+                  <option value="0.0">1세대미만 전차</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-tank">0</strong>대</span>
+                  <input type="number" id="edit-val-tank" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
 
+            <!-- 2행: 경전차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">경전차</td>
+              <td style="padding: 12px;">
+                <select id="select-lighttank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('lighttank')">
+                  <option value="3.5">3.5세대 경전차</option>
+                  <option value="3.0">3세대 경전차</option>
+                  <option value="2.0">2세대 경전차</option>
+                  <option value="1.0">1세대 경전차</option>
+                  <option value="0.0">1세대미만 경전차</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-lighttank">0</strong>대</span>
+                  <input type="number" id="edit-val-lighttank" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 3행: 차량 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">차량</td>
+              <td style="padding: 12px; color: #666; font-style: italic;">일반 차량</td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-vehicle">0</strong>대</span>
+                  <input type="number" id="edit-val-vehicle" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 4행: 견인포 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">견인포</td>
+              <td style="padding: 12px;">
+                <select id="select-howitzer-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('howitzer')">
+                  <option value="under">105mm 미만</option>
+                  <option value="over">105mm 이상</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-howitzer">0</strong>문</span>
+                  <input type="number" id="edit-val-howitzer" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 5행: 자주포 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">자주포</td>
+              <td style="padding: 12px;">
+                <select id="select-sph-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('sph')">
+                  <option value="under">사거리 20km 미만</option>
+                  <option value="over">사거리 20km 이상</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-sph">0</strong>문</span>
+                  <input type="number" id="edit-val-sph" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 6행: 장갑차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">장갑차</td>
+              <td style="padding: 12px;">
+                <select id="select-apc-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('apc')">
+                  <option value="apc">APC (병력수송장갑차)</option>
+                  <option value="ifv">IFV (보병전투차)</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-apc">0</strong>대</span>
+                  <input type="number" id="edit-val-apc" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 7행: 헬기 및 공격헬기 -->
+            <tr>
+              <td style="padding: 12px; font-weight: bold;">헬기</td>
+              <td style="padding: 12px;">
+                <select id="select-heli-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('heli')">
+                  <option value="transport">기동 헬기</option>
+                  <option value="attack">공격 헬기</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-heli">0</strong>대</span>
+                  <input type="number" id="edit-val-heli" value="0" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-buttons" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="submit" class="btn-submit" style="padding: 10px 20px; background-color: var(--primary-color, #007bff); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">변경사항 저장</button>
+        <button type="button" onclick="closeArmyEditModal()" class="btn-close" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
   <script src="script.js"></script>
 </body>
 </html>
