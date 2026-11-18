@@ -3082,4 +3082,163 @@ window.openArmyEditModal = openArmyEditModal;
 window.closeArmyEditModal = closeArmyEditModal;
 window.updateArmyCurrentDisplay = updateArmyCurrentDisplay;
 window.validateAndSubmitArmyData = validateAndSubmitArmyData;
+
+  // 🛡️ 공군 전력 관리 모달 열기 및 데이터 연동
+function openAirEditModal() {
+  const modal = document.getElementById('air-edit-modal');
+  if (modal) modal.style.display = 'flex';
+  loadAndDisplayMyAirEquipment();
+}
+
+function closeAirEditModal() {
+  const modal = document.getElementById('air-edit-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// 자국의 공군 장비 보유량을 불러와서 모달 UI에 채워주는 함수
+function loadAndDisplayMyAirEquipment() {
+  if (!currentUser || !currentUser.country) {
+    console.warn("로그인된 유저 또는 국가 정보가 없습니다.");
+    return;
+  }
+  
+  const myCountryName = currentUser.country;
+  const cleanMyCountry = cleanName(myCountryName);
+  
+  const airArray = Array.isArray(globalAirData) ? globalAirData : [];
+  const myObjAir = airArray.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
+  
+  // 공군 시트 헤더 명칭에 맞게 캐시 데이터 매핑
+  window.modalAirCache = {
+    fighter: {
+      'sub1': parseNumber(myObjAir['전투기1세대미만'] || myObjAir['전투기0'] || 0),
+      '1': parseNumber(myObjAir['전투기1'] || 0),
+      '2': parseNumber(myObjAir['전투기2'] || 0),
+      '3': parseNumber(myObjAir['전투기3'] || 0),
+      '4': parseNumber(myObjAir['전투기4'] || 0),
+      '4.5': parseNumber(myObjAir['전투기45'] || myObjAir['전투기4.5'] || 0),
+      '5': parseNumber(myObjAir['전투기5'] || 0)
+    },
+    attacker: {
+      'sub': parseNumber(myObjAir['아음속공격기'] || myObjAir['공격기'] || 0),
+      'super': parseNumber(myObjAir['초음속공격기'] || 0)
+    },
+    bomber: parseNumber(myObjAir['폭격기'] || 0),
+    special: parseNumber(myObjAir['특수목적항공기'] || 0),
+    transport: parseNumber(myObjAir['수송기'] || 0)
+  };
+
+  updateAirCurrentDisplay('fighter');
+  updateAirCurrentDisplay('attacker');
+  updateAirCurrentDisplay('bomber');
+  updateAirCurrentDisplay('special');
+  updateAirCurrentDisplay('transport');
+}
+
+// 드롭다운 변경 시 보유수 텍스트 갱신
+function updateAirCurrentDisplay(category) {
+  if (!window.modalAirCache) return;
+  const cache = window.modalAirCache;
+  let val = 0;
+
+  if (category === 'fighter') {
+    const gen = document.getElementById('select-fighter-gen')?.value || '5';
+    val = cache.fighter[gen] || 0;
+    const el = document.getElementById('cur-val-fighter');
+    if (el) el.innerText = val;
+  } else if (category === 'attacker') {
+    const type = document.getElementById('select-attacker-type')?.value || 'sub';
+    val = cache.attacker[type] || 0;
+    const el = document.getElementById('cur-val-attacker');
+    if (el) el.innerText = val;
+  } else if (category === 'bomber') {
+    val = cache.bomber || 0;
+    const el = document.getElementById('cur-val-bomber');
+    if (el) el.innerText = val;
+  } else if (category === 'special') {
+    val = cache.special || 0;
+    const el = document.getElementById('cur-val-special');
+    if (el) el.innerText = val;
+  } else if (category === 'transport') {
+    val = cache.transport || 0;
+    const el = document.getElementById('cur-val-transport');
+    if (el) el.innerText = val;
+  }
+}
+
+// 유효성 검증 (보유수보다 많은 마이너스 입력 방지)
+function validateAndSubmitAirData() {
+  // 현재 선택된 드롭다운 세부 세대/타입의 보유수와 비교 검증
+  const fighterGen = document.getElementById('select-fighter-gen')?.value || '5';
+  const curFighter = window.modalAirCache.fighter[fighterGen] || 0;
+  const editFighter = parseInt(document.getElementById('edit-fighter')?.value) || 0;
+  if (editFighter < 0 && Math.abs(editFighter) > curFighter) {
+    alert(`[오류] 전투기(${fighterGen}세대) 감소 수치(${Math.abs(editFighter)}대)가 현재 보유수(${curFighter}대)보다 클 수 없습니다!`);
+    document.getElementById('edit-fighter').focus();
+    return;
+  }
+
+  const attackerType = document.getElementById('select-attacker-type')?.value || 'sub';
+  const curAttacker = window.modalAirCache.attacker[attackerType] || 0;
+  const editAttacker = parseInt(document.getElementById('edit-attacker')?.value) || 0;
+  if (editAttacker < 0 && Math.abs(editAttacker) > curAttacker) {
+    alert(`[오류] 공격기 감소 수치(${Math.abs(editAttacker)}대)가 현재 보유수(${curAttacker}대)보다 클 수 없습니다!`);
+    document.getElementById('edit-attacker').focus();
+    return;
+  }
+
+  const items = [
+    { name: `전투기(${fighterGen}세대)`, inputId: 'edit-fighter', genKey: fighterGen },
+    { name: `공격기(${attackerType})`, inputId: 'edit-attacker', typeKey: attackerType },
+    { name: "폭격기", inputId: 'edit-bomber' },
+    { name: "특수목적항공기", inputId: 'edit-special' },
+    { name: "수송기", inputId: 'edit-transport' }
+  ];
+
+  sendAirDataToServer(items);
+}
+
+async function sendAirDataToServer(items) {
+  const payloadData = {};
+  items.forEach(item => {
+    const val = parseInt(document.getElementById(item.inputId)?.value) || 0;
+    if (val !== 0) {
+      if (item.genKey) payloadData[`edit-fighter-${item.genKey}`] = val;
+      else if (item.typeKey) payloadData[`edit-attacker-${item.typeKey}`] = val;
+      else payloadData[item.inputId] = val;
+    }
+  });
+
+  const payload = {
+    action: "updateAirEquipment",
+    country: currentUser ? currentUser.country : "",
+    changes: payloadData
+  };
+
+  try {
+    const response = await fetch(MIL_API_EDIT, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+
+    if (result.success || result.result === "success") {
+      alert("공군 전력이 성공적으로 업데이트되었습니다!");
+      closeAirEditModal();
+      showMyEconomyView();
+      checkFirebaseChanges();
+    } else {
+      alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
+    }
+  } catch (err) {
+    console.error("공군 전력 수정 오류:", err);
+    alert("서버 통신 중 오류가 발생했습니다.");
+  }
+}
+
+// 전역 등록
+window.openAirEditModal = openAirEditModal;
+window.closeAirEditModal = closeAirEditModal;
+window.updateAirCurrentDisplay = updateAirCurrentDisplay;
+window.validateAndSubmitAirData = validateAndSubmitAirData;
 });
