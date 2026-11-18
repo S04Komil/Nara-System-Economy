@@ -67,62 +67,55 @@ body {
   color: #e2e8f0;
 }
 
+[data-theme="dark"] .info-box {
+  background: #25282c;
+  border-color: #2d3748;
+}
+
 [data-theme="dark"] .info-val {
   color: #f7fafc;
 }
 
-/* ==========================================
-   🌐 PC 기준 상단 네비게이션바 레이아웃
-   ========================================== */
+/* 상단 네비게이션 바 반응형 최적화 */
 nav {
   background-color: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
   padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양 끝과 중앙 공간 배분으로 겹침 원천 차단 */
-  position: relative;
+  justify-content: space-between; /* 양 끝으로 여유있게 배치 */
   height: 70px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  box-sizing: border-box;
 }
 
 .logo-container {
   display: flex;
   align-items: center;
+  margin-right: 16px;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .logo-img {
-  height: 45px;
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
 
-/* 네비게이션 메뉴 (PC에서는 중앙 자동 정렬) */
 .nav-menu {
   display: flex;
   list-style: none;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
-  gap: 8px;
+  gap: 8px; /* 메뉴 간격을 살짝 띄워줌 */
   align-items: center;
-  justify-content: center;
+  overflow-x: visible; /* 갇혀 보이는 현상 방지를 위해 visible로 변경 */
   white-space: nowrap;
 }
 
-/* 우측 로그인 / 프로필 영역 */
-.auth-area-wrapper {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-#auth-nav-area, 
-#user-profile-area {
-  display: flex;
-  align-items: center;
+#nav-my-country-item,
+#auth-nav-area {
+  margin-left: auto;
 }
 
 /* 드롭다운 메인 카테고리 버튼 디자인 */
@@ -164,7 +157,9 @@ nav {
   color: white;
 }
 
-/* 드롭다운 스타일 */
+/* ==========================================
+   상단 내비게이션바 드롭다운 스타일 정돈
+   ========================================== */
 .nav-item.dropdown {
   position: relative;
   display: inline-block;
@@ -204,7 +199,7 @@ nav {
   display: block !important;
 }
 
-/* 컨테이너 및 기타 공통 스타일 */
+/* 메인 컨테이너 레이아웃 */
 .container {
   max-width: 900px;
   margin: 16px auto;
@@ -562,12 +557,12 @@ nav {
 .user-profile-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 6px;
+  background: #f1f3f5;
+  padding: 4px 8px;
   border-radius: 20px;
-  background-color: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .user-flag-img {
@@ -923,17 +918,42 @@ nav {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 🌙 다크모드 추가 보완 스타일 */
+@media (max-width: 768px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .row-grid-2, .row-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .main-title {
+    font-size: 1.2rem;
+  }
+  .edit-economy-container {
+    padding: 12px;
+  }
+  .modal-content {
+    padding: 20px 16px;
+  }
+  .modal-buttons button {
+    flex: 1;
+  }
+}
+/* 🌙 다크모드 유저 프로필 배지 보완 */
 [data-theme="dark"] .user-profile-badge {
-  background-color: #2d3748 !important;
-  color: #e2e8f0 !important;
-  border: 1px solid #4a5568;
+  background-color: #2d3748 !important; /* 어두운 카드 배경톤으로 변경 */
+  color: #e2e8f0 !important;             /* 밝은 텍스트 색상 */
+  border: 1px solid #4a5568;            /* 테두리 은은하게 추가 */
 }
 
 [data-theme="dark"] #user-country-name {
-  color: #f7fafc !important;
+  color: #f7fafc !important;             /* 국가명 텍스트 선명하게 */
 }
 
+/* ==========================================
+   🌙 다크모드 누락된 UI 컴포넌트 전체 일괄 보완
+   ========================================== */
+
+/* 1. 상단 내비게이션 드롭다운 메뉴 다크모드 대응 */
 [data-theme="dark"] .nav-item.dropdown .dropdown-content {
   background-color: #1e1e1e !important;
   border-color: #2d3748 !important;
@@ -949,6 +969,7 @@ nav {
   color: #ffffff !important;
 }
 
+/* 2. 패치노트 및 일반 모달 창 다크모드 대응 */
 [data-theme="dark"] .notice-modal-content,
 [data-theme="dark"] .modal-content {
   background-color: #1e1e1e !important;
@@ -965,6 +986,7 @@ nav {
   background-color: #2b6cb0 !important;
 }
 
+/* 3. 해외 경제 투자 테이블 및 일반 테이블 다크모드 대응 */
 [data-theme="dark"] .investment-table,
 [data-theme="dark"] table {
   background-color: #1e1e1e !important;
@@ -984,6 +1006,7 @@ nav {
   color: #e2e8f0 !important;
 }
 
+/* 4. 순위 리스트 항목 및 텍스트 다크모드 보완 */
 [data-theme="dark"] .rank-item {
   background: #25282c !important;
   border: 1px solid #2d3748;
@@ -1002,212 +1025,11 @@ nav {
   background: #1a365d !important;
   border-color: #3182ce !important;
 }
-
+/* 🌙 다크모드일 때 순위 바 색상을 어둡게 조정하여 가독성 향상 */
 [data-theme="dark"] .rank-bar {
-  background: #2d3748 !important;
+  background: #2d3748 !important; /* 어두운 다크 그레이 톤으로 변경 */
 }
 
 [data-theme="dark"] .rank-item.world-item .rank-bar {
-  background: #2b6cb0 !important;
-}
-
-
-/* ==========================================
-   📱 햄버거 버튼 및 모바일 반응형 전용 스타일 (768px 이하)
-   ========================================== */
-.mobile-menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 28px;
-  height: 22px;
-  padding: 0;
-  z-index: 1001;
-}
-
-.mobile-menu-toggle span {
-  display: block;
-  width: 100%;
-  height: 3px;
-  background-color: var(--text-color, #2d3748);
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-[data-theme="dark"] .mobile-menu-toggle span {
-  background-color: #e2e8f0;
-}
-
-.mobile-menu-header {
-  display: none;
-}
-
-.menu-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 998;
-  backdrop-filter: blur(2px);
-}
-
-.menu-overlay.active {
-  display: block;
-}
-
-@media (max-width: 768px) {
-  nav {
-    height: 60px !important;
-    padding: 0 10px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: nowrap !important;
-    overflow: hidden !important;
-    position: relative !important;
-  }
-
-  /* 1. 햄버거 버튼 맨 왼쪽 고정 */
-  .mobile-menu-toggle {
-    display: flex !important;
-    order: 1 !important;
-    margin-right: 6px !important;
-    flex-shrink: 0 !important;
-    z-index: 100001 !important;
-  }
-
-  /* 2. 로고는 햄버거 버튼 바로 옆 */
-  .logo-container {
-    position: static !important;
-    order: 2 !important;
-    margin-right: auto !important;
-    flex-shrink: 1 !important;
-    overflow: hidden !important;
-  }
-
-  .logo-img {
-    height: 26px !important;
-    width: auto !important;
-  }
-
-  /* 3. 우측 프로필 영역 맨 오른쪽 고정 */
-  .auth-area-wrapper {
-    order: 3 !important;
-    margin-left: 6px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-
-  /* 모바일 프로필 뱃지 압축 (긴 이메일 숨김 처리로 겹침 방지) */
-  .user-profile-badge {
-    padding: 2px 6px !important;
-    font-size: 11px !important;
-    max-width: 130px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    gap: 4px !important;
-  }
-
-  .user-profile-badge span:not(#user-country-name) {
-    display: none !important; 
-  }
-
-  #user-country-name {
-    max-width: 70px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-  }
-
-  .user-flag-img {
-    width: 14px !important;
-    height: 10px !important;
-  }
-
-  .btn-logout {
-    padding: 2px 4px !important;
-    font-size: 10px !important;
-    min-height: 22px !important;
-    margin-left: 2px !important;
-  }
-
-  /* 📱 사이드 메뉴: 평소에는 화면 오른쪽 밖으로 완전히 숨김 */
-  .nav-menu {
-    position: fixed !important;
-    top: 0 !important;
-    right: -100% !important;
-    width: 280px !important;
-    height: 100vh !important;
-    background-color: var(--card-bg, #ffffff) !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    padding: 20px !important;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3) !important;
-    transition: right 0.3s ease-in-out !important;
-    z-index: 100000 !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    margin: 0 !important;
-  }
-
-  /* 햄버거 버튼을 누르면 화면 안으로 슬라이드인 */
-  .nav-menu.active {
-    right: 0 !important;
-  }
-
-  .mobile-menu-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding-bottom: 15px !important;
-    margin-bottom: 15px !important;
-    border-bottom: 2px solid var(--border-color, #e2e8f0) !important;
-  }
-
-  .mobile-menu-title {
-    font-size: 1.1rem !important;
-    font-weight: bold !important;
-    color: var(--text-color, #1a202c) !important;
-  }
-
-  .mobile-menu-close {
-    background: none !important;
-    border: none !important;
-    font-size: 28px !important;
-    cursor: pointer !important;
-    color: var(--text-color, #666) !important;
-  }
-
-  .nav-item {
-    width: 100% !important;
-    margin-bottom: 6px !important;
-  }
-
-  .nav-item button, 
-  .nav-item .drop-btn {
-    width: 100% !important;
-    justify-content: flex-start !important;
-    padding: 12px 14px !important;
-    font-size: 1rem !important;
-  }
-
-  .nav-item.dropdown .dropdown-content {
-    position: static !important;
-    box-shadow: none !important;
-    border: none !important;
-    background: transparent !important;
-    padding-left: 15px !important;
-    width: 100% !important;
-  }
+  background: #2b6cb0 !important; /* 전세계 항목 바도 어두운 블루 톤으로 조화롭게 보정 */
 }

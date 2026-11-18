@@ -16,76 +16,66 @@
 
   <!-- 상단 네비게이션 메뉴 -->
   <nav>
-  <!-- 로고 -->
-  <div class="logo-container" onclick="location.href='index.html'">
-    <img src="logo.png" alt="Logo" class="logo-img">
-  </div>
+  <div class="logo-container" onclick="showMainView()">
+    <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
+  </div> 
 
-  <!-- 📱 모바일 전용 햄버거 버튼 (선 3개) -->
-  <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="메뉴 열기">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-
-  <!-- 네비게이션 메뉴 (PC에서는 가로 나열, 모바일에서는 사이드 드로어로 변환) -->
-  <ul class="nav-menu" id="navMenu">
-    <!-- 모바일 메뉴 내부 상단 닫기 버튼 (선택사항) -->
-    <li class="mobile-menu-header">
-      <span class="mobile-menu-title">메뉴</span>
-      <button class="mobile-menu-close" id="mobileMenuClose">&times;</button>
-    </li>
-
-    <li class="nav-item dropdown">
-      <button class="drop-btn">경제 통계 ▾</button>
-      <div class="dropdown-content">
-        <a href="#" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (전체)', '달러', 'nav-gdp')">GDP 순위</a>
-        <a href="#" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (전체)', '달러', 'nav-def')">국방비 순위</a>
-        <a href="#" onclick="switchCategory('인구(만명)', '인구 순위 (전체)', '명', 'nav-pop')">인구 순위</a>
-        <a href="#" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러', 'nav-cap')">1인당 GDP 순위</a>
-      </div>
-    </li>
+  <ul class="nav-menu">
     
-    <li class="nav-item dropdown">
-      <button class="drop-btn">국방 전력 ▾</button>
-      <div class="dropdown-content">
-        <a href="#" onclick="switchCategory('군사력종합', '종합 군사력 순위', '점수', 'nav-mil')">종합 군사력</a>
-        <a href="#" onclick="switchCategory('육군', '육군 전력 순위', '점수', 'nav-army')">육군 전력</a>
-        <a href="#" onclick="switchCategory('공군', '공군 전력 순위', '점수', 'nav-air')">공군 전력</a>
-        <a href="#" onclick="switchCategory('해군', '해군 전력 순위', '점수', 'nav-navy')">해군 전력</a>
+    <!-- 💰 [경제 통계 드롭다운] -->
+    <li class="nav-item dropdown" style="position: relative; display: inline-block;">
+      <a href="javascript:void(0);" class="drop-btn" style="background:transparent; border:none; color:inherit; font-weight:500; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:4px;">💰 경제 통계 ▾</a>
+      <div class="dropdown-content" style="display:none; position:absolute; top:100%; left:0; background:var(--bg-card, #fff); min-width:160px; box-shadow:0px 8px 20px rgba(0,0,0,0.15); border-radius:8px; z-index:1000; padding:8px 0; border:1px solid var(--border-color, #e2e8f0);">
+        <a href="#" onclick="switchCategory('GDP', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">GDP 순위</a>
+        <a href="#" onclick="switchCategory('국방비', '국방비 순위 (전체)', '달러', 'nav-def-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">국방비 순위</a>
+        <a href="#" onclick="switchCategory('인구', '인구 순위 (전체)', '명', 'nav-pop-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">인구 순위</a>
+        <a href="#" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">1인당 GDP 순위</a>
       </div>
     </li>
 
-    <li class="nav-item" id="nav-my-country-item">
-      <button onclick="switchCategory('my-economy-view', '자국 경제 관리', '점수', 'nav-my-country')">자국 경제</button>
+    <!-- 🎖️ [국방 전력 드롭다운] -->
+    <li class="nav-item dropdown" style="position: relative; display: inline-block;">
+      <a href="javascript:void(0);" class="drop-btn" style="background:transparent; border:none; color:inherit; font-weight:500; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:4px;">🎖️ 국방 전력 ▾</a>
+      <div class="dropdown-content" style="display:none; position:absolute; top:100%; left:0; background:var(--bg-card, #fff); min-width:160px; box-shadow:0px 8px 20px rgba(0,0,0,0.15); border-radius:8px; z-index:1000; padding:8px 0; border:1px solid var(--border-color, #e2e8f0);">
+        <a href="#" onclick="switchCategory('군사력종합', '전체 군사력 순위 (종합)', '점수', 'nav-total-military-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">전체 군사력 순위</a>
+        <div style="border-top:1px solid var(--border-color, #eee); margin:4px 0;"></div>
+        <a href="#" onclick="switchCategory('육군', '육군 전력 순위 (전체)', '점수', 'nav-army-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">육군 순위</a>
+        <a href="#" onclick="switchCategory('공군', '공군 전력 순위 (전체)', '점수', 'nav-air-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">공군 순위</a>
+        <a href="#" onclick="switchCategory('해군', '해군 전력 순위 (전체)', '점수', 'nav-navy-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">해군 순위</a>
+      </div>
     </li>
 
-    <li class="nav-item">
-      <button onclick="openNoticeModal()">패치노트 📢</button>
-    </li>
+    <!-- 로그인 전용: 자국 경제 탭 -->
+    <li class="nav-item" id="nav-my-country-item" style="display: none;"> 
+      <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button> 
+    </li> 
 
-    <li class="nav-item">
-      <button id="themeToggleBtn" onclick="toggleTheme()">🌙 다크모드</button>
-    </li>
+    <!-- 패치노트 버튼 --> 
+    <li class="nav-item"> 
+      <button id="btn-nav-changelog" onclick="openChangelogModal()">패치노트 📢</button> 
+    </li> 
+
+    <!-- 🌙 다크모드 토글 버튼 --> 
+    <li class="nav-item"> 
+      <button id="theme-toggle-btn" onclick="toggleDarkMode()">🌙 다크모드</button> 
+    </li> 
+
+    <!-- 로그인 버튼 구역 --> 
+    <li class="nav-item" id="auth-nav-area"> 
+      <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button> 
+    </li> 
+
+    <!-- 로그인 완료 후 유저 프로필 구역 --> 
+    <li class="nav-item" id="user-profile-area" style="display: none;"> 
+      <div class="user-profile-badge"> 
+        <img id="user-flag" src="" alt="국기" class="user-flag-img"> 
+        <span id="user-country-name">국가명</span> 
+        <button class="btn-logout" onclick="handleLogout()">로그아웃</button> 
+      </div> 
+    </li> 
   </ul>
-
-  <!-- 우측 로그인 / 프로필 영역 (PC/모바일 공용 고정) -->
-  <div class="auth-area-wrapper">
-    <div id="auth-nav-area">
-      <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
-    </div>
-    <div id="user-profile-area" style="display: none;">
-      <div class="user-profile-badge">
-        <img id="user-flag" src="" alt="국기" class="user-flag-img">
-        <span id="user-country-name">국가명</span>
-        <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
-      </div>
-    </div>
-  </div>
 </nav>
-
-<!-- 사이드 메뉴가 열렸을 때 뒷배경을 어둡게 만드는 오버레이 -->
-<div class="menu-overlay" id="menuOverlay"></div>
 
   <div class="container">
     <div id="loading">데이터를 불러오는 중입니다...</div>
