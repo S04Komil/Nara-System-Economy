@@ -2826,4 +2826,39 @@ document.addEventListener("submit", function (e) {
     setTimeout(() => { submitBtn.disabled = false; }, 5000);
   }
 });
+  // 페이지 로드 시 저장된 다크모드 설정 불러오기
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    updateThemeButtonUI(true);
+  }
+});
+
+// 다크모드 토글 함수
+function toggleDarkMode() {
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+  const isDark = currentTheme === "dark";
+
+  if (isDark) {
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme", "light");
+    updateThemeButtonUI(false);
+  } else {
+    document.documentElement.setAttribute("data-theme", "dark");
+    localStorage.setItem("theme", "dark");
+    updateThemeButtonUI(true);
+  }
+}
+
+// 버튼 텍스트 및 아이콘 업데이트 헬퍼 함수
+function updateThemeButtonUI(isDark) {
+  const btn = document.getElementById("theme-toggle-btn");
+  if (btn) {
+    btn.innerText = isDark ? "☀️ 라이트모드" : "🌙 다크모드";
+  }
+}
+
+// 전역 함수 등록
+window.toggleDarkMode = toggleDarkMode;
 });
