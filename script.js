@@ -2934,8 +2934,46 @@ function validateAndSubmitArmyData() {
 
 async function sendArmyDataToServer(items) {
   const payloadData = {};
+
   items.forEach(item => {
-    payloadData[item.inputId] = parseInt(document.getElementById(item.inputId)?.value) || 0;
+    const val = parseInt(document.getElementById(item.inputId)?.value) || 0;
+    if (val !== 0) {
+      let sheetHeader = "";
+
+      // 육군 시트 헤더명과 정확히 맵핑
+      if (item.inputId === 'edit-val-tank') {
+        const gen = document.getElementById('select-tank-gen')?.value; // '3.5', '3.0', '2.0', '1.0', '0.0'
+        if (gen === '3.5') sheetHeader = "전차35";
+        else if (gen === '3.0') sheetHeader = "전차3";
+        else if (gen === '2.0') sheetHeader = "전차2";
+        else if (gen === '1.0') sheetHeader = "전차1";
+        else if (gen === '0.0') sheetHeader = "전차"; // 1세대미만 전차
+      } else if (item.inputId === 'edit-val-lighttank') {
+        const gen = document.getElementById('select-lighttank-gen')?.value;
+        if (gen === '3.5') sheetHeader = "경전차35";
+        else if (gen === '3.0') sheetHeader = "경전차3";
+        else if (gen === '2.0') sheetHeader = "경전차2";
+        else if (gen === '1.0') sheetHeader = "경전차1";
+      } else if (item.inputId === 'edit-val-vehicle') {
+        sheetHeader = "차량";
+      } else if (item.inputId === 'edit-val-howitzer') {
+        const type = document.getElementById('select-howitzer-type')?.value;
+        sheetHeader = (type === 'under') ? "105견인포" : "155견인포"; // 시트 헤더 기준에 맞춤
+      } else if (item.inputId === 'edit-val-sph') {
+        const type = document.getElementById('select-sph-type')?.value;
+        sheetHeader = (type === 'under') ? "단거리자주포" : "자주포";
+      } else if (item.inputId === 'edit-val-apc') {
+        const type = document.getElementById('select-apc-type')?.value;
+        sheetHeader = (type === 'apc') ? "장갑차" : "IFV";
+      } else if (item.inputId === 'edit-val-heli') {
+        const type = document.getElementById('select-heli-type')?.value;
+        sheetHeader = (type === 'transport') ? "헬기" : "공격헬기";
+      }
+
+      if (sheetHeader) {
+        payloadData[sheetHeader] = val;
+      }
+    }
   });
 
   const payload = {
@@ -2953,7 +2991,8 @@ async function sendArmyDataToServer(items) {
 
     if (result.success || result.result === "success") {
       alert("육군 전력이 성공적으로 업데이트되었습니다!");
-      showMyEconomyView(); // 화면 갱신
+      closeArmyEditModal();
+      showMyEconomyView();
       checkFirebaseChanges();
     } else {
       alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
@@ -3200,12 +3239,32 @@ function validateAndSubmitAirData() {
 
 async function sendAirDataToServer(items) {
   const payloadData = {};
+  
   items.forEach(item => {
     const val = parseInt(document.getElementById(item.inputId)?.value) || 0;
     if (val !== 0) {
-      if (item.genKey) payloadData[`edit-fighter-${item.genKey}`] = val;
-      else if (item.typeKey) payloadData[`edit-attacker-${item.typeKey}`] = val;
-      else payloadData[item.inputId] = val;
+      let sheetHeader = "";
+
+      // 공군 시트 헤더명과 정확히 맵핑
+      if (item.inputId === 'edit-fighter') {
+        const gen = document.getElementById('select-fighter-gen')?.value;
+        if (gen === 'sub1') sheetHeader = "전투기1세대미만";
+        else if (gen === '4.5') sheetHeader = "전투기45"; // 시트 헤더가 '전투기45'인지 확인
+        else sheetHeader = `전투기${gen}`; // 전투기1, 전투기2, 전투기3, 전투기4, 전투기5
+      } else if (item.inputId === 'edit-attacker') {
+        const type = document.getElementById('select-attacker-type')?.value;
+        sheetHeader = (type === 'sub') ? "공격기" : "초음속공격기"; // 시트 헤더명 기준
+      } else if (item.inputId === 'edit-bomber') {
+        sheetHeader = "폭격기";
+      } else if (item.inputId === 'edit-special') {
+        sheetHeader = "특수목적항공기";
+      } else if (item.inputId === 'edit-transport') {
+        sheetHeader = "수송기";
+      }
+
+      if (sheetHeader) {
+        payloadData[sheetHeader] = val;
+      }
     }
   });
 
