@@ -582,7 +582,12 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
             if (cleanedName === '전세계') return null;
 
+            // 💡 전년도 데이터 조회 시에도 targetScoreKey가 있다면 우선적으로 해당 부문 점수 컬럼을 참조
             let rawVal = item[prevYearKey];
+            if ((rawVal === undefined || rawVal === null || String(rawVal).trim() === '') && targetScoreKey) {
+              rawVal = item[targetScoreKey];
+            }
+
             if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
               return null;
             }
