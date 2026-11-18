@@ -10,11 +10,11 @@
 [data-theme="dark"] {
   --bg-color: #121212;
   --card-bg: #1e1e1e;
-  --primary-color: #63b3ed; /* 다크모드에서 잘 보이는 밝은 파란색 계열 */
+  --primary-color: #63b3ed;
   --border-color: #2d3748;
   --text-color: #e2e8f0;
 }
-/* 🌙 다크모드 세부 텍스트 및 컨테이너 가독성 보완 */
+
 [data-theme="dark"] .edit-economy-container {
   background-color: #1e1e1e !important;
   color: #e2e8f0 !important;
@@ -39,7 +39,6 @@
   color: #ffffff !important;
 }
 
-/* 입력창(input, select) 다크모드 스타일 보완 */
 [data-theme="dark"] input,
 [data-theme="dark"] select {
   background-color: #2d3748 !important;
@@ -51,7 +50,6 @@
   color: #a0aec0 !important;
 }
 
-/* body 전역에 부드러운 전환 효과 추가 */
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   margin: 0;
@@ -63,7 +61,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 다크모드에서 역전될 여지가 있는 카드/모달 내부의 기본 배경색 보정 */
 [data-theme="dark"] .modal-content,
 [data-theme="dark"] .notice-modal-content {
   background-color: #1e1e1e;
@@ -83,10 +80,11 @@ body {
 nav {
   background-color: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 16px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
-  height: 70px; /* 모바일 화면 고려 높이 축소 */
+  justify-content: space-between; /* 양 끝으로 여유있게 배치 */
+  height: 70px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
@@ -99,7 +97,7 @@ nav {
 }
 
 .logo-img {
-  height: 50px; /* 로고 모바일 크기 최적화 */
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
@@ -109,21 +107,19 @@ nav {
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 4px;
-  width: 100%;
+  gap: 8px; /* 메뉴 간격을 살짝 띄워줌 */
   align-items: center;
-  overflow-x: auto; /* 모바일 메뉴 가로 스크롤 지원 */
+  overflow-x: visible; /* 갇혀 보이는 현상 방지를 위해 visible로 변경 */
   white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
 }
 
-/* 자국 경제, 로그인, 프로필 구역을 함께 오른쪽 끝으로 밀기 */
 #nav-my-country-item,
 #auth-nav-area {
   margin-left: auto;
 }
 
-.nav-item button {
+.nav-item button,
+.nav-item .drop-btn {
   background: none;
   border: none;
   padding: 8px 12px;
@@ -133,17 +129,74 @@ nav {
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.2s;
-  min-height: 44px; /* 터치 최소 영역 확보 */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
 }
 
-.nav-item button:hover {
+[data-theme="dark"] .nav-item button,
+[data-theme="dark"] .nav-item .drop-btn {
+  color: #e2e8f0;
+}
+
+.nav-item button:hover,
+.nav-item.dropdown:hover .drop-btn {
   background-color: #edf2f7;
   color: var(--primary-color);
+}
+
+[data-theme="dark"] .nav-item button:hover,
+[data-theme="dark"] .nav-item.dropdown:hover .drop-btn {
+  background-color: #2d3748;
 }
 
 .nav-item button.active {
   background-color: var(--primary-color);
   color: white;
+}
+
+/* ==========================================
+   상단 내비게이션바 드롭다운 스타일 정돈
+   ========================================== */
+.nav-item.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-item.dropdown .dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--card-bg, #ffffff);
+  min-width: 170px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  z-index: 1000;
+  padding: 8px 0;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.nav-item.dropdown .dropdown-content a {
+  color: var(--text-color, #2d3748) !important;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 0.9rem;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-item.dropdown .dropdown-content a:hover {
+  background-color: var(--primary-color, #007bff);
+  color: #ffffff !important;
+}
+
+.nav-item.dropdown:hover .dropdown-content {
+  display: block !important;
 }
 
 /* 메인 컨테이너 레이아웃 */
@@ -153,7 +206,6 @@ nav {
   padding: 0 16px;
 }
 
-/* 메인 화면 헤더 */
 .main-header {
   margin-bottom: 20px;
   display: flex;
@@ -178,13 +230,12 @@ nav {
   flex-shrink: 0;
 }
 
-/* 종목별 1위 카드 그리드 (모바일 2열 자동 배치) */
 .top-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
-  min-height: 180px; /* LCP Layout Shift 방지 */
+  min-height: 180px;
 }
 
 .top-card {
@@ -237,14 +288,13 @@ nav {
   color: white;
 }
 
-/* 순위 상세 화면 */
 .rank-section {
   background: var(--card-bg);
   padding: 16px;
   border-radius: 10px;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  min-height: 300px; /* LCP 레이아웃 고정 */
+  min-height: 300px;
 }
 
 .rank-list {
@@ -292,7 +342,6 @@ nav {
   color: #718096;
 }
 
-/* 세계 통계 카드 */
 .world-stats-section {
   margin-top: 28px;
   margin-bottom: 20px;
@@ -332,7 +381,6 @@ nav {
   color: #2b6cb0;
 }
 
-/* 바 배경 레이어 */
 .rank-bar {
   position: absolute;
   top: 0;
@@ -344,7 +392,6 @@ nav {
   transition: width 0.4s ease;
 }
 
-/* 전세계 항목 하이라이트 */
 .rank-item.world-item {
   background: #ebf8ff;
   border: 1px solid #90cdf4;
@@ -355,7 +402,6 @@ nav {
   background: #bee3f8;
 }
 
-/* 순위 변동 배지 */
 .rank-diff {
   font-size: 10px;
   font-weight: bold;
@@ -392,7 +438,6 @@ nav {
   gap: 6px;
 }
 
-/* 국기 이미지 최적화 (Layout Shift 방지 규격 설정) */
 .rank-flag {
   width: 22px;
   height: 15px;
@@ -402,7 +447,6 @@ nav {
   flex-shrink: 0;
 }
 
-/* 모달 레이아웃 및 안내문 모달 Overlay 통합 */
 .modal-overlay {
   position: fixed;
   top: 0; 
@@ -499,7 +543,6 @@ nav {
   text-decoration: underline;
 }
 
-/* 인증 버튼 및 프로필 */
 .btn-auth {
   background-color: var(--primary-color, #2b56f5);
   color: #fff;
@@ -542,7 +585,6 @@ nav {
   min-height: 32px;
 }
 
-/* Auth 모달 반응형 */
 .auth-modal-content {
   max-width: 380px;
   width: 92%;
@@ -590,7 +632,7 @@ nav {
   padding: 12px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 16px; /* iOS 자동 확대 방지 (16px 이상) */
+  font-size: 16px;
 }
 
 .btn-submit-auth {
@@ -607,7 +649,6 @@ nav {
   min-height: 44px;
 }
 
-/* 자국 경제 수정 화면 */
 .edit-economy-container {
   background: #fff;
   padding: 16px;
@@ -676,7 +717,7 @@ nav {
   border-collapse: collapse;
   text-align: center;
   font-size: 13px;
-  min-width: 500px; /* 모바일 가로 스크롤 보장 */
+  min-width: 500px;
 }
 
 .investment-table th, .investment-table td {
@@ -707,7 +748,6 @@ nav {
   background-color: #0056b3;
 }
 
-/* 폼 2분할 (모바일 1열로 세로 정렬) */
 .form-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -750,22 +790,16 @@ nav {
   transform: translateY(1px);
 }
 
-/* ==========================================
-   기준표 모달 (상하좌우 스크롤 & 높이 고정 해제)
-   ========================================== */
-
-/* 1. 모달 열렸을 때 flex 배치 */
 #standard-modal:not([style*="display: none"]) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
-/* 2. 모달 컨텐츠 크기 및 내부 flex 처리 */
 #standard-modal .modal-content {
   width: 92vw !important;
   max-width: 1100px !important;
-  max-height: 85vh !important;       /* 화면 높이의 85%로 제한 */
+  max-height: 85vh !important;
   margin: auto !important;
   padding: 20px !important;
   box-sizing: border-box;
@@ -773,19 +807,17 @@ nav {
   flex-direction: column !important;
 }
 
-/* 3. 모달 바디: 스크롤 동작 핵심 영역 */
 #standard-modal #standard-modal-body {
   width: 100% !important;
-  max-height: calc(85vh - 90px) !important; /* 모달 헤더를 제외한 영역 스크롤 */
-  overflow-x: auto !important;             /* 가로 스크롤 */
-  overflow-y: auto !important;             /* 세로 스크롤 (아래로 내려가기 가능) */
+  max-height: calc(85vh - 90px) !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
   margin-top: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   -webkit-overflow-scrolling: touch;
 }
 
-/* 4. 기준표 테이블 규격 */
 #standard-modal-body .rank-table {
   width: 100% !important;
   min-width: 850px !important;
@@ -806,7 +838,6 @@ nav {
   font-weight: bold !important;
 }
 
-/* 패치노트 아코디언 스타일 */
 .changelog-item summary {
   transition: color 0.2s ease;
 }
@@ -815,12 +846,10 @@ nav {
   color: #0056b3 !important;
 }
 
-/* 열렸을 때 배경 살짝 강조 */
 .changelog-item[open] {
   background-color: #fafafa !important;
 }
 
-/* 안내문 모달 박스 및 애니메이션 */
 .notice-modal-content {
   background: #ffffff;
   width: 90%;
@@ -889,343 +918,23 @@ nav {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 모바일 전용 반응형 미디어 쿼리 최적화 */
 @media (max-width: 768px) {
   .form-row-2 {
-    grid-template-columns: 1fr; /* 2분할 폼을 1열 세로 레이아웃으로 변경 */
+    grid-template-columns: 1fr;
   }
-
   .row-grid-2, .row-grid-3 {
-    grid-template-columns: 1fr; /* 모달 내부 그리드를 모바일에서 1열로 변경 */
+    grid-template-columns: 1fr;
   }
-
   .main-title {
     font-size: 1.2rem;
   }
-
   .edit-economy-container {
     padding: 12px;
   }
   .modal-content {
     padding: 20px 16px;
   }
-  
   .modal-buttons button {
     flex: 1;
   }
-
-}
-/* ==========================================
-   수출입 및 장비 관리 모달 (추가 및 개선 속성)
-   ========================================== */
-
-/* 모달 컨테이너 - 중앙 정렬 속성 보완 */
-.modal {
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-/* 모달 컨텐츠 - 높이 제한 및 내부 스크롤 추가 */
-.modal-content {
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-/* 읽기 전용 입력창 스타일 */
-.form-group input[readonly] {
-  background-color: #f3f4f6;
-  color: #6b7280;
-  cursor: not-allowed;
-}
-
-/* 폼 2열 배치 (가격 & 수량 등) */
-.form-row {
-  display: flex;
-  gap: 12px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-/* 취소 버튼 스타일 */
-.btn-cancel {
-  background-color: #e5e7eb;
-  color: #374151;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-cancel:hover {
-  background-color: #d1d5db;
-}
-
-/* ==========================================
-   수출입 로그 테이블 & 상태 뱃지
-   ========================================== */
-
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 16px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.9rem;
-}
-
-th, td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-th {
-  background-color: #f9fafb;
-  font-weight: 600;
-  color: #374151;
-}
-
-/* 상태 뱃지 */
-.status-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.status-complete {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-/* ==========================================
-   장비 수입 신청 모달 (Nara System 테마)
-   ========================================== */
-
-/* 1. 모달 전체 오버레이 (배경 어둡게) */
-#importEquipmentModal,
-.modal-overlay {
-  display: none; /* 기본 숨김 */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(15, 23, 42, 0.65); /* 깊은 네이비 톤 오버레이 */
-  backdrop-filter: blur(4px);                 /* 배경 글래스모피즘 효과 */
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-  box-sizing: border-box;
-}
-
-/* 2. 모달 컨테이너 박스 */
-#importEquipmentModal .modal-content,
-.modal-content {
-  background: #ffffff;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 14px;
-  padding: 28px 24px 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* 3. 모달 헤더 제목 */
-.modal-content h3 {
-  margin: 0 0 20px 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1e293b;
-  border-bottom: 2px solid #f1f5f9;
-  padding-bottom: 12px;
-}
-
-/* 4. 폼 라벨 및 입력창 스타일 */
-#import-form label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #475569;
-  margin-top: 12px;
-  margin-bottom: 6px;
-}
-
-#import-form input,
-#import-form select {
-  width: 100%;
-  height: 42px;
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  color: #1e293b;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-#import-form input:focus,
-#import-form select:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* Readonly (자동 채움) 필드 전용 스타일 */
-#import-form input[readonly] {
-  background-color: #f8fafc !important;
-  color: #64748b;
-  border-color: #e2e8f0;
-  cursor: not-allowed;
-}
-
-/* 5. 모달 하단 버튼 영역 */
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.modal-buttons button {
-  height: 40px;
-  padding: 0 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.05s ease;
-}
-
-.modal-buttons button:active {
-  transform: scale(0.98);
-}
-
-/* 수입 제출 버튼 */
-.btn-submit {
-  background-color: #2563eb;
-  color: #ffffff;
-}
-
-.btn-submit:hover {
-  background-color: #1d4ed8;
-}
-
-/* 취소 버튼 */
-.btn-close {
-  background-color: #f1f5f9;
-  color: #475569;
-}
-
-.btn-close:hover {
-  background-color: #e2e8f0;
-}
-
-/* 6. 모바일 반응형 처리 */
-@media (max-width: 600px) {
-  .modal-content {
-    padding: 20px 16px;
-  }
-  
-  .modal-buttons button {
-    flex: 1;
-  }
-}
-/* ==========================================
-   상단 내비게이션바 드롭다운 (경제 통계 / 국방 전력) 스타일
-   ========================================== */
-
-/* 드롭다운 부모 요소 위치 기준 설정 */
-.nav-item.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-/* 드롭다운 메인 카테고리 버튼 디자인 */
-.nav-item.dropdown .drop-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-color, #2d3748);
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding: 10px 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  border-radius: 4px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.nav-item.dropdown:hover .drop-btn {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* 마우스를 올렸을 때 나타나는 하위 메뉴 박스 */
-.nav-item.dropdown .dropdown-content {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: var(--bg-card, #ffffff);
-  min-width: 170px;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
-  border-radius: 8px;
-  z-index: 1000;
-  padding: 8px 0;
-  border: 1px solid var(--border-color, #e2e8f0);
-}
-
-/* 하위 메뉴 내부 항목 (링크) 디자인 */
-.nav-item.dropdown .dropdown-content a {
-  color: var(--text-color, #2d3748) !important;
-  padding: 10px 16px;
-  text-decoration: none;
-  display: block;
-  font-size: 0.9rem;
-  text-align: left;
-  white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-/* 하위 항목 호버 효과 */
-.nav-item.dropdown .dropdown-content a:hover {
-  background-color: var(--primary-color, #007bff);
-  color: #ffffff !important;
-}
-
-/* 마우스 커서가 올라갔을 때 드롭다운 박스 활성화 (열림) */
-.nav-item.dropdown:hover .dropdown-content {
-  display: block !important;
 }
