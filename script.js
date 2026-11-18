@@ -633,7 +633,35 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       isUnion: false
     };
   });
-
+  // 🧩 [추가] GDP, 국방비 등에서 연합(unionData) 항목이 존재할 경우 리스트에 합쳐주는 로직 복원
+  if (typeof unionData !== 'undefined' && Array.isArray(unionData) && (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비' || key === '1인당GDP')) {
+    unionData.forEach(item => {
+      let rawCountry = extractCountryFromRow(item);
+      let cleanedName = cleanName(rawCountry);
+      let rawVal = item[targetScoreKey] !== undefined ? item[targetScoreKey] : item[key];
+      
+      if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '' && String(rawVal).trim() !== 'N/A') {
+        let numVal = parseFloat(String(rawVal).replace(/,/g, ''));
+        if (!isNaN(numVal) && numVal >= 0) {
+          if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
+            numVal *= 10;
+          }
+          // 연합 항목은 순위 계산에서 제외하고 맨 뒤나 별도로 붙거나 정렬에 포함되도록 처리
+          listData.push({
+            country: rawCountry,
+            cleanKey: cleanedName,
+            val: numVal,
+            currentRank: '-',
+            prevRank: null,
+            isWorld: false,
+            isUnion: true // 연합 플래그 활성화
+          });
+        }
+      }
+    });
+    // 값 기준으로 재정렬 필요시 정렬 유지
+    listData.sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+  }
   // 주요 연합 깃발/로고 URL 맵
   const unionFlagMap = new Map([
     ['NATO', 'https://upload.wikimedia.org/wikipedia/commons/3/37/Flag_of_NATO.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
