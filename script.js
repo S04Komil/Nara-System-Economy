@@ -1150,11 +1150,11 @@ async function processGoogleLogin(userData) {
 
 // 3. 구글 로그인 성공 콜백 함수
 window.handleGoogleLogin = function(response) {
-  console.log("1. Google Login 버튼 응답 도착:", response);
+  //console.log("1. Google Login 버튼 응답 도착:", response);
 
   try {
     const responsePayload = parseJwt(response.credential);
-    console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
+    //console.log("2. 디코딩된 Google 토큰 Payload:", responsePayload);
     
     if (!responsePayload.email) {
       alert("구글 계정 이메일 정보를 불러올 수 없습니다.");
@@ -1695,7 +1695,7 @@ window.handleLogout = function() {
   // 사용자가 다른 탭에 갔다 돌아오거나 탭이 다시 활성화될 때 최신 데이터 자동 로드
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-      console.log("🔄 탭 활성화: 최신 데이터를 불러옵니다.");
+      //console.log("🔄 탭 활성화: 최신 데이터를 불러옵니다.");
       if (typeof loadMainData === "function") {
         loadMainData();
       }
@@ -2819,7 +2819,7 @@ async function checkFirebaseChanges() {
       } else {
         // 이전 상태와 현재 상태가 다르면 데이터가 변경된 것으로 판단!
         if (initialDataSnapshots[url] !== textData) {
-          console.log(`🔄 파이어베이스 데이터 변경 감지 (${url})! 2초 후 화면을 최신화합니다.`);
+          //console.log(`🔄 파이어베이스 데이터 변경 감지 (${url})! 2초 후 화면을 최신화합니다.`);
           initialDataSnapshots[url] = textData; // 최신 상태로 갱신
 
           // 💡 서버 동기화 시간을 고려하여 2초(2000ms) 동안 대기한 후 화면 갱신 함수 실행
@@ -2830,7 +2830,7 @@ async function checkFirebaseChanges() {
             if (typeof showMyEconomyView === 'function') {
               showMyEconomyView();
             }
-            console.log("✨ 최신 데이터 반영 완료!");
+            //console.log("✨ 최신 데이터 반영 완료!");
           }, 2000);
           
           return;
@@ -3001,7 +3001,7 @@ async function sendArmyDataToServer() {
   };
 
   // 🔍 콘솔에서 changes 객체에 값이 잘 담기는지 확인
-  console.log("🛡️ [육군 전송 데이터 확인 Payload]:", JSON.stringify(payload, null, 2));
+  //console.log("🛡️ [육군 전송 데이터 확인 Payload]:", JSON.stringify(payload, null, 2));
 
   try {
     const response = await fetch(MIL_API_EDIT, {
@@ -3010,7 +3010,7 @@ async function sendArmyDataToServer() {
     });
     const result = await response.json();
 
-    console.log("🛡️ [육군 서버 응답 Result]:", result);
+    //console.log("🛡️ [육군 서버 응답 Result]:", result);
 
     if (result.success || result.result === "success") {
       alert("육군 전력이 성공적으로 업데이트되었습니다!");
@@ -3394,7 +3394,7 @@ function checkAndFillNavyClassData() {
       countEl.value = matchedShip['대수'] || 0;
     }
 
-    console.log("⚓ 기존 함급 데이터 자동 로드 성공:", searchClassName);
+    //console.log("⚓ 기존 함급 데이터 자동 로드 성공:", searchClassName);
   }
 }
 
@@ -3433,7 +3433,7 @@ async function validateAndSubmitNavyData() {
     changes: payloadData
   };
 
-  console.log("⚓ [해군 전송 데이터 Payload]:", JSON.stringify(payload, null, 2));
+  //console.log("⚓ [해군 전송 데이터 Payload]:", JSON.stringify(payload, null, 2));
 
   try {
     const response = await fetch(MIL_API_EDIT, {
@@ -3442,7 +3442,7 @@ async function validateAndSubmitNavyData() {
     });
     const result = await response.json();
 
-    console.log("⚓ [해군 서버 응답 Result]:", result);
+    //console.log("⚓ [해군 서버 응답 Result]:", result);
 
     if (result.success || result.result === "success") {
       alert("해군 함정 전력이 성공적으로 업데이트되었습니다!");
