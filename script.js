@@ -833,9 +833,9 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     let defRatioDisplay = "-";
     if (rawDefRatio !== undefined && rawDefRatio !== '' && !isNaN(parseFloat(rawDefRatio))) {
       let numRatio = parseFloat(rawDefRatio);
-      defRatioDisplay = `${numRatio.toFixed(2)}%`;
+      defRatioDisplay = `${numRatio.toFixed(2)}%`; // ✔️ 공백 없이 붙이기
     } else if (rawGdp > 0) {
-      defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`;
+      defRatioDisplay = `${((rawDef / rawGdp) * 100).toFixed(2)}%`; // ✔️ 공백 없이 붙이기
     }
     
     const rawEquip = (parseFloat(getPropByCleanKey(item, '총장비구입비')) || 0) * 10;
