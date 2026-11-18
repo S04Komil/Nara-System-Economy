@@ -1068,47 +1068,79 @@ nav {
     height: auto !important;
     min-height: 60px;
     padding: 8px 12px !important;
-    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
     justify-content: space-between !important;
+    flex-wrap: nowrap !important; /* 강제 줄바꿈 방지 */
   }
 
   .logo-container {
     position: static !important;
-    margin-right: auto;
+    margin-right: 4px;
+    flex-shrink: 1;
+    overflow: hidden;
   }
 
   .logo-img {
-    height: 32px !important;
+    height: 28px !important;
     width: auto;
   }
 
+  /* 햄버거 버튼 */
   .mobile-menu-toggle {
     display: flex !important;
-    margin-left: 10px;
-    order: 2;
+    margin-left: 6px;
+    flex-shrink: 0;
   }
 
+  /* 우측 프로필 래퍼가 찌그러지지 않도록 설정 */
   .auth-area-wrapper {
-    order: 1;
-    margin-left: 0;
-    margin-right: 10px;
+    margin-left: auto;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
   }
 
+  /* 📱 모바일 프로필 뱃지 최적화 (이메일 숨김 및 크기 축소) */
   .user-profile-badge {
-    padding: 4px 8px !important;
+    padding: 3px 6px !important;
     font-size: 11px !important;
-    max-width: 180px;
+    max-width: 130px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    gap: 4px !important;
+  }
+  /* 모바일에서는 국가명 뒤의 이메일 주소가 나오지 않도록 숨기거나 짧게 처리 */
+  #user-country-name {
+    max-width: 70px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* 이메일 텍스트가 포함된 경우 숨기기 위한 처리 (선택사항) */
+  .user-profile-badge span {
+    font-size: 11px;
   }
 
   .user-flag-img {
-    width: 16px !important;
-    height: 11px !important;
+    width: 14px !important;
+    height: 10px !important;
   }
 
-  /* 사이드바 메뉴 */
+  /* 로그아웃 버튼 크기 축소 */
+  .btn-logout {
+    padding: 2px 5px !important;
+    font-size: 10px !important;
+    min-height: 24px !important;
+    margin-left: 2px !important;
+  }
+
+  /* 사이드바 메뉴 슬라이드 설정 */
   .nav-menu {
     position: fixed !important;
     top: 0 !important;
@@ -1127,52 +1159,5 @@ nav {
 
   .nav-menu.active {
     right: 0 !important;
-  }
-
-  .mobile-menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
-    border-bottom: 2px solid var(--border-color, #e2e8f0);
-  }
-
-  .mobile-menu-title {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--text-color, #1a202c);
-  }
-
-  .mobile-menu-close {
-    background: none;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: var(--text-color, #666);
-    line-height: 1;
-  }
-
-  .nav-item {
-    width: 100%;
-    margin-bottom: 6px;
-  }
-
-  .nav-item button, 
-  .nav-item .drop-btn {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 12px 14px;
-    font-size: 1rem;
-  }
-
-  .nav-item.dropdown .dropdown-content {
-    position: static;
-    box-shadow: none;
-    border: none;
-    background: transparent;
-    padding-left: 15px;
-    width: 100%;
   }
 }
