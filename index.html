@@ -1022,7 +1022,7 @@
             <tr style="border-bottom: 1px solid var(--border-color, #eee);">
               <td style="padding: 12px; font-weight: bold;">함급명</td>
               <td style="padding: 12px;">
-                <input type="text" id="edit-navy-class-name" placeholder="예: 알레이버크급 배치3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                <input type="text" id="edit-navy-class-name" placeholder="예: 알레이버크급 배치3" onblur="checkAndFillNavyClassData()" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
               </td>
             </tr>
 
@@ -1048,7 +1048,7 @@
               </td>
             </tr>
 
-            <!-- 4행: 특수 시스템 체크형 (이지스, 핵추진, VLS) -->
+            <!-- 4행: 특수 시스템 체크형 -->
             <tr style="border-bottom: 1px solid var(--border-color, #eee);">
               <td style="padding: 12px; font-weight: bold;">특수 체계 여부</td>
               <td style="padding: 12px; display: flex; gap: 20px; align-items: center;">
