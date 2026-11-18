@@ -2987,7 +2987,108 @@ function openArmyEditModal() {
   if (modal) modal.style.display = 'flex';
   // 모달을 열 때 현재 보유수 데이터를 폼에 동기화하는 함수 호출 가능
 }
+function loadAndDisplayMyArmyEquipment() {
+  if (!currentUser || !currentUser.country) {
+    console.warn("로그인된 유저 또는 국가 정보가 없습니다.");
+    return;
+  }
+  
+  const myCountryName = currentUser.country;
+  const cleanMyCountry = cleanName(myCountryName);
+  
+  // mainData에서 현재 로그인한 국가의 데이터를 정확히 찾기
+  const myObj = mainData.find(d => cleanName(d['국가명'] || d['국가']) === cleanMyCountry) || {};
+  
+  // 데이터가 잘 찾아졌는지 콘솔에서 확인 (디버깅용)
+  console.log("현재 내 국가 육군 데이터 매칭:", myObj);
 
+  // 시트의 헤더 명칭("전차(3.5세대)" 등)과 일치하도록 캐시 객체에 담기
+  window.myArmyDataCache = {
+    tank: {
+      '3.5': parseNumber(myObj['전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObj['전차(3세대)'] || 0),
+      '2.0': parseNumber(myObj['전차(2세대)'] || 0),
+      '1.0': parseNumber(myObj['전차(1세대)'] || 0),
+      '0.0': parseNumber(myObj['전차(1세대미만)'] || 0)
+    },
+    lighttank: {
+      '3.5': parseNumber(myObj['경전차(3.5세대)'] || 0),
+      '3.0': parseNumber(myObj['경전차(3세대)'] || 0),
+      '2.0': parseNumber(myObj['경전차(2세대)'] || 0),
+      '1.0': parseNumber(myObj['경전차(1세대)'] || 0),
+      '0.0': parseNumber(myObj['경전차(1세대미만)'] || 0)
+    },
+    vehicle: parseNumber(myObj['차량'] || 0),
+    howitzer: {
+      'under': parseNumber(myObj['견인포(105mm미만)'] || 0),
+      'over': parseNumber(myObj['견인포(105mm이상)'] || 0)
+    },
+    sph: {
+      'under': parseNumber(myObj['자주포(사거리20km미만)'] || 0),
+      'over': parseNumber(myObj['자주포(사거리20km이상)'] || 0)
+    },
+    apc: {
+      'apc': parseNumber(myObj['장갑차(APC)'] || 0),
+      'ifv': parseNumber(myObj['장갑차(IFV)'] || 0)
+    },
+    heli: {
+      'transport': parseNumber(myObj['헬기'] || 0),
+      'attack': parseNumber(myObj['공격헬기'] || 0)
+    }
+  };
+
+  // 모든 종류의 보유수 텍스트 갱신 실행
+  updateArmyCurrentDisplay('tank');
+  updateArmyCurrentDisplay('lighttank');
+  updateArmyCurrentDisplay('vehicle');
+  updateArmyCurrentDisplay('howitzer');
+  updateArmyCurrentDisplay('sph');
+  updateArmyCurrentDisplay('apc');
+  updateArmyCurrentDisplay('heli');
+}
+
+// 드롭다운 변경 또는 초기화 시 보유수 텍스트를 화면에 반영하는 함수
+function updateArmyCurrentDisplay(category) {
+  if (!window.myArmyDataCache) return;
+  const cache = window.myArmyDataCache;
+  let val = 0;
+
+  if (category === 'tank') {
+    const gen = document.getElementById('select-tank-gen')?.value || '3.5';
+    val = cache.tank[gen] || 0;
+    const el = document.getElementById('cur-val-tank');
+    if (el) el.innerText = val;
+  } else if (category === 'lighttank') {
+    const gen = document.getElementById('select-lighttank-gen')?.value || '3.5';
+    val = cache.lighttank[gen] || 0;
+    const el = document.getElementById('cur-val-lighttank');
+    if (el) el.innerText = val;
+  } else if (category === 'vehicle') {
+    val = cache.vehicle || 0;
+    const el = document.getElementById('cur-val-vehicle');
+    if (el) el.innerText = val;
+  } else if (category === 'howitzer') {
+    const type = document.getElementById('select-howitzer-type')?.value || 'under';
+    val = cache.howitzer[type] || 0;
+    const el = document.getElementById('cur-val-howitzer');
+    if (el) el.innerText = val;
+  } else if (category === 'sph') {
+    const type = document.getElementById('select-sph-type')?.value || 'under';
+    val = cache.sph[type] || 0;
+    const el = document.getElementById('cur-val-sph');
+    if (el) el.innerText = val;
+  } else if (category === 'apc') {
+    const type = document.getElementById('select-apc-type')?.value || 'apc';
+    val = cache.apc[type] || 0;
+    const el = document.getElementById('cur-val-apc');
+    if (el) el.innerText = val;
+  } else if (category === 'heli') {
+    const type = document.getElementById('select-heli-type')?.value || 'transport';
+    val = cache.heli[type] || 0;
+    const el = document.getElementById('cur-val-heli');
+    if (el) el.innerText = val;
+  }
+}
 function closeArmyEditModal() {
   const modal = document.getElementById('army-edit-modal');
   if (modal) modal.style.display = 'none';
