@@ -494,28 +494,28 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   const listEl = document.getElementById('rank-list');
   listEl.innerHTML = '';
 
-  // 💡 탭별 데이터 소스, 점수 컬럼 키, 시계열 데이터 및 기준 총합 분기 설정
+  // 1. 탭별 데이터 소스, 점수 컬럼 키, 시계열 데이터 및 기준 총합 분기 설정
   let rawDataSource = mainData;
   let targetScoreKey = key;
   let targetSeriesData = [];
   let totalBaseVal = 0;
 
   if (key === '육군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
-    targetScoreKey = '육군점수';             // C열
-    targetSeriesData = globalArmyChangeData;  // 육군 순위 변화 시계열
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (C열 육군점수)
+    targetScoreKey = '육군점수';
+    targetSeriesData = globalArmyChangeData;
   } else if (key === '공군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
-    targetScoreKey = '공군점수';             // D열
-    targetSeriesData = globalAirChangeData;   // 공군 순위 변화 시계열
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (D열 공군점수)
+    targetScoreKey = '공군점수';
+    targetSeriesData = globalAirChangeData;
   } else if (key === '해군') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
-    targetScoreKey = '해군점수';             // E열
-    targetSeriesData = globalNavyChangeData;  // 해군 순위 변화 시계열
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (E열 해군점수)
+    targetScoreKey = '해군점수';
+    targetSeriesData = globalNavyChangeData;
   } else if (key === '군사력종합' || key === '종합군사력') {
-    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 데이터 활용
-    targetScoreKey = '총점수';               // F열
-    targetSeriesData = globalMilitaryChangeData; // 종합 군사력 순위 변화 시계열
+    rawDataSource = globalTotalMilitaryData; // 종합 군사력 시트 (F열 총점수)
+    targetScoreKey = '총점수';
+    targetSeriesData = globalMilitaryChangeData;
   } else if (key === 'GDP(10억달러)' || key === 'GDP') {
     targetSeriesData = globalGdpData;
     totalBaseVal = worldTotals.gdp;
@@ -528,7 +528,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     totalBaseVal = worldTotals.pop;
   }
 
-  // 💡 현재 점수 리스트 생성 (군사력 부문은 종합 군사력 시트에서, 나머지는 mainData에서 추출)
+  // 2. 현재 연도 기준 점수 리스트 생성
   let currentList = rawDataSource.map(item => {
     let rawCountry = extractCountryFromRow(item);
     let cleanedName = cleanName(rawCountry);
@@ -554,6 +554,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
   const prevRankMap = new Map();
 
+  // 3. 전년도 순위 비교 맵 생성 (시계열 데이터 연동)
   if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
     const yearKeys = getSortedYearKeys(targetSeriesData);
 
@@ -582,7 +583,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
             if (cleanedName === '전세계') return null;
 
-            // 💡 전년도 데이터 조회 시에도 targetScoreKey가 있다면 우선적으로 해당 부문 점수 컬럼을 참조
             let rawVal = item[prevYearKey];
             if ((rawVal === undefined || rawVal === null || String(rawVal).trim() === '') && targetScoreKey) {
               rawVal = item[targetScoreKey];
@@ -708,6 +708,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   const maxValInList = listData.length > 0 ? listData[0].val : 1;
   let rankCounter = 1;
 
+  // 4. 화면 리스트 렌더링 파트 (점수 단위 및 바 그래프 지원)
   listData.forEach((item) => {
     let formattedVal = "";
     if (unitType === '달러') {
@@ -755,10 +756,10 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
 
     let percent = 0;
-    if (key === '1인당GDP') {
+    if (unitType === '점수' || key === '1인당GDP' || totalBaseVal === 0) {
       percent = (item.val / maxValInList) * 100;
     } else {
-      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
+      percent = (item.val / totalBaseVal) * 100;
     }
     percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
 
