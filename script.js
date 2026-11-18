@@ -501,48 +501,18 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   const listEl = document.getElementById('rank-list');
   listEl.innerHTML = '';
 
-  // 1. 탭별 데이터 소스, 점수 컬럼 키, 시계열 데이터 및 기준 총합 분기 설정
-  let rawDataSource = mainData;
-  let targetScoreKey = key;
-  let targetSeriesData = [];
   let totalBaseVal = 0;
+  if (key === 'GDP(10억달러)' || key === 'GDP') totalBaseVal = worldTotals.gdp;
+  else if (key === '인구(만명)' || key === '인구') totalBaseVal = worldTotals.pop;
+  else if (key === '국방비(10억달러)' || key === '국방비') totalBaseVal = worldTotals.def;
 
-  if (key === '육군') {
-    rawDataSource = globalTotalMilitaryData; // C열 육군점수
-    targetScoreKey = '육군점수';
-    targetSeriesData = globalArmyChangeData;
-  } else if (key === '공군') {
-    rawDataSource = globalTotalMilitaryData; // D열 공군점수
-    targetScoreKey = '공군점수';
-    targetSeriesData = globalAirChangeData;
-  } else if (key === '해군') {
-    rawDataSource = globalTotalMilitaryData; // E열 해군점수
-    targetScoreKey = '해군점수';
-    targetSeriesData = globalNavyChangeData;
-  } else if (key === '군사력종합' || key === '종합군사력' || key === '총점수') {
-    rawDataSource = globalTotalMilitaryData; // 💡 F열 '총점수'로 정확히 매핑!
-    targetScoreKey = '총점수';
-    targetSeriesData = globalMilitaryChangeData;
-  } else if (key === 'GDP(10억달러)' || key === 'GDP') {
-    targetSeriesData = globalGdpData;
-    totalBaseVal = worldTotals.gdp;
-  } else if (key === '국방비(10억달러)' || key === '국방비') {
-    targetSeriesData = globalDefData;
-    totalBaseVal = worldTotals.def;
-  } else if (key === '1인당GDP') {
-    targetSeriesData = globalCapData;
-  } else if (key === '인구(만명)' || key === '인구') {
-    totalBaseVal = worldTotals.pop;
-  }
-
-  // 2. 현재 연도 기준 점수 리스트 생성 (listData의 재료가 됨)
-  let currentList = rawDataSource.map(item => {
+  let currentList = mainData.map(item => {
     let rawCountry = extractCountryFromRow(item);
     let cleanedName = cleanName(rawCountry);
 
     if (cleanedName === '전세계') return null;
 
-    let rawVal = item[targetScoreKey] !== undefined ? item[targetScoreKey] : item[key];
+    let rawVal = item[key];
     if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
       return null;
     }
@@ -559,9 +529,13 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   .filter(item => item !== null && item.country !== '')
   .sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
 
+  let targetSeriesData = [];
+  if (key === 'GDP(10억달러)' || key === 'GDP') targetSeriesData = globalGdpData;
+  else if (key === '국방비(10억달러)' || key === '국방비') targetSeriesData = globalDefData;
+  else if (key === '1인당GDP') targetSeriesData = globalCapData;
+
   const prevRankMap = new Map();
 
-  // 3. 전년도 순위 비교 맵 생성 (시계열 데이터 연동)
   if (key !== '인구(만명)' && key !== '인구' && targetSeriesData && targetSeriesData.length > 0) {
     const yearKeys = getSortedYearKeys(targetSeriesData);
 
@@ -572,7 +546,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
 
     if (validYearKeys.length > 0) {
       const exactIdx = validYearKeys.findIndex(k => parseInt(k.replace(/[^\d]/g, ''), 10) === currentSheetYear);
-      
+
       let prevYearKey = null;
       if (exactIdx > 0) {
         prevYearKey = validYearKeys[exactIdx - 1];
@@ -591,10 +565,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
             if (cleanedName === '전세계') return null;
 
             let rawVal = item[prevYearKey];
-            if ((rawVal === undefined || rawVal === null || String(rawVal).trim() === '') && targetScoreKey) {
-              rawVal = item[targetScoreKey];
-            }
-
             if (rawVal === undefined || rawVal === null || String(rawVal).trim() === '' || String(rawVal).trim() === 'N/A') {
               return null;
             }
@@ -618,7 +588,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
   }
 
-  // 💡 군사력 데이터가 온전히 담긴 listData 완성
   let listData = currentList.map((item, idx) => {
     const currentRank = idx + 1;
     const prevRank = prevRankMap.get(item.cleanKey);
@@ -633,35 +602,7 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       isUnion: false
     };
   });
-  // 🧩 [추가] GDP, 국방비 등에서 연합(unionData) 항목이 존재할 경우 리스트에 합쳐주는 로직 복원
-  if (typeof unionData !== 'undefined' && Array.isArray(unionData) && (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비' || key === '1인당GDP')) {
-    unionData.forEach(item => {
-      let rawCountry = extractCountryFromRow(item);
-      let cleanedName = cleanName(rawCountry);
-      let rawVal = item[targetScoreKey] !== undefined ? item[targetScoreKey] : item[key];
-      
-      if (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '' && String(rawVal).trim() !== 'N/A') {
-        let numVal = parseFloat(String(rawVal).replace(/,/g, ''));
-        if (!isNaN(numVal) && numVal >= 0) {
-          if (key === 'GDP(10억달러)' || key === '국방비(10억달러)' || key === 'GDP' || key === '국방비') {
-            numVal *= 10;
-          }
-          // 연합 항목은 순위 계산에서 제외하고 맨 뒤나 별도로 붙거나 정렬에 포함되도록 처리
-          listData.push({
-            country: rawCountry,
-            cleanKey: cleanedName,
-            val: numVal,
-            currentRank: '-',
-            prevRank: null,
-            isWorld: false,
-            isUnion: true // 연합 플래그 활성화
-          });
-        }
-      }
-    });
-    // 값 기준으로 재정렬 필요시 정렬 유지
-    listData.sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
-  }
+
   // 주요 연합 깃발/로고 URL 맵
   const unionFlagMap = new Map([
     ['NATO', 'https://upload.wikimedia.org/wikipedia/commons/3/37/Flag_of_NATO.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original'],
@@ -671,10 +612,79 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     ['SCO', 'https://upload.wikimedia.org/wikipedia/ko/7/7b/SCO.svg?utm_source=ko.wikipedia.org&utm_campaign=index&utm_content=original']
   ]);
 
+  // === 연합 데이터 집계 및 계산 (과거 원본 로직 복원) ===
+  const isGdpKey = (key === 'GDP(10억달러)' || key === 'GDP');
+  const isDefKey = (key === '국방비(10억달러)' || key === '국방비');
+  const isPerCapGdpKey = (key === '1인당GDP');
+
+  if (isGdpKey || isDefKey || isPerCapGdpKey) {
+    const unionTotals = new Map();
+
+    mainData.forEach(item => {
+      const rawUnionStr = String(item['소속연합'] || item['연합'] || '').trim();
+      if (!rawUnionStr || rawUnionStr === '-' || rawUnionStr === 'N/A' || rawUnionStr === '무소속') return;
+
+      const unions = rawUnionStr.split(',').map(u => u.trim()).filter(Boolean);
+
+      const gdpVal = parseNumber(item['GDP'] || item['GDP(10억달러)']) * 10;
+      const defVal = parseNumber(item['국방비'] || item['국방비(10억달러)']) * 10;
+      const popVal = parseNumber(item['인구'] || item['인구(만명)']) * 10000;
+
+      unions.forEach(unionName => {
+        if (!unionTotals.has(unionName)) {
+          unionTotals.set(unionName, { gdp: 0, def: 0, pop: 0 });
+        }
+
+        const uData = unionTotals.get(unionName);
+        uData.gdp += gdpVal;
+        uData.def += defVal;
+        uData.pop += popVal;
+      });
+    });
+
+    unionTotals.forEach((uData, unionName) => {
+      let unionVal = 0;
+
+      if (isGdpKey) {
+        unionVal = uData.gdp;
+      } else if (isDefKey) {
+        unionVal = uData.def;
+      } else if (isPerCapGdpKey) {
+        unionVal = uData.pop > 0 ? (uData.gdp * 100000000) / uData.pop : 0;
+      }
+
+      if (unionVal > 0) {
+        listData.push({
+          country: `[연합] ${unionName}`,
+          cleanKey: unionName,
+          val: unionVal,
+          currentRank: null,
+          prevRank: null,
+          isWorld: false,
+          isUnion: true
+        });
+      }
+    });
+
+    listData.sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+  }
+
+  if (key === '1인당GDP') {
+    listData.push({
+      country: '전세계',
+      cleanKey: '전세계',
+      val: worldTotals.cap,
+      currentRank: null,
+      prevRank: null,
+      isWorld: true,
+      isUnion: false
+    });
+    listData.sort((a, b) => b.val - a.val || a.cleanKey.localeCompare(b.cleanKey));
+  }
+
   const maxValInList = listData.length > 0 ? listData[0].val : 1;
   let rankCounter = 1;
 
-  // 4. 화면 리스트 렌더링 파트 (군사력 '점수' 단위 및 바 그래프 지원)
   listData.forEach((item) => {
     let formattedVal = "";
     if (unitType === '달러') {
@@ -683,8 +693,6 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
       formattedVal = formatPopulation(item.val);
     } else if (unitType === '달러_직접') {
       formattedVal = `${Math.round(item.val).toLocaleString()} 달러`;
-    } else if (unitType === '점수') {
-      formattedVal = `${Math.round(item.val).toLocaleString()} 점`;
     }
 
     let rankDiffHtml = "";
@@ -722,16 +730,16 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
     }
 
     let percent = 0;
-    if (unitType === '점수' || key === '1인당GDP' || totalBaseVal === 0) {
+    if (key === '1인당GDP') {
       percent = (item.val / maxValInList) * 100;
     } else {
-      percent = (item.val / totalBaseVal) * 100;
+      percent = totalBaseVal > 0 ? (item.val / totalBaseVal) * 100 : 0;
     }
     percent = Math.min(Math.max(percent, 0), 100).toFixed(1);
 
     const li = document.createElement('li');
     li.className = `rank-item ${item.isWorld ? 'world-item' : ''} ${item.isUnion ? 'union-item' : ''}`;
-    
+
     const countryClickableAttr = (item.isWorld || item.isUnion) ? '' : `onclick="openCountryModal('${item.cleanKey}')" style="cursor: pointer;"`;
 
     li.innerHTML = `
