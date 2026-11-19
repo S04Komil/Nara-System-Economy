@@ -1298,3 +1298,45 @@ nav {
     left: auto !important;
     z-index: 2500 !important;
   }
+}
+/* ==========================================
+   🖥️ PC 전용: 네비게이션 메뉴 전체 가운데 정렬
+   ========================================== */
+@media (min-width: 769px) {
+  .main-navbar,
+  nav {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .logo-container {
+    margin-right: 0 !important;
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+
+  .nav-menu,
+  .desktop-nav-menu {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #nav-my-country-item,
+  #auth-nav-area,
+  #user-profile-area {
+    margin-left: 0 !important;
+  }
+
+  .main-navbar::after,
+  nav::after {
+    content: "";
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+}
