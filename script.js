@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     };
 
-    setMilitaryCard('top-total-military-country', 'top-total-military-val', '총점수');
+    setMilitaryCard('top-total-military-country', 'top-total-military-val', '군사력종합');
     setMilitaryCard('top-army-country', 'top-army-val', '육군점수');
     setMilitaryCard('top-air-country', 'top-air-val', '공군점수');
     setMilitaryCard('top-navy-country', 'top-navy-val', '해군점수');
