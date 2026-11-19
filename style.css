@@ -1340,3 +1340,16 @@ nav {
     flex-shrink: 0;
   }
 }
+/* PC 전용 드롭다운: 모바일 화면에서는 강제 숨김 */
+@media (max-width: 768px) {
+  .pc-profile-dropdown {
+    display: none !important;
+  }
+}
+
+/* 모바일 전용 드롭다운: PC 화면에서는 강제 숨김 */
+@media (min-width: 769px) {
+  .mobile-profile-dropdown {
+    display: none !important;
+  }
+}
