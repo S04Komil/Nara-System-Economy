@@ -1519,9 +1519,17 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
       const result = await response.json();
 
       if (result.success || result.result === 'success') {
-        alert('자국 경제 설정이 정상적으로 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.');
-        showMyEconomyView();
-        checkFirebaseChanges();
+        alert('자국 경제 설정이 정상적으로 저장되었습니다. \n사이트에 반영하기까지 약간의 시간이 필요합니다.');
+
+        setTimeout(() => {
+          if (typeof showMyEconomyView === 'function') {
+            showMyEconomyView();
+          }
+          if (typeof checkFirebaseChanges === 'function') {
+            checkFirebaseChanges();
+          }
+          loadMainData();
+        }, 3000);
       } else {
         alert('저장 실패: ' + (result.message || '알 수 없는 오류'));
       }
@@ -1667,11 +1675,21 @@ function renderMyInvestments(investments) {
 
       if (result.result === "success" || result.success) {
         alert("해외투자 정보가 저장되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
-        showMyEconomyView();
         if (typeof closeInvestmentModal === "function") {
           closeInvestmentModal();
         }
-        checkFirebaseChanges();
+
+        setTimeout(() => {
+          if (typeof showMyEconomyView === "function") {
+            showMyEconomyView();
+          }
+          if (typeof checkFirebaseChanges === "function") {
+            checkFirebaseChanges();
+          }
+          if (typeof loadMainData === "function") {
+            loadMainData();
+          }
+        }, 3000);
       } else {
         alert("저장 실패: " + (result.message || "오류가 발생했습니다."));
       }
@@ -1772,6 +1790,7 @@ function closeInvestmentModal() {
       if (result.result === "success") {
         alert("성공적으로 삭제되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
         checkFirebaseChanges();
+        loadMainData();
       } else {
         alert("삭제 실패: " + result.message);
       }
@@ -1996,6 +2015,8 @@ async function submitRemittance() {
       
       if (typeof loadData === "function") loadData();
       checkFirebaseChanges();
+
+      loadMainData();
     } else {
       alert("송금 실패: " + (result.message || "오류가 발생했습니다."));
     }
@@ -2537,6 +2558,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
       if (typeof loadImportLogsData === "function") loadImportLogsData();
       if (typeof loadMainData === "function") loadMainData();
       checkFirebaseChanges();
+      loadMainData();
     } else {
       alert("처리 실패: " + (result.message || "알 수 없는 오류"));
     }
@@ -2662,6 +2684,7 @@ if (equipmentForm) {
         equipmentForm.reset();
         closeEquipmentModal();
         checkFirebaseChanges();
+        loadMainData();
         if (typeof loadEquipmentData === "function") loadEquipmentData();
       } else {
         alert("장비 등록 실패: " + (result.message || "알 수 없는 오류"));
@@ -2734,6 +2757,7 @@ if (importForm) {
         if (typeof loadImportLogsData === "function") loadImportLogsData();
         if (typeof loadMainData === "function") loadMainData();
         checkFirebaseChanges();
+        loadMainData();
       } else {
         alert("처리 실패: " + (result.message || "알 수 없는 오류"));
       }
@@ -2885,6 +2909,7 @@ async function deleteMyEquipment(name) {
         await loadEquipmentData();
         renderMyEquipmentTable();
         checkFirebaseChanges();
+        loadMainData();
       }
     } else {
       alert("삭제 실패: " + (result.message || "알 수 없는 오류"));
@@ -3149,8 +3174,19 @@ async function sendArmyDataToServer() {
     if (result.success || result.result === "success") {
       alert("육군 전력이 성공적으로 업데이트되었습니다!");
       closeArmyEditModal();
-      showMyEconomyView();
-      checkFirebaseChanges();
+
+      setTimeout(() => {
+        if (typeof showMyEconomyView === "function") {
+          showMyEconomyView();
+        }
+        if (typeof checkFirebaseChanges === "function") {
+          checkFirebaseChanges();
+        }
+        if (typeof loadAndDisplayMyArmyEquipment === "function") {
+          loadAndDisplayMyArmyEquipment();
+        }
+        loadMainData();
+      }, 3000);
     } else {
       alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
     }
@@ -3441,8 +3477,19 @@ async function sendAirDataToServer(items) {
     if (result.success || result.result === "success") {
       alert("공군 전력이 성공적으로 업데이트되었습니다!");
       closeAirEditModal();
-      showMyEconomyView();
-      checkFirebaseChanges();
+
+      setTimeout(() => {
+        if (typeof showMyEconomyView === "function") {
+          showMyEconomyView();
+        }
+        if (typeof checkFirebaseChanges === "function") {
+          checkFirebaseChanges();
+        }
+        if (typeof loadAndDisplayMyAirEquipment === "function") {
+          loadAndDisplayMyAirEquipment();
+        }
+        loadMainData();
+      }, 3000);
     } else {
       alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
     }
@@ -3581,8 +3628,12 @@ async function validateAndSubmitNavyData() {
     if (result.success || result.result === "success") {
       alert("해군 함정 전력이 성공적으로 업데이트되었습니다!");
       closeNavyEditModal();
-      if (typeof showMyEconomyView === 'function') showMyEconomyView();
-      if (typeof checkFirebaseChanges === 'function') checkFirebaseChanges();
+
+      setTimeout(() => {
+        if (typeof showMyEconomyView === 'function') showMyEconomyView();
+        if (typeof checkFirebaseChanges === 'function') checkFirebaseChanges();
+        loadMainData();
+      }, 3000);
     } else {
       alert("업데이트 실패: " + (result.message || "알 수 없는 오류"));
     }
