@@ -1033,3 +1033,134 @@ nav {
 [data-theme="dark"] .rank-item.world-item .rank-bar {
   background: #2b6cb0 !important; /* 전세계 항목 바도 어두운 블루 톤으로 조화롭게 보정 */
 }
+
+/* ==========================================
+   🏳️ 국기 프로필 3행 드롭다운 메뉴
+   ========================================== */
+.user-flag-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--border-color, #e2e8f0) !important;
+  background-color: var(--card-bg, #ffffff) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-flag-btn:hover {
+  border-color: var(--primary-color, #2b6cb0) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.user-flag-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.user-flag-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf2f7;
+  font-size: 14px;
+}
+
+.flag-caret {
+  font-size: 11px;
+  color: #718096;
+}
+
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  max-width: 300px;
+  background-color: var(--card-bg, #ffffff);
+  color: var(--text-color, #2d3748);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  z-index: 2000;
+  padding: 8px;
+  text-align: left;
+  animation: fadeIn 0.12s ease-out;
+}
+
+/* 1행: 국기 + 국가명 */
+.profile-row-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.profile-row-flag {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.profile-row-country-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2행: 이메일 */
+.profile-row-email {
+  padding: 6px 10px;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #718096;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color, #e2e8f0);
+  margin: 4px 0;
+}
+
+/* 3행: 로그아웃 */
+.profile-row-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  padding: 7px 10px !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: #e53e3e !important;
+}
+
+.profile-row-logout:hover {
+  background-color: rgba(229, 62, 62, 0.12) !important;
+}
+
+[data-theme="dark"] .profile-dropdown-menu {
+  background-color: #1e1e1e;
+  border-color: #2d3748;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="dark"] .profile-row-email {
+  color: #a0aec0;
+}
