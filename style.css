@@ -1353,3 +1353,9 @@ nav {
     display: none !important;
   }
 }
+/* 다크모드 클래스가 body.dark-mode 라고 가정한 예시 */
+body.dark-mode h2,
+body.dark-mode .main-title,
+body.dark-mode .section-title {
+  color: var(--text-color, #f1f5f9);
+}
