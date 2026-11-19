@@ -3706,3 +3706,4 @@ function syncMobileDrawerAuth() {
 }
   
 });
+});
