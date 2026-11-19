@@ -3559,47 +3559,59 @@ window.checkAndFillNavyClassData = checkAndFillNavyClassData;
 window.validateAndSubmitNavyData = validateAndSubmitNavyData;
 
 function syncDropdownThemeLabel() {
-  const themeBtn = document.getElementById('dropdown-theme-toggle');
+  const themeBtn = document.getElementById('dropdown-theme-toggle-mobile');
   if (!themeBtn) return;
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   themeBtn.innerText = isDark ? '☀️ 라이트모드' : '🌙 다크모드';
 }
+function getProfileDropdownEl(targetType) {
+  if (targetType === 'pc') return document.getElementById('user-profile-dropdown-pc');
+  if (targetType === 'mobile') return document.getElementById('user-profile-dropdown-mobile');
+  return window.innerWidth <= 768
+    ? document.getElementById('user-profile-dropdown-mobile')
+    : document.getElementById('user-profile-dropdown-pc');
+}
 
-window.toggleUserProfileDropdown = function(event) {
+window.toggleUserProfileDropdown = function(event, targetType) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
 
-  const dropdown = document.getElementById('user-profile-dropdown');
+  const pcDropdown = document.getElementById('user-profile-dropdown-pc');
+  const mobileDropdown = document.getElementById('user-profile-dropdown-mobile');
+  const dropdown = getProfileDropdownEl(targetType);
   if (!dropdown) return;
 
   const isOpen = dropdown.style.display === 'block';
-  if (isOpen) {
-    dropdown.style.display = 'none';
-    return;
-  }
+  if (pcDropdown) pcDropdown.style.display = 'none';
+  if (mobileDropdown) mobileDropdown.style.display = 'none';
+
+  if (isOpen) return;
 
   if (currentUser) {
     const countryName = currentUser.country || '-';
     const flagUrl = flagMap.get(cleanName(countryName)) || '';
+    const emailText = currentUser.email || currentUser.username || '-';
 
-    const ddFlag = document.getElementById('dropdown-user-flag');
-    if (ddFlag) {
-      if (flagUrl) {
-        ddFlag.src = flagUrl;
-        ddFlag.alt = `${countryName} 국기`;
-        ddFlag.style.display = 'inline-block';
-      } else {
-        ddFlag.style.display = 'none';
+    ['pc', 'mobile'].forEach(mode => {
+      const ddFlag = document.getElementById(`dropdown-user-flag-${mode}`);
+      if (ddFlag) {
+        if (flagUrl) {
+          ddFlag.src = flagUrl;
+          ddFlag.alt = `${countryName} 국기`;
+          ddFlag.style.display = 'inline-block';
+        } else {
+          ddFlag.style.display = 'none';
+        }
       }
-    }
 
-    const ddCountry = document.getElementById('dropdown-user-country');
-    if (ddCountry) ddCountry.innerText = countryName;
+      const ddCountry = document.getElementById(`dropdown-user-country-${mode}`);
+      if (ddCountry) ddCountry.innerText = countryName;
 
-    const ddEmail = document.getElementById('dropdown-user-email');
-    if (ddEmail) ddEmail.innerText = currentUser.email || currentUser.username || '-';
+      const ddEmail = document.getElementById(`dropdown-user-email-${mode}`);
+      if (ddEmail) ddEmail.innerText = emailText;
+    });
   }
 
   syncDropdownThemeLabel();
@@ -3608,9 +3620,12 @@ window.toggleUserProfileDropdown = function(event) {
   //드롭다운 리스너
   // document 클릭 닫기 리스너에 모바일 트리거 추가
   document.addEventListener('click', function(e) {
-    const dropdown = document.getElementById('user-profile-dropdown');
-    const pcTrigger = document.getElementById('user-flag-trigger');
-    const mobileTrigger = document.getElementById('mobile-flag-trigger');
+  const pcDropdown = document.getElementById('user-profile-dropdown-pc');
+  const mobileDropdown = document.getElementById('user-profile-dropdown-mobile');
+  const pcTrigger = document.getElementById('user-flag-trigger');
+  const mobileTrigger = document.getElementById('mobile-flag-trigger');
+
+  [pcDropdown, mobileDropdown].forEach(dropdown => {
     if (dropdown && dropdown.style.display === 'block') {
       const clickedInsideDropdown = dropdown.contains(e.target);
       const clickedPcTrigger = pcTrigger && pcTrigger.contains(e.target);
