@@ -15,14 +15,20 @@
 <body>
 
   <!-- 상단 네비게이션 메뉴 -->
-  <nav>
+<nav class="main-navbar">
+  <!-- 모바일 전용: 선 3개(햄버거) 버튼 -->
+  <button type="button" id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileDrawer(event)" aria-label="메뉴 열기">
+    <span id="mobile-menu-icon">☰</span>
+  </button>
+
   <div class="logo-container" onclick="showMainView()">
     <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
     <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
-  </div> 
+  </div>
 
-  <ul class="nav-menu">
-    
+  <!-- 데스크톱 전용 가로 메뉴 (모바일에서는 숨김) -->
+  <ul class="nav-menu desktop-nav-menu">
+
     <!-- 💰 [경제 통계 드롭다운] -->
     <li class="nav-item dropdown" style="position: relative; display: inline-block;">
       <a href="javascript:void(0);" class="drop-btn" style="background:transparent; border:none; color:inherit; font-weight:500; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:4px;">💰 경제 통계 ▾</a>
@@ -47,24 +53,24 @@
     </li>
 
     <!-- 로그인 전용: 자국 경제 탭 -->
-    <li class="nav-item" id="nav-my-country-item" style="display: none;"> 
-      <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button> 
-    </li> 
+    <li class="nav-item" id="nav-my-country-item" style="display: none;">
+      <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button>
+    </li>
 
-    <!-- 패치노트 버튼 --> 
-    <li class="nav-item"> 
-      <button id="btn-nav-changelog" onclick="openChangelogModal()">패치노트 📢</button> 
-    </li> 
+    <!-- 패치노트 버튼 -->
+    <li class="nav-item">
+      <button id="btn-nav-changelog" onclick="openChangelogModal()">패치노트 📢</button>
+    </li>
 
-    <!-- 🌙 다크모드 토글 버튼 --> 
-    <li class="nav-item"> 
-      <button id="theme-toggle-btn" onclick="toggleDarkMode()">🌙 다크모드</button> 
-    </li> 
+    <!-- 🌙 다크모드 토글 버튼 -->
+    <li class="nav-item">
+      <button id="theme-toggle-btn" onclick="toggleDarkMode()">🌙 다크모드</button>
+    </li>
 
-    <!-- 로그인 버튼 구역 --> 
-    <li class="nav-item" id="auth-nav-area"> 
-      <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button> 
-    </li> 
+    <!-- 로그인 버튼 구역 -->
+    <li class="nav-item" id="auth-nav-area">
+      <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
+    </li>
 
     <!-- 로그인 완료 후 유저 프로필 구역 (국기 클릭 시 3행 드롭다운) -->
     <li class="nav-item" id="user-profile-area" style="display: none; position: relative;">
@@ -96,7 +102,58 @@
       </div>
     </li>
   </ul>
+
+  <!-- 모바일 우측 간편 영역 (로그인 버튼 또는 국기 프로필) -->
+  <div class="mobile-right-actions">
+    <div id="mobile-auth-area">
+      <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+    </div>
+    <div id="mobile-user-area" style="display: none; position: relative;">
+      <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
+        <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
+        <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
+        <span class="flag-caret">▾</span>
+      </button>
+    </div>
+  </div>
 </nav>
+
+<!-- 모바일 햄버거(☰) 클릭 시 나타나는 2단 메뉴 드로어 -->
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" style="display: none;" onclick="closeMobileDrawer()"></div>
+<aside id="mobile-nav-drawer" class="mobile-nav-drawer" style="display: none;" onclick="event.stopPropagation()">
+  <div class="mobile-drawer-body">
+    <!-- 좌측 대메뉴 탭 -->
+    <div class="drawer-left-tabs">
+      <button type="button" class="drawer-tab-btn active" data-tab="economy" onclick="switchDrawerTab('economy', this)">경제 통계</button>
+      <button type="button" class="drawer-tab-btn" data-tab="military" onclick="switchDrawerTab('military', this)">국방 전력</button>
+      <button type="button" class="drawer-tab-btn" data-tab="menu" onclick="switchDrawerTab('menu', this)">기타 메뉴</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 경제 통계 -->
+    <div class="drawer-right-panel" id="drawer-panel-economy">
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('GDP', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn'))">GDP 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('국방비', '국방비 순위 (전체)', '달러', 'nav-def-btn'))">국방비 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('인구', '인구 순위 (전체)', '명', 'nav-pop-btn'))">인구 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn'))">1인당 GDP 순위</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 국방 전력 -->
+    <div class="drawer-right-panel" id="drawer-panel-military" style="display: none;">
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('군사력종합', '전체 군사력 순위 (종합)', '점수', 'nav-total-military-btn'))">전체 군사력 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('육군', '육군 전력 순위 (전체)', '점수', 'nav-army-btn'))">육군 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('공군', '공군 전력 순위 (전체)', '점수', 'nav-air-btn'))">공군 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('해군', '해군 전력 순위 (전체)', '점수', 'nav-navy-btn'))">해군 순위</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 기타 메뉴 -->
+    <div class="drawer-right-panel" id="drawer-panel-menu" style="display: none;">
+      <button type="button" class="drawer-link-item" id="drawer-my-country-btn" style="display: none;" onclick="drawerAction(() => switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country'))">자국 경제</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => openChangelogModal())">패치노트 📢</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => toggleDarkMode())">🌙 다크모드</button>
+      <button type="button" class="drawer-link-item danger" id="drawer-logout-btn" style="display: none;" onclick="drawerAction(() => handleLogout())">로그아웃</button>
+    </div>
+  </div>
+</aside>
 
   <div class="container">
     <div id="loading">데이터를 불러오는 중입니다...</div>
