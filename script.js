@@ -3706,4 +3706,72 @@ function syncMobileDrawerAuth() {
 }
   
 });
+  function showSignedInputNotice(el, message) {
+  if (!el) return;
+
+  // 입력칸 바로 뒤에 경고 메시지 엘리먼트 생성 또는 재사용
+  let noticeEl = el.parentElement ? el.parentElement.querySelector('.signed-input-error') : null;
+  if (!noticeEl && el.parentElement) {
+    noticeEl = document.createElement('div');
+    noticeEl.className = 'signed-input-error';
+    noticeEl.style.color = '#dc2626';
+    noticeEl.style.fontSize = '0.78rem';
+    noticeEl.style.marginTop = '4px';
+    noticeEl.style.fontWeight = '600';
+    el.parentElement.appendChild(noticeEl);
+  }
+
+  if (noticeEl) {
+    noticeEl.textContent = message;
+    noticeEl.style.display = 'block';
+  }
+
+  // 기존 프로젝트에 토스트/알림 함수가 있으면 함께 호출 (없으면 무시)
+  if (typeof showToast === 'function') {
+    showToast(message, 'error');
+  }
+}
+
+function clearSignedInputNotice(el) {
+  if (!el || !el.parentElement) return;
+  const noticeEl = el.parentElement.querySelector('.signed-input-error');
+  if (noticeEl) {
+    noticeEl.textContent = '';
+    noticeEl.style.display = 'none';
+  }
+}
+
+function sanitizeSignedIntegerInput(el) {
+  if (!el) return;
+  const originalVal = el.value;
+  let val = originalVal;
+
+  // 빈 문자열이거나 '-'만 있는 경우(입력 중 상태)는 허용하되 기존 경고만 정리
+  if (val === '' || val === '-') {
+    clearSignedInputNotice(el);
+    return;
+  }
+
+  // 숫자와 '-' 외 문자 제거
+  const hadInvalidChar = /[^0-9-]/.test(val);
+  val = val.replace(/[^0-9-]/g, '');
+
+  // '-'가 맨 앞에만 오도록 정리 (중간이나 여러 개 들어간 '-' 제거)
+  const isNegative = val.startsWith('-');
+  const hadExtraMinus = (val.match(/-/g) || []).length > (isNegative ? 1 : 0);
+  val = val.replace(/-/g, '');
+  if (isNegative) {
+    val = '-' + val;
+  }
+
+  if (hadInvalidChar || hadExtraMinus) {
+    showSignedInputNotice(el, '정수(앞자리 - 포함)만 입력할 수 있습니다.');
+  } else {
+    clearSignedInputNotice(el);
+  }
+
+  if (el.value !== val) {
+    el.value = val;
+  }
+}
 });
