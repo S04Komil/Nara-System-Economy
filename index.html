@@ -72,82 +72,78 @@
       <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
     </li>
 
-    <!-- 로그인 완료 후 유저 프로필 구역 (국기 클릭 시 드롭다운) -->
+    <!-- 로그인 완료 후 유저 프로필 구역 (PC 전용 드롭다운) -->
     <li class="nav-item" id="user-profile-area" style="display: none; position: relative;">
-      <button type="button" id="user-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
+      <button type="button" id="user-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event, 'pc')" title="계정 메뉴">
         <img id="user-flag" src="" alt="국기" class="user-flag-img">
         <span id="user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
         <span class="flag-caret">▾</span>
       </button>
-      <!-- 모바일에서도 숨겨지지 않는 위치로 이동한 프로필 드롭다운 -->
-      <div id="user-profile-dropdown" class="profile-dropdown-menu" style="display: none;">
+
+      <!-- PC 전용 프로필 드롭다운 -->
+      <div id="user-profile-dropdown-pc" class="profile-dropdown-menu pc-profile-dropdown" style="display: none;">
         <!-- 1행: 국기 + 국가명 -->
         <div class="profile-row-country">
-          <img id="dropdown-user-flag" src="" alt="국기" class="profile-row-flag">
-          <span id="dropdown-user-country" class="profile-row-country-name">-</span>
+          <img id="dropdown-user-flag-pc" src="" alt="국기" class="profile-row-flag">
+          <span id="dropdown-user-country-pc" class="profile-row-country-name">-</span>
         </div>
-  
+
         <div class="profile-dropdown-divider"></div>
-  
+
         <!-- 2행: 이메일 -->
-        <div id="dropdown-user-email" class="profile-row-email">-</div>
-  
+        <div id="dropdown-user-email-pc" class="profile-row-email">-</div>
+
         <div class="profile-dropdown-divider"></div>
-  
-        <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
-        <button type="button" id="dropdown-theme-toggle" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
-          🌙 다크모드
-        </button>
-  
-        <div class="profile-dropdown-divider mobile-only-theme-row"></div>
-  
-        <!-- 4행: 로그아웃 -->
+
+        <!-- 3행: 로그아웃 -->
         <button type="button" class="profile-row-logout" onclick="handleLogout()">
           로그아웃
         </button>
       </div>
     </li>
   </ul>
-   <!-- 모바일에서도 숨겨지지 않는 위치로 이동한 프로필 드롭다운 -->
-      <div id="user-profile-dropdown" class="profile-dropdown-menu" style="display: none;">
-        <!-- 1행: 국기 + 국가명 -->
-        <div class="profile-row-country">
-          <img id="dropdown-user-flag" src="" alt="국기" class="profile-row-flag">
-          <span id="dropdown-user-country" class="profile-row-country-name">-</span>
-        </div>
-  
-        <div class="profile-dropdown-divider"></div>
-  
-        <!-- 2행: 이메일 -->
-        <div id="dropdown-user-email" class="profile-row-email">-</div>
-  
-        <div class="profile-dropdown-divider"></div>
-  
-        <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
-        <button type="button" id="dropdown-theme-toggle" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
-          🌙 다크모드
-        </button>
-  
-        <div class="profile-dropdown-divider mobile-only-theme-row"></div>
-  
-        <!-- 4행: 로그아웃 -->
-        <button type="button" class="profile-row-logout" onclick="handleLogout()">
-          로그아웃
-        </button>
-      </div>
+
+  <!-- 모바일 전용 프로필 드롭다운 (ul 바깥) -->
+  <div id="user-profile-dropdown-mobile" class="profile-dropdown-menu mobile-profile-dropdown" style="display: none;">
+    <!-- 1행: 국기 + 국가명 -->
+    <div class="profile-row-country">
+      <img id="dropdown-user-flag-mobile" src="" alt="국기" class="profile-row-flag">
+      <span id="dropdown-user-country-mobile" class="profile-row-country-name">-</span>
+    </div>
+
+    <div class="profile-dropdown-divider"></div>
+
+    <!-- 2행: 이메일 -->
+    <div id="dropdown-user-email-mobile" class="profile-row-email">-</div>
+
+    <div class="profile-dropdown-divider"></div>
+
+    <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
+    <button type="button" id="dropdown-theme-toggle-mobile" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
+      🌙 다크모드
+    </button>
+
+    <div class="profile-dropdown-divider mobile-only-theme-row"></div>
+
+    <!-- 4행: 로그아웃 -->
+    <button type="button" class="profile-row-logout" onclick="handleLogout()">
+      로그아웃
+    </button>
+  </div>
+
   <!-- 모바일 우측 간편 영역 (로그인 버튼 또는 국기 프로필) -->
-      <div class="mobile-right-actions">
-        <div id="mobile-auth-area">
-          <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
-        </div>
-        <div id="mobile-user-area" style="display: none; position: relative;">
-          <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
-            <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
-            <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
-            <span class="flag-caret">▾</span>
-          </button>
-        </div>
-      </div>
+  <div class="mobile-right-actions">
+    <div id="mobile-auth-area">
+      <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+    </div>
+    <div id="mobile-user-area" style="display: none; position: relative;">
+      <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event, 'mobile')" title="계정 메뉴">
+        <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
+        <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
+        <span class="flag-caret">▾</span>
+      </button>
+    </div>
+  </div>
 </nav>
       
       
