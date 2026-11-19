@@ -3537,8 +3537,18 @@ window.closeNavyEditModal = closeNavyEditModal;
 window.checkAndFillNavyClassData = checkAndFillNavyClassData;
 window.validateAndSubmitNavyData = validateAndSubmitNavyData;
 
-  window.toggleUserProfileDropdown = function(event) {
-  if (event) event.stopPropagation();
+function syncDropdownThemeLabel() {
+  const themeBtn = document.getElementById('dropdown-theme-toggle');
+  if (!themeBtn) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  themeBtn.innerText = isDark ? '☀️ 라이트모드' : '🌙 다크모드';
+}
+
+window.toggleUserProfileDropdown = function(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 
   const dropdown = document.getElementById('user-profile-dropdown');
   if (!dropdown) return;
@@ -3551,8 +3561,7 @@ window.validateAndSubmitNavyData = validateAndSubmitNavyData;
 
   if (currentUser) {
     const countryName = currentUser.country || '-';
-    const cleanCountryKey = cleanName(countryName);
-    const flagUrl = flagMap.get(cleanCountryKey) || '';
+    const flagUrl = flagMap.get(cleanName(countryName)) || '';
 
     const ddFlag = document.getElementById('dropdown-user-flag');
     if (ddFlag) {
@@ -3572,6 +3581,7 @@ window.validateAndSubmitNavyData = validateAndSubmitNavyData;
     if (ddEmail) ddEmail.innerText = currentUser.email || currentUser.username || '-';
   }
 
+  syncDropdownThemeLabel();
   dropdown.style.display = 'block';
 };
   //드롭다운 리스너
@@ -3653,4 +3663,5 @@ function syncMobileDrawerAuth() {
     }
   }
 }
+  
 });
