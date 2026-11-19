@@ -1043,40 +1043,61 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   };
 
   function updateAuthUI() {
-  const navMyCountry = document.getElementById('nav-my-country-item');
-  const authNavArea = document.getElementById('auth-nav-area');
-  const userProfileArea = document.getElementById('user-profile-area');
-  const userFlag = document.getElementById('user-flag');
-  const userFlagFallback = document.getElementById('user-flag-fallback');
-  const dropdown = document.getElementById('user-profile-dropdown');
+    const isLoggedIn = Boolean(currentUser && currentUser.country);
+    const cleanUserCountry = isLoggedIn ? cleanName(currentUser.country) : '';
+    const flagUrl = isLoggedIn ? (flagMap.get(cleanUserCountry) || '') : '';
 
-  if (dropdown) dropdown.style.display = 'none';
+    // PC 상단 영역
+    const navMyCountry = document.getElementById('nav-my-country-item');
+    const authNavArea = document.getElementById('auth-nav-area');
+    const userProfileArea = document.getElementById('user-profile-area');
+    const userFlag = document.getElementById('user-flag');
+    const userFlagFallback = document.getElementById('user-flag-fallback');
+    const dropdown = document.getElementById('user-profile-dropdown');
 
-  if (currentUser && currentUser.country) {
-    if (navMyCountry) navMyCountry.style.display = 'block';
-    if (authNavArea) authNavArea.style.display = 'none';
-    if (userProfileArea) userProfileArea.style.display = 'block';
+    if (dropdown) dropdown.style.display = 'none';
 
-    const cleanUserCountry = cleanName(currentUser.country);
-    const flagUrl = flagMap.get(cleanUserCountry);
+    if (navMyCountry) navMyCountry.style.display = isLoggedIn ? 'block' : 'none';
+    if (authNavArea) authNavArea.style.display = isLoggedIn ? 'none' : 'block';
+    if (userProfileArea) userProfileArea.style.display = isLoggedIn ? 'block' : 'none';
 
     if (userFlag && userFlagFallback) {
-      if (flagUrl) {
+      if (isLoggedIn && flagUrl) {
         userFlag.src = flagUrl;
         userFlag.alt = `${currentUser.country} 국기`;
         userFlag.style.display = 'inline-block';
         userFlagFallback.style.display = 'none';
       } else {
         userFlag.style.display = 'none';
-        userFlagFallback.style.display = 'inline-flex';
+        userFlagFallback.style.display = isLoggedIn ? 'inline-flex' : 'none';
       }
     }
-  } else {
-    if (navMyCountry) navMyCountry.style.display = 'none';
-    if (authNavArea) authNavArea.style.display = 'block';
-    if (userProfileArea) userProfileArea.style.display = 'none';
+
+    // 모바일 우측 영역 및 드로어 동기화
+    const mobileAuthArea = document.getElementById('mobile-auth-area');
+    const mobileUserArea = document.getElementById('mobile-user-area');
+    const mobileFlag = document.getElementById('mobile-user-flag');
+    const mobileFlagFallback = document.getElementById('mobile-user-flag-fallback');
+    const drawerMyCountryBtn = document.getElementById('drawer-my-country-btn');
+    const drawerLogoutBtn = document.getElementById('drawer-logout-btn');
+
+    if (mobileAuthArea) mobileAuthArea.style.display = isLoggedIn ? 'none' : 'block';
+    if (mobileUserArea) mobileUserArea.style.display = isLoggedIn ? 'block' : 'none';
+    if (drawerMyCountryBtn) drawerMyCountryBtn.style.display = isLoggedIn ? 'block' : 'none';
+    if (drawerLogoutBtn) drawerLogoutBtn.style.display = isLoggedIn ? 'block' : 'none';
+
+    if (mobileFlag && mobileFlagFallback) {
+      if (isLoggedIn && flagUrl) {
+        mobileFlag.src = flagUrl;
+        mobileFlag.alt = `${currentUser.country} 국기`;
+        mobileFlag.style.display = 'inline-block';
+        mobileFlagFallback.style.display = 'none';
+      } else {
+        mobileFlag.style.display = 'none';
+        mobileFlagFallback.style.display = isLoggedIn ? 'inline-flex' : 'none';
+      }
+    }
   }
-}
 
   window.openMyCountryModal = function() {
     window.showMyEconomyView();
@@ -3585,15 +3606,20 @@ window.toggleUserProfileDropdown = function(event) {
   dropdown.style.display = 'block';
 };
   //드롭다운 리스너
+  // document 클릭 닫기 리스너에 모바일 트리거 추가
   document.addEventListener('click', function(e) {
-  const dropdown = document.getElementById('user-profile-dropdown');
-  const trigger = document.getElementById('user-flag-trigger');
-  if (dropdown && dropdown.style.display === 'block') {
-    if (!dropdown.contains(e.target) && !(trigger && trigger.contains(e.target))) {
-      dropdown.style.display = 'none';
+    const dropdown = document.getElementById('user-profile-dropdown');
+    const pcTrigger = document.getElementById('user-flag-trigger');
+    const mobileTrigger = document.getElementById('mobile-flag-trigger');
+    if (dropdown && dropdown.style.display === 'block') {
+      const clickedInsideDropdown = dropdown.contains(e.target);
+      const clickedPcTrigger = pcTrigger && pcTrigger.contains(e.target);
+      const clickedMobileTrigger = mobileTrigger && mobileTrigger.contains(e.target);
+      if (!clickedInsideDropdown && !clickedPcTrigger && !clickedMobileTrigger) {
+        dropdown.style.display = 'none';
+      }
     }
-  }
-});
+  });
   window.toggleMobileDrawer = function(event) {
   if (event) event.stopPropagation();
 
