@@ -548,7 +548,7 @@ nav {
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 380px) {
   .top-cards-grid {
     grid-template-columns: 1fr;
   }
