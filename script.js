@@ -3584,4 +3584,73 @@ window.validateAndSubmitNavyData = validateAndSubmitNavyData;
     }
   }
 });
+  window.toggleMobileDrawer = function(event) {
+  if (event) event.stopPropagation();
+
+  const drawer = document.getElementById('mobile-nav-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+  const icon = document.getElementById('mobile-menu-icon');
+  if (!drawer || !backdrop) return;
+
+  const isOpen = drawer.style.display === 'block';
+  if (isOpen) {
+    closeMobileDrawer();
+  } else {
+    drawer.style.display = 'block';
+    backdrop.style.display = 'block';
+    if (icon) icon.innerText = '—';
+    syncMobileDrawerAuth();
+  }
+};
+
+window.closeMobileDrawer = function() {
+  const drawer = document.getElementById('mobile-nav-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+  const icon = document.getElementById('mobile-menu-icon');
+  if (drawer) drawer.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+  if (icon) icon.innerText = '☰';
+};
+
+window.switchDrawerTab = function(tabName, btnEl) {
+  document.querySelectorAll('.drawer-tab-btn').forEach(btn => btn.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  ['economy', 'military', 'menu'].forEach(key => {
+    const panel = document.getElementById(`drawer-panel-${key}`);
+    if (panel) panel.style.display = key === tabName ? 'flex' : 'none';
+  });
+};
+
+window.drawerAction = function(fn) {
+  closeMobileDrawer();
+  if (typeof fn === 'function') fn();
+};
+
+function syncMobileDrawerAuth() {
+  const isLoggedIn = Boolean(currentUser && currentUser.country);
+  const myCountryBtn = document.getElementById('drawer-my-country-btn');
+  const logoutBtn = document.getElementById('drawer-logout-btn');
+  const mobileAuthArea = document.getElementById('mobile-auth-area');
+  const mobileUserArea = document.getElementById('mobile-user-area');
+  const mobileFlag = document.getElementById('mobile-user-flag');
+  const mobileFlagFallback = document.getElementById('mobile-user-flag-fallback');
+
+  if (myCountryBtn) myCountryBtn.style.display = isLoggedIn ? 'block' : 'none';
+  if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'block' : 'none';
+  if (mobileAuthArea) mobileAuthArea.style.display = isLoggedIn ? 'none' : 'block';
+  if (mobileUserArea) mobileUserArea.style.display = isLoggedIn ? 'block' : 'none';
+
+  if (isLoggedIn && mobileFlag && mobileFlagFallback) {
+    const flagUrl = flagMap.get(cleanName(currentUser.country));
+    if (flagUrl) {
+      mobileFlag.src = flagUrl;
+      mobileFlag.style.display = 'inline-block';
+      mobileFlagFallback.style.display = 'none';
+    } else {
+      mobileFlag.style.display = 'none';
+      mobileFlagFallback.style.display = 'inline-flex';
+    }
+  }
+}
 });
