@@ -371,6 +371,46 @@ document.addEventListener("DOMContentLoaded", function() {
       document.getElementById('top-cap-country').innerText = topCap['국가'] || topCap['국가명'] || topCap['카테고리'] || '-';
       document.getElementById('top-cap-val').innerText = `${Math.round(parseFloat(topCap['1인당GDP']) || 0).toLocaleString()} 달러`;
     }
+
+    // =========================================================
+    // 군사력 종합 / 육군 / 공군 / 해군 1위 카드 렌더링 (globalTotalMilitaryData 기준)
+    // =========================================================
+    const validMilitary = (Array.isArray(globalTotalMilitaryData) ? globalTotalMilitaryData : [])
+      .filter(item => item && typeof item === 'object' && cleanName(extractCountryFromRow(item)) !== '전세계');
+
+    const getMilitaryTop = (scoreKey) => {
+      if (!validMilitary.length) return null;
+      return validMilitary.reduce((best, item) => {
+        const curScore = parseNumber(item[scoreKey]);
+        const bestScore = best ? parseNumber(best[scoreKey]) : -Infinity;
+        return curScore > bestScore ? item : best;
+      }, null);
+    };
+
+    const setMilitaryCard = (countryElId, valElId, scoreKey) => {
+      const countryEl = document.getElementById(countryElId);
+      const valEl = document.getElementById(valElId);
+      const topItem = getMilitaryTop(scoreKey);
+
+      if (!topItem) {
+        if (countryEl) countryEl.innerText = '-';
+        if (valEl) valEl.innerText = '-';
+        return;
+      }
+
+      const scoreVal = parseNumber(topItem[scoreKey]);
+      if (countryEl) {
+        countryEl.innerText = extractCountryFromRow(topItem) || '-';
+      }
+      if (valEl) {
+        valEl.innerText = `${Math.round(scoreVal).toLocaleString()} 점`;
+      }
+    };
+
+    setMilitaryCard('top-total-military-country', 'top-total-military-val', '총점수');
+    setMilitaryCard('top-army-country', 'top-army-val', '육군점수');
+    setMilitaryCard('top-air-country', 'top-air-val', '공군점수');
+    setMilitaryCard('top-navy-country', 'top-navy-val', '해군점수');
   }
 
   function renderWorldStats() {
