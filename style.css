@@ -190,6 +190,9 @@ nav {
   display: none;
 }
 
+/* ==========================================
+   📱 모바일 반응형 (768px 이하)
+   ========================================== */
 @media (max-width: 768px) {
   .desktop-nav-menu {
     display: none !important;
@@ -212,16 +215,34 @@ nav {
   }
 
   .mobile-right-actions {
-    display: flex;
-    align-items: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
     gap: 6px;
+    margin-left: auto;
     flex-shrink: 0;
+  }
+
+  #mobile-auth-area,
+  #mobile-user-area {
+    display: flex !important;
+    align-items: center !important;
+    position: static !important;
   }
 
   .mobile-login-btn {
     padding: 6px 10px;
     font-size: 0.82rem;
     border-radius: 6px;
+  }
+
+  /* 국기 드롭다운을 상단 바 바로 아래 고정 위치로 띄워 잘림/미표시 방지 */
+  .profile-dropdown-menu {
+    position: fixed !important;
+    top: 74px !important;
+    right: 12px !important;
+    left: auto !important;
+    z-index: 2500 !important;
   }
 }
 
@@ -1286,17 +1307,6 @@ nav {
 @media (min-width: 769px) {
   .mobile-only-theme-row {
     display: none !important;
-  }
-}
-
-/* 모바일(768px 이하): 국기 드롭다운을 고정 위치로 띄워 잘림/미표시 방지 */
-@media (max-width: 768px) {
-  .profile-dropdown-menu {
-    position: fixed !important;
-    top: 64px !important;
-    right: 12px !important;
-    left: auto !important;
-    z-index: 2500 !important;
   }
 }
 /* ==========================================
