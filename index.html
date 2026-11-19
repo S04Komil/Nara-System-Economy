@@ -80,25 +80,6 @@
         <span class="flag-caret">▾</span>
       </button>
     
-      
-    </li>
-  </ul>
-
-  
-</nav>
-      <!-- 모바일 우측 간편 영역 (로그인 버튼 또는 국기 프로필) -->
-      <div class="mobile-right-actions">
-        <div id="mobile-auth-area">
-          <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
-        </div>
-        <div id="mobile-user-area" style="display: none; position: relative;">
-          <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
-            <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
-            <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
-            <span class="flag-caret">▾</span>
-          </button>
-        </div>
-      </div>
       <!-- 모바일에서도 숨겨지지 않는 위치로 이동한 프로필 드롭다운 -->
       <div id="user-profile-dropdown" class="profile-dropdown-menu" style="display: none;">
         <!-- 1행: 국기 + 국가명 -->
@@ -126,6 +107,24 @@
           로그아웃
         </button>
       </div>
+    </li>
+  </ul>
+  <!-- 모바일 우측 간편 영역 (로그인 버튼 또는 국기 프로필) -->
+      <div class="mobile-right-actions">
+        <div id="mobile-auth-area">
+          <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+        </div>
+        <div id="mobile-user-area" style="display: none; position: relative;">
+          <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
+            <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
+            <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
+            <span class="flag-caret">▾</span>
+          </button>
+        </div>
+      </div>
+</nav>
+      
+      
 
 <!-- 모바일 햄버거(☰) 클릭 시 나타나는 2단 메뉴 드로어 -->
 <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" style="display: none;" onclick="closeMobileDrawer()"></div>
