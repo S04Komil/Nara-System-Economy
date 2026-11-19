@@ -450,7 +450,7 @@ nav {
 .main-title {
   font-size: 1.4rem;
   font-weight: bold;
-  color: #1a202c;
+  color: var(--text-color, #1a202c);
   margin: 0;
 }
 
@@ -464,23 +464,28 @@ nav {
   flex-shrink: 0;
 }
 
+[data-theme="dark"] .year-badge {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
 .top-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 24px;
-  min-height: 180px;
 }
 
 .top-card {
   background: var(--card-bg);
-  padding: 16px;
+  padding: 14px;
   border-radius: 10px;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .top-card-category {
@@ -490,17 +495,27 @@ nav {
   margin-bottom: 6px;
 }
 
+[data-theme="dark"] .top-card-category {
+  color: #a0aec0;
+}
+
 .top-card-country {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: bold;
   color: var(--primary-color);
   margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .top-card-val {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #4a5568;
   margin-bottom: 12px;
+  word-break: break-word;
+}
+
+[data-theme="dark"] .top-card-val {
+  color: #cbd5e0;
 }
 
 .btn-go-rank {
@@ -517,9 +532,26 @@ nav {
   min-height: 44px;
 }
 
+[data-theme="dark"] .btn-go-rank {
+  background-color: #2d3748;
+  color: #90cdf4;
+}
+
 .btn-go-rank:hover {
   background-color: var(--primary-color);
   color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .top-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .top-cards-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .rank-section {
@@ -650,7 +682,7 @@ nav {
 .section-title {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #1a202c;
+  color: var(--text-color, #1a202c);
   margin-bottom: 12px;
 }
 
@@ -675,10 +707,14 @@ nav {
   margin-bottom: 6px;
 }
 
+[data-theme="dark"] .world-card-title {
+  color: #a0aec0;
+}
+
 .world-card-val {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #2b6cb0;
+  color: var(--primary-color, #2b6cb0);
 }
 
 /* ==========================================
@@ -1158,6 +1194,12 @@ nav {
 /* ==========================================
    🌙 다크모드 일괄 보완
    ========================================== */
+[data-theme="dark"] h2,
+[data-theme="dark"] .main-title,
+[data-theme="dark"] .section-title {
+  color: var(--text-color, #e2e8f0) !important;
+}
+
 [data-theme="dark"] .edit-economy-container {
   background-color: #1e1e1e !important;
   color: #e2e8f0 !important;
@@ -1264,6 +1306,7 @@ nav {
 [data-theme="dark"] .rank-item.world-item .rank-bar {
   background: #2b6cb0 !important;
 }
+
 /* 3행/모바일 4행 드롭다운: 다크모드 버튼 */
 .profile-row-theme {
   width: 100%;
@@ -1299,6 +1342,7 @@ nav {
     z-index: 2500 !important;
   }
 }
+
 /* ==========================================
    🖥️ PC 전용: 네비게이션 메뉴 전체 가운데 정렬
    ========================================== */
@@ -1340,6 +1384,7 @@ nav {
     flex-shrink: 0;
   }
 }
+
 /* PC 화면(769px 이상): 모바일 전용 드롭다운 숨김 */
 @media (min-width: 769px) {
   .mobile-profile-dropdown {
@@ -1352,10 +1397,4 @@ nav {
   .pc-profile-dropdown {
     display: none !important;
   }
-}
-/* 다크모드 클래스가 body.dark-mode 라고 가정한 예시 */
-body.dark-mode h2,
-body.dark-mode .main-title,
-body.dark-mode .section-title {
-  color: var(--text-color, #f1f5f9);
 }
