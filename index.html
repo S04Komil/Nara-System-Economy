@@ -80,28 +80,28 @@
         <span class="flag-caret">▾</span>
       </button>
     
-      <!-- 국기 클릭 시 펼쳐지는 드롭다운 (1행 국기+국기명 / 2행 이메일 / 3행 다크모드 / 4행 로그아웃) -->
+      <!-- 모바일에서도 숨겨지지 않는 위치로 이동한 프로필 드롭다운 -->
       <div id="user-profile-dropdown" class="profile-dropdown-menu" style="display: none;">
         <!-- 1행: 국기 + 국가명 -->
         <div class="profile-row-country">
           <img id="dropdown-user-flag" src="" alt="국기" class="profile-row-flag">
           <span id="dropdown-user-country" class="profile-row-country-name">-</span>
         </div>
-    
+  
         <div class="profile-dropdown-divider"></div>
-    
+  
         <!-- 2행: 이메일 -->
         <div id="dropdown-user-email" class="profile-row-email">-</div>
-    
+  
         <div class="profile-dropdown-divider"></div>
-    
+  
         <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
         <button type="button" id="dropdown-theme-toggle" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
           🌙 다크모드
         </button>
-    
+  
         <div class="profile-dropdown-divider mobile-only-theme-row"></div>
-    
+  
         <!-- 4행: 로그아웃 -->
         <button type="button" class="profile-row-logout" onclick="handleLogout()">
           로그아웃
