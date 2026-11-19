@@ -1043,35 +1043,40 @@ window.switchCategory = function(key, title, unitType, navBtnId, sheetName) {
   };
 
   function updateAuthUI() {
-    const navMyCountry = document.getElementById('nav-my-country-item');
-    const authNavArea = document.getElementById('auth-nav-area');
-    const userProfileArea = document.getElementById('user-profile-area');
-    const userCountryName = document.getElementById('user-country-name');
-    const userFlag = document.getElementById('user-flag');
+  const navMyCountry = document.getElementById('nav-my-country-item');
+  const authNavArea = document.getElementById('auth-nav-area');
+  const userProfileArea = document.getElementById('user-profile-area');
+  const userFlag = document.getElementById('user-flag');
+  const userFlagFallback = document.getElementById('user-flag-fallback');
+  const dropdown = document.getElementById('user-profile-dropdown');
 
-    if (currentUser && currentUser.country) {
-      if (navMyCountry) navMyCountry.style.display = 'block';
-      if (authNavArea) authNavArea.style.display = 'none';
-      if (userProfileArea) userProfileArea.style.display = 'block';
+  if (dropdown) dropdown.style.display = 'none';
 
-      if (userCountryName) userCountryName.innerText = `${currentUser.country} (${currentUser.username || currentUser.email || ''})`;
-      
-      const cleanUserCountry = cleanName(currentUser.country);
-      const flagUrl = flagMap.get(cleanUserCountry);
-      if (userFlag) {
-        if (flagUrl) {
-          userFlag.src = flagUrl;
-          userFlag.style.display = 'inline-block';
-        } else {
-          userFlag.style.display = 'none';
-        }
+  if (currentUser && currentUser.country) {
+    if (navMyCountry) navMyCountry.style.display = 'block';
+    if (authNavArea) authNavArea.style.display = 'none';
+    if (userProfileArea) userProfileArea.style.display = 'block';
+
+    const cleanUserCountry = cleanName(currentUser.country);
+    const flagUrl = flagMap.get(cleanUserCountry);
+
+    if (userFlag && userFlagFallback) {
+      if (flagUrl) {
+        userFlag.src = flagUrl;
+        userFlag.alt = `${currentUser.country} 국기`;
+        userFlag.style.display = 'inline-block';
+        userFlagFallback.style.display = 'none';
+      } else {
+        userFlag.style.display = 'none';
+        userFlagFallback.style.display = 'inline-flex';
       }
-    } else {
-      if (navMyCountry) navMyCountry.style.display = 'none';
-      if (authNavArea) authNavArea.style.display = 'block';
-      if (userProfileArea) userProfileArea.style.display = 'none';
     }
+  } else {
+    if (navMyCountry) navMyCountry.style.display = 'none';
+    if (authNavArea) authNavArea.style.display = 'block';
+    if (userProfileArea) userProfileArea.style.display = 'none';
   }
+}
 
   window.openMyCountryModal = function() {
     window.showMyEconomyView();
@@ -3531,4 +3536,52 @@ window.openNavyEditModal = openNavyEditModal;
 window.closeNavyEditModal = closeNavyEditModal;
 window.checkAndFillNavyClassData = checkAndFillNavyClassData;
 window.validateAndSubmitNavyData = validateAndSubmitNavyData;
+
+  window.toggleUserProfileDropdown = function(event) {
+  if (event) event.stopPropagation();
+
+  const dropdown = document.getElementById('user-profile-dropdown');
+  if (!dropdown) return;
+
+  const isOpen = dropdown.style.display === 'block';
+  if (isOpen) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  if (currentUser) {
+    const countryName = currentUser.country || '-';
+    const cleanCountryKey = cleanName(countryName);
+    const flagUrl = flagMap.get(cleanCountryKey) || '';
+
+    const ddFlag = document.getElementById('dropdown-user-flag');
+    if (ddFlag) {
+      if (flagUrl) {
+        ddFlag.src = flagUrl;
+        ddFlag.alt = `${countryName} 국기`;
+        ddFlag.style.display = 'inline-block';
+      } else {
+        ddFlag.style.display = 'none';
+      }
+    }
+
+    const ddCountry = document.getElementById('dropdown-user-country');
+    if (ddCountry) ddCountry.innerText = countryName;
+
+    const ddEmail = document.getElementById('dropdown-user-email');
+    if (ddEmail) ddEmail.innerText = currentUser.email || currentUser.username || '-';
+  }
+
+  dropdown.style.display = 'block';
+};
+  //드롭다운 리스너
+  document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('user-profile-dropdown');
+  const trigger = document.getElementById('user-flag-trigger');
+  if (dropdown && dropdown.style.display === 'block') {
+    if (!dropdown.contains(e.target) && !(trigger && trigger.contains(e.target))) {
+      dropdown.style.display = 'none';
+    }
+  }
+});
 });
