@@ -72,30 +72,37 @@
       <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
     </li>
 
-    <!-- 로그인 완료 후 유저 프로필 구역 (국기 클릭 시 3행 드롭다운) -->
+    <!-- 로그인 완료 후 유저 프로필 구역 (국기 클릭 시 드롭다운) -->
     <li class="nav-item" id="user-profile-area" style="display: none; position: relative;">
       <button type="button" id="user-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event)" title="계정 메뉴">
         <img id="user-flag" src="" alt="국기" class="user-flag-img">
         <span id="user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
         <span class="flag-caret">▾</span>
       </button>
-
-      <!-- 국기 클릭 시 펼쳐지는 3행 드롭다운 -->
+    
+      <!-- 국기 클릭 시 펼쳐지는 드롭다운 (1행 국기+국기명 / 2행 이메일 / 3행 다크모드 / 4행 로그아웃) -->
       <div id="user-profile-dropdown" class="profile-dropdown-menu" style="display: none;">
         <!-- 1행: 국기 + 국가명 -->
         <div class="profile-row-country">
           <img id="dropdown-user-flag" src="" alt="국기" class="profile-row-flag">
           <span id="dropdown-user-country" class="profile-row-country-name">-</span>
         </div>
-
+    
         <div class="profile-dropdown-divider"></div>
-
+    
         <!-- 2행: 이메일 -->
         <div id="dropdown-user-email" class="profile-row-email">-</div>
-
+    
         <div class="profile-dropdown-divider"></div>
-
-        <!-- 3행: 로그아웃 -->
+    
+        <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
+        <button type="button" id="dropdown-theme-toggle" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
+          🌙 다크모드
+        </button>
+    
+        <div class="profile-dropdown-divider mobile-only-theme-row"></div>
+    
+        <!-- 4행: 로그아웃 -->
         <button type="button" class="profile-row-logout" onclick="handleLogout()">
           로그아웃
         </button>
@@ -149,8 +156,6 @@
     <div class="drawer-right-panel" id="drawer-panel-menu" style="display: none;">
       <button type="button" class="drawer-link-item" id="drawer-my-country-btn" style="display: none;" onclick="drawerAction(() => switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country'))">자국 경제</button>
       <button type="button" class="drawer-link-item" onclick="drawerAction(() => openChangelogModal())">패치노트 📢</button>
-      <button type="button" class="drawer-link-item" onclick="drawerAction(() => toggleDarkMode())">🌙 다크모드</button>
-      <button type="button" class="drawer-link-item danger" id="drawer-logout-btn" style="display: none;" onclick="drawerAction(() => handleLogout())">로그아웃</button>
     </div>
   </div>
 </aside>
