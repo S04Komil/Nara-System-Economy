@@ -1264,3 +1264,37 @@ nav {
 [data-theme="dark"] .rank-item.world-item .rank-bar {
   background: #2b6cb0 !important;
 }
+/* 3행/모바일 4행 드롭다운: 다크모드 버튼 */
+.profile-row-theme {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start !important;
+  padding: 7px 10px !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: var(--text-color, #2d3748) !important;
+}
+
+.profile-row-theme:hover {
+  background-color: rgba(43, 108, 176, 0.12) !important;
+}
+
+/* PC에서는 국기 드롭다운 안의 다크모드 행 숨김 (상단바에 이미 존재) */
+@media (min-width: 769px) {
+  .mobile-only-theme-row {
+    display: none !important;
+  }
+}
+
+/* 모바일(768px 이하): 국기 드롭다운을 고정 위치로 띄워 잘림/미표시 방지 */
+@media (max-width: 768px) {
+  .profile-dropdown-menu {
+    position: fixed !important;
+    top: 64px !important;
+    right: 12px !important;
+    left: auto !important;
+    z-index: 2500 !important;
+  }
