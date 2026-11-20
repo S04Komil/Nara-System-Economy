@@ -1791,6 +1791,7 @@ function closeInvestmentModal() {
         alert("성공적으로 삭제되었습니다. \n 사이트에 반영하기까지 약간의 시간이 필요합니다.");
         loadMainData();
         checkFirebaseChanges();
+        showMyEconomyView();
       } else {
         alert("삭제 실패: " + result.message);
       }
@@ -2013,7 +2014,7 @@ async function submitRemittance() {
       alert(`${targetCountry}에게 ${amount} (10억 달러 단위) 송금이 완료되었습니다.`);
       loadMainData();
       closeRemittanceModal();
-      
+      showMyEconomyView();
       if (typeof loadData === "function") loadData();
       checkFirebaseChanges();
 
@@ -2559,6 +2560,7 @@ async function handleExportApprove(timestamp, exporter, importer, name, status, 
       if (typeof loadMainData === "function") loadMainData();
       if (typeof loadImportLogsData === "function") loadImportLogsData();
       checkFirebaseChanges();
+      showMyEconomyView();
     } else {
       alert("처리 실패: " + (result.message || "알 수 없는 오류"));
     }
