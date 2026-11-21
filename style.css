@@ -1486,7 +1486,8 @@ nav {
 }
 
 #equipment-form .btn-close,
-#import-form .btn-close {
+#import-form .btn-close, 
+#log-modal .btn-close {
   padding: 9px 18px;
   border: none;
   border-radius: 8px;
