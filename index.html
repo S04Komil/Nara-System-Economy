@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-  <meta name="google-site-verification" content="rkfLBqt7D3zfMMZ5Da_hO9456C5nrLotKbqUTiXBv-8">
+  <meta name="google-site-verification" content="rkfLBqt7D3zfMMZ5Da_hO9456C5nrLotKbqUTiXBv-8" />
   
   <title>[NS]국가시스템 경제</title>
   <link rel="stylesheet" href="style.css">
@@ -15,45 +15,173 @@
 <body>
 
   <!-- 상단 네비게이션 메뉴 -->
-  <nav>
-    <div class="logo-container" onclick="showMainView()">
-      <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-      <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
-    </div>
-    <ul class="nav-menu">
-      <li class="nav-item">
-        <button id="nav-gdp-btn" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn')">GDP순위</button>
-      </li>
-      <li class="nav-item">
-        <button id="nav-def-btn" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (전체)', '달러', 'nav-def-btn')">국방비순위</button>
-      </li>
-      <li class="nav-item">
-        <button id="nav-pop-btn" onclick="switchCategory('인구(만명)', '인구 순위 (전체)', '명', 'nav-pop-btn')">인구순위</button>
-      </li>
-      <li class="nav-item">
-        <button id="nav-cap-btn" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn')">1인당GDP순위</button>
-      </li>
-      
-      <!-- 로그인 전용: 자국 경제 탭 (margin-left: auto; 추가) -->
-      <li class="nav-item" id="nav-my-country-item" style="display: none;">
-        <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button>
-      </li>
+<nav class="main-navbar">
+  <!-- 모바일 전용: 선 3개(햄버거) 버튼 -->
+  <button type="button" id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileDrawer(event)" aria-label="메뉴 열기">
+    <span id="mobile-menu-icon">☰</span>
+  </button>
 
-      <!-- 로그인 버튼 구역 (로그인 전 오른쪽 정렬용 margin-left: auto 추가) -->
-      <li class="nav-item" id="auth-nav-area">
-        <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
-      </li>
+  <div class="logo-container" onclick="showMainView()">
+    <img src="logo.png" alt="로고" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    <span style="display:none; font-weight:bold; color:var(--primary-color);">NARA ECON</span>
+  </div>
 
-      <!-- 로그인 완료 후 유저 프로필 구역 -->
-      <li class="nav-item" id="user-profile-area" style="display: none;">
-        <div class="user-profile-badge">
-          <img id="user-flag" src="" alt="국기" class="user-flag-img">
-          <span id="user-country-name">국가명</span>
-          <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+  <!-- 데스크톱 전용 가로 메뉴 (모바일에서는 숨김) -->
+  <ul class="nav-menu desktop-nav-menu">
+
+    <!-- 💰 [경제 통계 드롭다운] -->
+    <li class="nav-item dropdown" style="position: relative; display: inline-block;">
+      <a href="javascript:void(0);" class="drop-btn" style="background:transparent; border:none; color:inherit; font-weight:500; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:4px;">💰 경제 통계 ▾</a>
+      <div class="dropdown-content" style="display:none; position:absolute; top:100%; left:0; background:var(--bg-card, #fff); min-width:160px; box-shadow:0px 8px 20px rgba(0,0,0,0.15); border-radius:8px; z-index:1000; padding:8px 0; border:1px solid var(--border-color, #e2e8f0);">
+        <a href="#" onclick="switchCategory('GDP', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">GDP 순위</a>
+        <a href="#" onclick="switchCategory('국방비', '국방비 순위 (전체)', '달러', 'nav-def-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">국방비 순위</a>
+        <a href="#" onclick="switchCategory('인구', '인구 순위 (전체)', '명', 'nav-pop-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">인구 순위</a>
+        <a href="#" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">1인당 GDP 순위</a>
+      </div>
+    </li>
+
+    <!-- 🎖️ [국방 전력 드롭다운] -->
+    <li class="nav-item dropdown" style="position: relative; display: inline-block;">
+      <a href="javascript:void(0);" class="drop-btn" style="background:transparent; border:none; color:inherit; font-weight:500; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:4px;">🎖️ 국방 전력 ▾</a>
+      <div class="dropdown-content" style="display:none; position:absolute; top:100%; left:0; background:var(--bg-card, #fff); min-width:160px; box-shadow:0px 8px 20px rgba(0,0,0,0.15); border-radius:8px; z-index:1000; padding:8px 0; border:1px solid var(--border-color, #e2e8f0);">
+        <a href="#" onclick="switchCategory('군사력종합', '전체 군사력 순위 (종합)', '점수', 'nav-total-military-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">전체 군사력 순위</a>
+        <div style="border-top:1px solid var(--border-color, #eee); margin:4px 0;"></div>
+        <a href="#" onclick="switchCategory('육군', '육군 전력 순위 (전체)', '점수', 'nav-army-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">육군 순위</a>
+        <a href="#" onclick="switchCategory('공군', '공군 전력 순위 (전체)', '점수', 'nav-air-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">공군 순위</a>
+        <a href="#" onclick="switchCategory('해군', '해군 전력 순위 (전체)', '점수', 'nav-navy-btn'); return false;" style="color:var(--text-color); padding:10px 16px; display:block; text-decoration:none; font-size:0.9rem;">해군 순위</a>
+      </div>
+    </li>
+
+    <!-- 로그인 전용: 자국 경제 탭 -->
+    <li class="nav-item" id="nav-my-country-item" style="display: none;">
+      <button id="btn-nav-my-country" onclick="switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country')">자국 경제</button>
+    </li>
+
+    <!-- 패치노트 버튼 -->
+    <li class="nav-item">
+      <button id="btn-nav-changelog" onclick="openChangelogModal()">패치노트 📢</button>
+    </li>
+
+    <!-- 🌙 다크모드 토글 버튼 -->
+    <li class="nav-item">
+      <button id="theme-toggle-btn" onclick="toggleDarkMode()">🌙 다크모드</button>
+    </li>
+
+    <!-- 로그인 버튼 구역 -->
+    <li class="nav-item" id="auth-nav-area">
+      <button id="btn-open-login" class="btn-auth" onclick="openAuthModal('login')">로그인</button>
+    </li>
+
+    <!-- 로그인 완료 후 유저 프로필 구역 (PC 전용 드롭다운) -->
+    <li class="nav-item" id="user-profile-area" style="display: none; position: relative;">
+      <button type="button" id="user-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event, 'pc')" title="계정 메뉴">
+        <img id="user-flag" src="" alt="국기" class="user-flag-img">
+        <span id="user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
+        <span class="flag-caret">▾</span>
+      </button>
+
+      <!-- PC 전용 프로필 드롭다운 -->
+      <div id="user-profile-dropdown-pc" class="profile-dropdown-menu pc-profile-dropdown" style="display: none;">
+        <!-- 1행: 국기 + 국가명 -->
+        <div class="profile-row-country">
+          <img id="dropdown-user-flag-pc" src="" alt="국기" class="profile-row-flag">
+          <span id="dropdown-user-country-pc" class="profile-row-country-name">-</span>
         </div>
-      </li>
-    </ul>
-  </nav>
+
+        <div class="profile-dropdown-divider"></div>
+
+        <!-- 2행: 이메일 -->
+        <div id="dropdown-user-email-pc" class="profile-row-email">-</div>
+
+        <div class="profile-dropdown-divider"></div>
+
+        <!-- 3행: 로그아웃 -->
+        <button type="button" class="profile-row-logout" onclick="handleLogout()">
+          로그아웃
+        </button>
+      </div>
+    </li>
+  </ul>
+
+  <!-- 모바일 전용 프로필 드롭다운 (ul 바깥) -->
+  <div id="user-profile-dropdown-mobile" class="profile-dropdown-menu mobile-profile-dropdown" style="display: none;">
+    <!-- 1행: 국기 + 국가명 -->
+    <div class="profile-row-country">
+      <img id="dropdown-user-flag-mobile" src="" alt="국기" class="profile-row-flag">
+      <span id="dropdown-user-country-mobile" class="profile-row-country-name">-</span>
+    </div>
+
+    <div class="profile-dropdown-divider"></div>
+
+    <!-- 2행: 이메일 -->
+    <div id="dropdown-user-email-mobile" class="profile-row-email">-</div>
+
+    <div class="profile-dropdown-divider"></div>
+
+    <!-- 3행: 다크모드 (모바일 국기 드롭다운용) -->
+    <button type="button" id="dropdown-theme-toggle-mobile" class="profile-row-theme mobile-only-theme-row" onclick="toggleDarkMode(); syncDropdownThemeLabel();">
+      🌙 다크모드
+    </button>
+
+    <div class="profile-dropdown-divider mobile-only-theme-row"></div>
+
+    <!-- 4행: 로그아웃 -->
+    <button type="button" class="profile-row-logout" onclick="handleLogout()">
+      로그아웃
+    </button>
+  </div>
+
+  <!-- 모바일 우측 간편 영역 (로그인 버튼 또는 국기 프로필) -->
+  <div class="mobile-right-actions">
+    <div id="mobile-auth-area">
+      <button type="button" class="btn-auth mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+    </div>
+    <div id="mobile-user-area" style="display: none; position: relative;">
+      <button type="button" id="mobile-flag-trigger" class="user-flag-btn" onclick="toggleUserProfileDropdown(event, 'mobile')" title="계정 메뉴">
+        <img id="mobile-user-flag" src="" alt="국기" class="user-flag-img">
+        <span id="mobile-user-flag-fallback" class="user-flag-fallback" style="display: none;">🏳️</span>
+        <span class="flag-caret">▾</span>
+      </button>
+    </div>
+  </div>
+</nav>
+      
+      
+
+<!-- 모바일 햄버거(☰) 클릭 시 나타나는 2단 메뉴 드로어 -->
+<div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" style="display: none;" onclick="closeMobileDrawer()"></div>
+<aside id="mobile-nav-drawer" class="mobile-nav-drawer" style="display: none;" onclick="event.stopPropagation()">
+  <div class="mobile-drawer-body">
+    <!-- 좌측 대메뉴 탭 -->
+    <div class="drawer-left-tabs">
+      <button type="button" class="drawer-tab-btn active" data-tab="economy" onclick="switchDrawerTab('economy', this)">경제 통계</button>
+      <button type="button" class="drawer-tab-btn" data-tab="military" onclick="switchDrawerTab('military', this)">국방 전력</button>
+      <button type="button" class="drawer-tab-btn" data-tab="menu" onclick="switchDrawerTab('menu', this)">기타 메뉴</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 경제 통계 -->
+    <div class="drawer-right-panel" id="drawer-panel-economy">
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('GDP', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn'))">GDP 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('국방비', '국방비 순위 (전체)', '달러', 'nav-def-btn'))">국방비 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('인구', '인구 순위 (전체)', '명', 'nav-pop-btn'))">인구 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn'))">1인당 GDP 순위</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 국방 전력 -->
+    <div class="drawer-right-panel" id="drawer-panel-military" style="display: none;">
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('군사력종합', '전체 군사력 순위 (종합)', '점수', 'nav-total-military-btn'))">전체 군사력 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('육군', '육군 전력 순위 (전체)', '점수', 'nav-army-btn'))">육군 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('공군', '공군 전력 순위 (전체)', '점수', 'nav-air-btn'))">공군 순위</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => switchCategory('해군', '해군 전력 순위 (전체)', '점수', 'nav-navy-btn'))">해군 순위</button>
+    </div>
+
+    <!-- 우측 소메뉴 목록: 기타 메뉴 -->
+    <div class="drawer-right-panel" id="drawer-panel-menu" style="display: none;">
+      <button type="button" class="drawer-link-item" id="drawer-my-country-btn" style="display: none;" onclick="drawerAction(() => switchCategory('my-economy-view', '자국경제', 'None', 'btn-nav-my-country'))">자국 경제</button>
+      <button type="button" class="drawer-link-item" onclick="drawerAction(() => openChangelogModal())">패치노트 📢</button>
+    </div>
+  </div>
+</aside>
 
   <div class="container">
     <div id="loading">데이터를 불러오는 중입니다...</div>
@@ -75,7 +203,7 @@
               <div class="top-card-country" id="top-gdp-country">-</div>
               <div class="top-card-val" id="top-gdp-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('GDP(10억달러)', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('GDP', 'GDP 순위 (전체)', '달러', 'nav-gdp-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 국방비 1위 카드 -->
@@ -85,7 +213,7 @@
               <div class="top-card-country" id="top-def-country">-</div>
               <div class="top-card-val" id="top-def-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('국방비(10억달러)', '국방비 순위 (전체)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('국방비', '국방비 순위 (전체)', '달러', 'nav-def-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 인구수 1위 카드 -->
@@ -95,7 +223,7 @@
               <div class="top-card-country" id="top-pop-country">-</div>
               <div class="top-card-val" id="top-pop-val">-</div>
             </div>
-            <button class="btn-go-rank" onclick="switchCategory('인구(만명)', '인구 순위 (전체)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
+            <button class="btn-go-rank" onclick="switchCategory('인구', '인구 순위 (전체)', '명', 'nav-pop-btn')">순위 보러가기 →</button>
           </div>
 
           <!-- 1인당 GDP 1위 카드 -->
@@ -107,7 +235,48 @@
             </div>
             <button class="btn-go-rank" onclick="switchCategory('1인당GDP', '1인당 GDP 순위 (전체)', '달러_직접', 'nav-cap-btn')">순위 보러가기 →</button>
           </div>
+          <!-- 군사력 종합 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">군사력 종합 1위</div>
+              <div class="top-card-country" id="top-total-military-country">-</div>
+              <div class="top-card-val" id="top-total-military-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('군사력종합', '전체 군사력 순위 (종합)', '점수', 'nav-total-military-btn')">순위 보러가기 →</button>
+          </div>
+          
+          <!-- 육군 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">육군 1위</div>
+              <div class="top-card-country" id="top-army-country">-</div>
+              <div class="top-card-val" id="top-army-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('육군', '육군 전력 순위 (전체)', '점수', 'nav-army-btn')">순위 보러가기 →</button>
+          </div>
+          
+          <!-- 공군 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">공군 1위</div>
+              <div class="top-card-country" id="top-air-country">-</div>
+              <div class="top-card-val" id="top-air-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('공군', '공군 전력 순위 (전체)', '점수', 'nav-air-btn')">순위 보러가기 →</button>
+          </div>
+          
+          <!-- 해군 1위 카드 -->
+          <div class="top-card">
+            <div>
+              <div class="top-card-category">해군 1위</div>
+              <div class="top-card-country" id="top-navy-country">-</div>
+              <div class="top-card-val" id="top-navy-val">-</div>
+            </div>
+            <button class="btn-go-rank" onclick="switchCategory('해군', '해군 전력 순위 (전체)', '점수', 'nav-navy-btn')">순위 보러가기 →</button>
+          </div>
         </div>
+
+        
 
         <!-- 2. 세계 통계 섹션 -->
         <div class="world-stats-section">
@@ -168,9 +337,10 @@
             </div>
 
             <!-- 2행: 대륙과 소속연합 -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box"><span class="info-label">대륙</span><span id="my-continent" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">소속연합</span><span id="my-union" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">강대국등급</span><span id="modal-power-grade" class="info-val">-</span></div>
             </div>
 
             <!-- 3행: GDP와 GDP순위 -->
@@ -191,16 +361,29 @@
               <div class="info-box"><span class="info-label">국방비 순위</span><span id="my-def-rank" class="info-val">-</span></div>
             </div>
 
+            <div class="edit-row row-grid-3">
+              <div class="info-box edit-input-box">
+                <label class="info-label" for="edit-equip-rate">국방비 대비 장비구입비 (%)</label>
+                <div class="number-control-group">
+                  <input type="number" id="edit-equip-rate" step="0.01" min="0" placeholder="0.00">
+                </div>
+              </div>
+              <div class="info-box"><span class="info-label">총장비구입비</span><span id="my-equip-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">현재장비구입비</span><span id="my-equip-rank" class="info-val">-</span></div>
+            </div>
+
             <!-- 5행: 인구수와 인구순위 -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box"><span class="info-label">인구수</span><span id="my-pop-display" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">인구 순위</span><span id="my-pop-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">다음연도 인구수</span><span id="my-pop-next" class="info-val">-</span></div>
             </div>
 
             <!-- 6행: 1인당 GDP와 1인당 GDP 순위 -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box"><span class="info-label">1인당 GDP</span><span id="my-per-gdp-display" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="my-per-gdp-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">경제등급</span><span id="my-economy-grade" class="info-val">-</span></div>
             </div>
 
             <!-- 7행: 세율(입력/조절)과 국가예산 -->
@@ -214,6 +397,31 @@
               <div class="info-box"><span class="info-label">국가예산</span><span id="my-budget-display" class="info-val">-</span></div>
             </div>
 
+            <!-- 자국 R&D 및 기술 정보 (입력 및 표시) -->
+            <div class="edit-row row-grid-2">
+              <div class="info-box edit-input-box">
+                <label class="info-label" for="edit-rnd-ratio">GDP대비 R&D 예산 (%)</label>
+                <div class="number-control-group">
+                  <input type="number" id="edit-rnd-ratio" step="0.01" min="0" placeholder="0.00">
+                </div>
+              </div>
+              <div class="info-box">
+                <span class="info-label">R&D 예산</span>
+                <span id="my-rnd-budget-display" class="info-val">-</span>
+              </div>
+            </div>
+
+            <div class="edit-row row-grid-2">
+              <div class="info-box">
+                <span class="info-label">기술개발정도</span>
+                <span id="my-tech-level-display" class="info-val">-</span>
+              </div>
+              <div class="info-box">
+                <span class="info-label">미래기술적용</span>
+                <span id="my-future-tech-display" class="info-val">-</span>
+              </div>
+            </div>
+
             <!-- 8행: 경제체제(선택형)와 주업(선택형 최대 4개) -->
             <div class="edit-row row-grid-2">
               <div class="info-box edit-input-box">
@@ -225,7 +433,7 @@
                 </select>
               </div>
               <div class="info-box edit-input-box" style="grid-column: span 1;">
-                <label class="info-label">주업 (최대 4개 선택)</label>
+                <label class="info-label">주업 (최대 5개 선택)</label>
                 <div class="industry-checkbox-group" id="edit-industry-group">
                   <label><input type="checkbox" name="industry" value="농수산업" onchange="limitIndustryCheckboxes(this)"> 농수산업</label>
                   <label><input type="checkbox" name="industry" value="경공업" onchange="limitIndustryCheckboxes(this)"> 경공업</label>
@@ -233,12 +441,13 @@
                   <label><input type="checkbox" name="industry" value="서비스업" onchange="limitIndustryCheckboxes(this)"> 서비스업</label>
                   <label><input type="checkbox" name="industry" value="첨단산업" onchange="limitIndustryCheckboxes(this)"> 첨단산업</label>
                   <label><input type="checkbox" name="industry" value="에너지산업" onchange="limitIndustryCheckboxes(this)"> 에너지산업</label>
+                  <label><input type="checkbox" name="industry" value="고부가가치산업" onchange="limitIndustryCheckboxes(this)"> 고부가가치산업</label>
                 </div>
               </div>
             </div>
 
             <!-- 9행: 복지수준(선택형)과 경제투자율(입력/조절, 0.1단위) -->
-            <div class="edit-row row-grid-2">
+            <div class="edit-row row-grid-3">
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-welfare">복지수준</label>
                 <select id="edit-welfare">
@@ -253,6 +462,10 @@
                   <option value="높은복지국가">높은복지국가</option>
                 </select>
               </div>
+              <div class="info-box">
+                <span class="info-label" for="welfare-budget-display">복지지출비</span>
+                <span id="welfare-budget-display" class="info-val">-</span>
+              </div>
               <div class="info-box edit-input-box">
                 <label class="info-label" for="edit-invest-rate">경제투자율 (%)</label>
                 <div class="number-control-group">
@@ -262,18 +475,43 @@
             </div>
 
             <!-- 10행: 국고 -->
-            <div class="edit-row row-grid-1">
+            <div class="edit-row row-grid-3">
               <div class="info-box"><span class="info-label">순이익</span><span id="my-profit-display" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">국고</span><span id="my-treasury-display" class="info-val">-</span></div>
+              <button type="button" class="btn-secondary" onclick="openRemittanceModal()" style="padding: 2px 8px; font-size: 11px;">송금하기</button>
             </div>
 
             <!-- 11행: 경제성장률 -->
-            <div class="edit-row row-grid-1">
+            <div class="edit-row row-grid-2">
               <div class="info-box"><span class="info-label">경제성장률</span><span id="my-growth-rate-display" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">다음연도GDP</span><span id="my-nextGDP" class="info-val">-</span></div>
             </div>
 
-            <div style="margin-top: 20px; text-align: right;">
-              <button type="submit" class="submit-Economy-btn" onclick="saveMyEconomyData()" id="submit-economy-btn" style="width: auto; padding: 12px 30px;">자국 경제 저장하기</button>
+            
+
+            <!-- 버튼 그룹 (왼쪽: 장비 및 로그 버튼 / 오른쪽: 기준표 & 자국 경제 저장하기) -->
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              
+              <!-- 👈 [왼쪽] 장비 관련 & 로그 버튼 그룹 -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="openEquipmentModal()" style="background-color: #28a745; color: white; border: none;">🛠️ 장비 등록</button>
+                <button type="button" class="btn-secondary" onclick="openMyEquipmentModal()" style="background-color: #ffc107; color: #212529; border: none;">📋 내 장비 관리</button>
+                <button type="button" class="btn-secondary" onclick="openImportModal()" style="background-color: #17a2b8; color: white; border: none;">📦 장비 수입</button>
+                <button type="button" class="btn-secondary" onclick="openLogModal()" style="background-color: #6c757d; color: white; border: none;">📋 수출입 로그</button>
+              </div>
+              <!-- 🛡️✈️⚓ 육·공·해군 전력 관리 버튼 그룹 -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="openArmyEditModal()" style="background-color: #4a5568; color: white; border: none;">🛡️ 육군 전력 관리</button>
+                <button type="button" class="btn-secondary" onclick="openAirEditModal()" style="background-color: #4a5568; color: white; border: none;">✈️ 공군 전력 관리</button>
+                <button type="button" class="btn-secondary" onclick="openNavyEditModal()" style="background-color: #4a5568; color: white; border: none;">⚓ 해군 전력 관리</button>
+              </div>
+            
+              <!-- 👉 [오른쪽] 기존 버튼 그룹 -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-secondary" onclick="openStandardModal()">기준표</button>
+                <button type="submit" class="submit-Economy-btn" onclick="saveMyEconomyData()" id="submit-economy-btn" style="width: auto; padding: 12px 30px;">자국 경제 저장하기</button>
+              </div>
+            
             </div>
 
           </form>
@@ -301,7 +539,7 @@
                   </tr>
                 </thead>
                 <tbody id="my-investment-list">
-                  <!-- JS로 dynamic 로딩 (자신의 국가 투자 데이터) -->
+                  <!-- JS로 dynamic 로딩 -->
                 </tbody>
               </table>
             </div>
@@ -324,9 +562,10 @@
               <img id="modal-flag" src="" alt="국기" class="modal-flag-img">
               <h2 id="modal-country-name" class="modal-country-title">국가명</h2>
             </div>
-            <div class="modal-row row-grid-2">
+            <div class="modal-row row-grid-3">
               <div class="info-box"><span class="info-label">대륙</span><span id="modal-continent" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">소속연합</span><span id="modal-alliance" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">강대국등급</span><span id="modal-power" class="info-val">-</span></div>
             </div>
             <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">GDP</span><span id="modal-gdp" class="info-val">-</span></div>
@@ -337,24 +576,40 @@
               <div class="info-box"><span class="info-label">국방비</span><span id="modal-def" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">국방비 순위</span><span id="modal-def-rank" class="info-val">-</span></div>
             </div>
+            <div class="modal-row row-grid-3">
+              <div class="info-box"><span class="info-label">국방비 대비 장비구입비</span><span id="modal-equip-ratio" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">총장비구입비</span><span id="modal-equip-global" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">현재장비구입비</span><span id="modal-equip" class="info-val">-</span></div>
+            </div>
             <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">인구수</span><span id="modal-pop" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">인구 순위</span><span id="modal-pop-rank" class="info-val">-</span></div>
             </div>
-            <div class="modal-row row-grid-2">
+            <div class="modal-row row-grid-3">
               <div class="info-box"><span class="info-label">1인당 GDP</span><span id="modal-cap" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">1인당 GDP 순위</span><span id="modal-cap-rank" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">경제등급</span><span id="modal-EconomyGrade" class="info-val">-</span></div>
             </div>
             <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">세율</span><span id="modal-tax" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">국가예산</span><span id="modal-budget" class="info-val">-</span></div>
             </div>
+            <!-- R&D 및 기술 정보 섹션 -->
+            <div class="modal-row row-grid-2">
+              <div class="info-box"><span class="info-label">GDP 대비 R&D 예산</span><span id="modal-rnd-ratio" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">R&D 예산</span><span id="modal-rnd-budget" class="info-val">-</span></div>
+            </div>
+            <div class="modal-row row-grid-2">
+              <div class="info-box"><span class="info-label">기술개발정도</span><span id="modal-tech-level" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">미래기술적용</span><span id="modal-future-tech" class="info-val">-</span></div>
+            </div>
             <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">경제체제</span><span id="modal-system" class="info-val">-</span></div>
               <div class="info-box"><span class="info-label">주업</span><span id="modal-industry" class="info-val">-</span></div>
             </div>
-            <div class="modal-row row-grid-1">
+            <div class="modal-row row-grid-2">
               <div class="info-box"><span class="info-label">복지수준</span><span id="modal-welfare" class="info-val">-</span></div>
+              <div class="info-box"><span class="info-label">복지지출비</span><span id="modal-welfare-budget" class="info-val">-</span></div>
             </div>
             <div class="modal-row row-grid-1">
               <div class="info-box"><span class="info-label">국고</span><span id="modal-treasury" class="info-val">-</span></div>
@@ -369,6 +624,27 @@
     </div>
   </div>
 
+  <!-- 패치노트 모달 팝업 -->
+  <div id="changelog-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 650px;">
+      <button class="modal-close" onclick="closeChangelogModal()">&times;</button>
+      <div class="modal-body">
+        <h2 style="margin-bottom: 15px; text-align: center;">📢 시스템 패치노트</h2>
+        
+        <!-- 패치노트 탭 전환 버튼 영역 -->
+        <div class="changelog-tabs" style="display: flex; gap: 10px; margin-bottom: 15px;">
+          <button type="button" id="btn-economy" onclick="loadChangelog('economy')" style="flex: 1; padding: 8px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #007bff; color: #fff;">나라시스템 경제</button>
+          <button type="button" id="btn-website" onclick="loadChangelog('website')" style="flex: 1; padding: 8px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; color: #333;">웹사이트</button>
+        </div>
+        
+        <!-- JS로 JSON 데이터를 읽어와 렌더링할 영역 -->
+        <div id="changelog-list" class="changelog-container" style="max-height: 400px; overflow-y: auto; padding-right: 10px; text-align: left;">
+          데이터를 불러오는 중입니다...
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 해외 투자 추가 모달 팝업 -->
   <div id="invest-modal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
@@ -376,16 +652,13 @@
       <h2 style="margin-bottom: 20px; text-align: center;">신규 해외경제투자 등록</h2>
       
       <form id="invest-form" onsubmit="event.preventDefault(); submitInvestment();">
-        <!-- 1. 피투자국 국명 -->
         <div class="form-group">
           <label for="invest-target-country">피투자국 국명</label>
           <select id="invest-target-country" required onchange="onInvestTargetChange(this.value)">
             <option value="">국가를 선택하세요</option>
-            <!-- JS로 자신 제외한 국가 목록 로딩 -->
           </select>
         </div>
 
-        <!-- 2. 수익여부 -->
         <div class="form-group">
           <label for="invest-return-option">수익여부</label>
           <select id="invest-return-option">
@@ -394,12 +667,12 @@
           </select>
         </div>
 
-        <!-- 3. 투자금 입력 -->
         <div class="form-group">
           <label for="invest-amount">투자금 입력</label>
           <div class="number-control-group">
-            <input type="number" id="invest-amount" step="0.1" min="0" placeholder="0.0" required>
+            <input type="number" id="invest-amount" step="0.1" min="0" placeholder="0.0" required oninput="updateInvestConvertedAmount(this.value)">
           </div>
+          <div id="invest-converted-text" style="font-size: 12px; color: #007bff; margin-top: 5px; font-weight: bold; min-height: 18px;"></div>
         </div>
 
         <button type="submit" class="btn-submit-auth" style="margin-top: 15px;">투자하기</button>
@@ -412,7 +685,6 @@
     <div class="modal-content auth-modal-content">
       <button class="modal-close" onclick="closeAuthModal()">&times;</button>
       
-      <!-- 상단 모드 전환 탭 (로그인 / 회원가입) -->
       <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
         <button type="button" id="tab-login" class="auth-tab-btn active" onclick="switchAuthTab('login')" style="flex: 1; padding: 10px; border: none; cursor: pointer;">로그인</button>
         <button type="button" id="tab-signup" class="auth-tab-btn" onclick="switchAuthTab('signup')" style="flex: 1; padding: 10px; border: none; cursor: pointer;">회원가입</button>
@@ -430,7 +702,6 @@
         <input type="password" id="auth-pw" placeholder="비밀번호 입력" required>
       </div>
 
-      <!-- 회원가입 모드일 때만 노출되는 국가 입력 구역 -->
       <div class="form-group" id="auth-country-group" style="display: none;">
         <label for="auth-country">국가명</label>
         <input type="text" id="auth-country" placeholder="국가명 입력">
@@ -438,7 +709,6 @@
 
       <button id="auth-submit-btn" class="btn-submit-auth" onclick="handleAuthSubmit()">로그인하기</button>
 
-      <!-- 구글 로그인 영역 -->
       <div style="margin: 20px 0; text-align: center; color: #888; position: relative;">
         <span style="background: #fff; padding: 0 10px; position: relative; z-index: 1;">또는</span>
         <hr style="position: absolute; top: 50%; left: 0; right: 0; margin: 0; border: none; border-top: 1px solid #eee; z-index: 0;">
@@ -460,7 +730,6 @@
            style="display: flex; justify-content: center;">
       </div>
 
-      <!-- 모달 하단 즉시 전환 링크 -->
       <div id="auth-switch-footer" style="margin-top: 15px; text-align: center; font-size: 14px; color: #666;">
         <span id="auth-switch-text">계정이 없으신가요?</span>
         <a href="#" id="auth-switch-link" onclick="event.preventDefault(); switchAuthTab('signup');" style="color: var(--primary-color, #007bff); font-weight: bold; margin-left: 5px; text-decoration: underline;">회원가입하기</a>
@@ -468,6 +737,494 @@
     </div>
   </div>
 
+  <!-- 기준표 모달 -->
+  <div id="standard-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeStandardModal()">&times;</button>
+      <div class="modal-body">
+        <h2 style="margin-bottom: 20px; text-align: center;">경제 기준표</h2>
+        <div id="standard-modal-body" class="table-responsive">
+          <table class="rank-table">
+            <thead>
+              <tr id="standard-table-head"></tr>
+            </thead>
+            <tbody id="standard-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 국고 송금 모달 팝업 -->
+  <div id="remittance-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeRemittanceModal()">&times;</button>
+      <h2 style="margin-bottom: 20px; text-align: center;">국고 송금하기</h2>
+      
+      <form id="remittance-form" onsubmit="event.preventDefault(); submitRemittance();">
+        <div class="form-group">
+          <label for="remittance-target-country">송금 대상 국가</label>
+          <select id="remittance-target-country" required>
+            <option value="">국가를 선택하세요</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="remittance-amount">송금 금액 (10억 달러 단위)</label>
+          <div class="number-control-group">
+            <input type="number" id="remittance-amount" step="0.1" min="0.1" placeholder="0.0" required oninput="updateConvertedAmount(this.value)">
+          </div>
+          <div id="remittance-converted-text" style="font-size: 12px; color: #007bff; margin-top: 5px; font-weight: bold; min-height: 18px;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="remittance-reason">송금 사유 / 메모</label>
+          <input type="text" id="remittance-reason" placeholder="예: 무역 대금 결제, 지원금 등">
+        </div>
+
+        <button type="submit" class="btn-submit-auth" style="margin-top: 15px;">송금 완료</button>
+      </form>
+    </div>
+  </div>
+  <!-- 첫 방문 안내문 모달 -->
+<div id="notice-modal" class="modal-overlay" style="display: none;">
+  <div class="notice-modal-content">
+    <div class="notice-header">
+      <h3>📢 이용 안내문</h3>
+    </div>
+    <div class="notice-body">
+      <p>안녕하세요! <strong>Nara System Economy</strong>에 오신 것을 환영합니다.</p>
+      <ul>
+        <li>본 서비스는 카카오톡 오픈 채팅방 [NS] 국가시스템(로블록스MTC) 세계관의 경제를 다룹니다.</li>
+        <li>최신 업데이트 내역은 상단 <strong>패치노트 📢</strong> 버튼을 통해 확인하실 수 있습니다.</li>
+        <li>이 세계관을 같이 하고 싶다면 <a href=https://open.kakao.com/o/gf41etqh>[NS] 국가시스템(로블록스MTC) 오픈채팅방</a>을 눌러 입장하여
+        <br>첫마디로 웹사이트를 보고 왔습니다. 라고 해주세요</li>
+        <li>시스템 이용 중 문의사항이나 오류 보고는 커뮤니티를 통해 남겨주세요.</li>
+      </ul>
+    </div>
+    <div class="notice-footer">
+      <label class="dont-show-again">
+        <input type="checkbox" id="dont-show-today"> 일주일 동안 보지 않기
+      </label>
+      <button type="button" class="btn-close-notice" onclick="closeNoticeModal()">닫기</button>
+    </div>
+  </div>
+</div>
+ <!-- 1. 군사장비 등록 모달 -->
+<div id="equipment-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <h3>🛠️ 군사장비 등록</h3>
+    <form id="equipment-form">
+      <label>수출국(생산국)</label>
+      <input type="text" id="eq-exporter" style="background-color: #f0f0f0;" readonly required>
+      <br>
+      <label>장비이름</label>
+      <input type="text" id="eq-name" placeholder="예: K2 흑표" required>
+      <br>
+      <label>장비유형</label>
+      <select id="eq-category" required>
+        <option value="전차/장갑차">전차/장갑차</option>
+        <option value="자주포/포병">자주포/포병</option>
+        <option value="전투기/항공기">전투기/항공기</option>
+        <option value="함정/잠수함">함정/잠수함</option>
+        <option value="미사일/방공">미사일/방공</option>
+        <option value="기타">기타</option>
+      </select>
+      <br>
+      <label>1대당 가격 (만$)</label>
+      <input type="number" id="eq-price" step="0.01" placeholder="예: 850 (850만 달러)" required>
+      <br>
+      <div class="modal-buttons">
+        <button type="submit" class="btn-submit">등록하기</button>
+        <button type="button" onclick="closeEquipmentModal()" class="btn-close">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 장비 수입 신청 모달 -->
+<div id="import-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <h3>장비 수입 신청</h3>
+    <form id="import-form">
+      <!-- 1. 수입국 (내 국가 자동 채움) -->
+      <label for="importCountry">수입국</label>
+      <input type="text" id="importCountry" readonly style="background-color: #f0f0f0;">
+
+      <!-- 2. 등록된 장비 목록 선택 -->
+      <label for="equipmentSearch">장비 검색</label>
+      <input type="text" id="equipmentSearch" placeholder="장비명 또는 국가 검색 (예: F-14, 미국)" oninput="filterEquipmentOptions(this.value)">
+      
+      <label for="importEquipmentSelect">장비 선택</label>
+      <select id="importEquipmentSelect" onchange="onSelectEquipment(this.value)" required>
+        <option value="">-- 장비를 선택하세요 --</option>
+      </select>
+
+      <!-- 3. 선택한 장비의 정보 표시 (자동 입력) -->
+      <label for="importExporter">수출국 (생산국)</label>
+      <input type="text" id="importExporter" readonly style="background-color: #f0f0f0;">
+
+      <label for="importCategory">장비 유형</label>
+      <input type="text" id="importCategory" readonly style="background-color: #f0f0f0;">
+
+      <label for="importUnitPrice">1대당 가격 (만$)</label>
+      <input type="number" id="importUnitPrice" readonly style="background-color: #f0f0f0;">
+
+      <!-- 4. 대수 입력 (사용자 입력) -->
+      <label for="importQuantity">대수 (수량)</label>
+      <input type="number" id="importQuantity" min="1" value="1" oninput="calculateTotalPrice()" required>
+
+      <!-- 5. 총가격 (자동 계산) -->
+      <label for="importTotalPrice">총가격 (만$)</label>
+      <input type="number" id="importTotalPrice" readonly style="background-color: #f0f0f0;">
+
+      <div class="modal-buttons">
+        <button type="submit" class="btn-submit">수입하기</button>
+        <button type="button" onclick="closeImportModal()" class="btn-close">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. 수출입 로그 모달 -->
+<div id="log-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 800px; width: 90%;">
+    <h3>📋 수출입 로그 기록</h3>
+    <div class="table-container" style="max-height: 400px; overflow-y: auto; margin: 15px 0;">
+      <table style="width: 100%; border-collapse: collapse; text-align: center;">
+        <thead>
+          <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+            <th style="padding: 10px;">날짜</th>
+            <th style="padding: 10px;">수입국</th>
+            <th style="padding: 10px;">수출국</th>
+            <th style="padding: 10px;">장비명</th>
+            <th style="padding: 10px;">유형</th>
+            <th style="padding: 10px;">수량</th>
+            <th style="padding: 10px;">총 금액(만$)</th>
+            <th style="padding: 10px;">상태</th>
+          </tr>
+        </thead>
+        <tbody id="import-logs-tbody">
+          <!-- 동적 출력 -->
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-buttons">
+      <button type="button" onclick="closeLogModal()" class="btn-close">닫기</button>
+    </div>
+  </div>
+</div>
+  <!-- 자국 장비 관리 모달 -->
+<div id="my-equipment-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-content" style="max-width: 800px;">
+    <span class="close-btn" onclick="closeMyEquipmentModal()">&times;</span>
+    <h2>자국 등록 장비 목록</h2>
+    
+    <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>장비이름</th>
+            <th>분류</th>
+            <th>1대당 가격</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="my-equipment-list-tbody">
+          <!-- JS로 동적 생성 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- 🛡️ 육군 전력 상세 관리 모달 -->
+<div id="army-edit-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 700px; width: 90%;">
+    <button class="modal-close" onclick="closeArmyEditModal()">&times;</button>
+    <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; text-align: center;">🛡️ 육군 전력 상세 관리 및 증감 수정</h3>
+    
+    <form id="army-edit-form" onsubmit="event.preventDefault(); validateAndSubmitArmyData();">
+      <div style="overflow-x: auto; max-height: 450px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+          <thead>
+            <tr style="background-color: rgba(0,0,0,0.04); border-bottom: 2px solid var(--border-color, #cbd5e1); position: sticky; top: 0; background: #fff; z-index: 1;">
+              <th style="padding: 10px; width: 25%;">종류</th>
+              <th style="padding: 10px; width: 35%;">세부 분류 / 선택</th>
+              <th style="padding: 10px; width: 40%;">현재 보유수 및 증감 입력</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1행: 전차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">전차</td>
+              <td style="padding: 12px;">
+                <select id="select-tank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('tank')">
+                  <option value="3.5">3.5세대 전차</option>
+                  <option value="3.0">3세대 전차</option>
+                  <option value="2.0">2세대 전차</option>
+                  <option value="1.0">1세대 전차</option>
+                  <option value="0.0">1세대미만 전차</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-tank">0</strong>대</span>
+                  <input type="text" id="edit-val-tank" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 2행: 경전차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">경전차</td>
+              <td style="padding: 12px;">
+                <select id="select-lighttank-gen" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('lighttank')">
+                  <option value="3.5">3.5세대 경전차</option>
+                  <option value="3.0">3세대 경전차</option>
+                  <option value="2.0">2세대 경전차</option>
+                  <option value="1.0">1세대 경전차</option>
+                  <option value="0.0">1세대미만 경전차</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-lighttank">0</strong>대</span>
+                  <input type="text" id="edit-val-lighttank" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 3행: 차량 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">차량</td>
+              <td style="padding: 12px; color: #666; font-style: italic;">일반 차량</td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-vehicle">0</strong>대</span>
+                  <input type="text" id="edit-val-vehicle" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 4행: 견인포 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">견인포</td>
+              <td style="padding: 12px;">
+                <select id="select-howitzer-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('howitzer')">
+                  <option value="under">105mm 미만</option>
+                  <option value="over">105mm 이상</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-howitzer">0</strong>문</span>
+                  <input type="text" id="edit-val-howitzer" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 5행: 자주포 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">자주포</td>
+              <td style="padding: 12px;">
+                <select id="select-sph-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('sph')">
+                  <option value="under">사거리 20km 미만</option>
+                  <option value="over">사거리 20km 이상</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-sph">0</strong>문</span>
+                  <input type="text" id="edit-val-sph" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 6행: 장갑차 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">장갑차</td>
+              <td style="padding: 12px;">
+                <select id="select-apc-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('apc')">
+                  <option value="apc">APC (병력수송장갑차)</option>
+                  <option value="ifv">IFV (보병전투차)</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-apc">0</strong>대</span>
+                  <input type="text" id="edit-val-apc" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+
+            <!-- 7행: 헬기 및 공격헬기 -->
+            <tr>
+              <td style="padding: 12px; font-weight: bold;">헬기</td>
+              <td style="padding: 12px;">
+                <select id="select-heli-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="updateArmyCurrentDisplay('heli')">
+                  <option value="transport">기동 헬기</option>
+                  <option value="attack">공격 헬기</option>
+                </select>
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 0.85rem; color: #666; white-space: nowrap;">보유: <strong id="cur-val-heli">0</strong>대</span>
+                  <input type="text" id="edit-val-heli" value="0" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-buttons" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="submit" class="btn-submit" style="padding: 10px 20px; background-color: var(--primary-color, #007bff); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">변경사항 저장</button>
+        <button type="button" onclick="closeArmyEditModal()" class="btn-close" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 🛡️ 공군 전력 관리 모달 (육군 모달 바깥으로 분리 완료) -->
+<div id="air-edit-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="background: var(--bg-card, #fff); padding: 24px; border-radius: 12px; width: 650px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px; font-weight: bold;">✈️ 공군 전력 관리 (보유량 수정)</h3>
+    
+    <!-- 5행 3열 그리드 레이아웃 -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-height: 400px; overflow-y: auto; padding-right: 4px;">
+
+      <!-- 1행 1열: 전투기 세부 분류 -->
+      <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+        <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px;">전투기</label>
+        <select id="select-fighter-gen" onchange="updateAirCurrentDisplay('fighter')" style="width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #ccc;">
+          <option value="sub1">1세대 미만</option>
+          <option value="1">1세대</option>
+          <option value="2">2세대</option>
+          <option value="3">3세대</option>
+          <option value="4">4세대</option>
+          <option value="4.5">4.5세대</option>
+          <option value="5" selected>5세대</option>
+        </select>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px;">보유: <span id="cur-val-fighter" style="font-weight: bold; color: #007bff;">0</span>대</div>
+        <input type="text" id="edit-fighter" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+      </div>
+
+      <!-- 1행 2열: 공격기 세부 분류 -->
+      <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+        <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px;">공격기</label>
+        <select id="select-attacker-type" onchange="updateAirCurrentDisplay('attacker')" style="width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #ccc;">
+          <option value="sub">아음속</option>
+          <option value="super">초음속</option>
+        </select>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px;">보유: <span id="cur-val-attacker" style="font-weight: bold; color: #007bff;">0</span>대</div>
+        <input type="text" id="edit-attacker" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+      </div>
+
+      <!-- 1행 3열: 폭격기 -->
+      <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+        <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px;">폭격기</label>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px; margin-top: 6px;">보유: <span id="cur-val-bomber" style="font-weight: bold; color: #007bff;">0</span>대</div>
+        <input type="text" id="edit-bomber" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc; margin-top: 4px;">
+      </div>
+
+      <!-- 2행 1열: 특수목적항공기 -->
+      <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+        <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px;">특수목적항공기</label>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px; margin-top: 6px;">보유: <span id="cur-val-special" style="font-weight: bold; color: #007bff;">0</span>대</div>
+        <input type="text" id="edit-special" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc; margin-top: 4px;">
+      </div>
+
+      <!-- 2행 2열: 수송기 -->
+      <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 8px;">
+        <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px;">수송기</label>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px; margin-top: 6px;">보유: <span id="cur-val-transport" style="font-weight: bold; color: #007bff;">0</span>대</div>
+        <input type="text" id="edit-transport" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="증감 (+/-)" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #ccc; margin-top: 4px;">
+      </div>
+
+    </div>
+
+    <!-- 모달 버튼 영역 -->
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+      <button type="button" onclick="closeAirEditModal()" style="padding: 8px 16px; border: none; background: #6c757d; color: white; border-radius: 6px; cursor: pointer;">취소</button>
+      <button type="button" onclick="validateAndSubmitAirData()" style="padding: 8px 16px; border: none; background: #007bff; color: white; border-radius: 6px; cursor: pointer;">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⚓ 해군 전력 상세 관리 모달 -->
+<div id="navy-edit-modal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+  <div class="modal-content" style="background: var(--bg-card, #fff); padding: 24px; border-radius: 12px; width: 700px; max-width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+    <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.2rem; font-weight: bold; text-align: center;">⚓ 해군 함정 전력 상세 등록 및 수정</h3>
+    
+    <form id="navy-edit-form" onsubmit="event.preventDefault(); validateAndSubmitNavyData();">
+      <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+          <thead>
+            <tr style="background-color: rgba(0,0,0,0.04); border-bottom: 2px solid var(--border-color, #cbd5e1); position: sticky; top: 0; background: #fff; z-index: 1;">
+              <th style="padding: 10px; width: 25%;">항목</th>
+              <th style="padding: 10px; width: 75%;">입력 및 선택</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 1행: 함급명 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">함급명</td>
+              <td style="padding: 12px;">
+                <input type="text" id="edit-navy-class-name" placeholder="예: 알레이버크급 배치3" onblur="checkAndFillNavyClassData()" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+
+            <!-- 2행: 함종 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">함종</td>
+              <td style="padding: 12px;">
+                <select id="select-navy-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                  <option value="구축함">구축함 (순양함 포함)</option>
+                  <option value="호위함">호위함</option>
+                  <option value="전함">전함</option>
+                  <option value="잠수함">잠수함</option>
+                  <option value="항공모함">항공모함</option>
+                </select>
+              </td>
+            </tr>
+
+            <!-- 3행: 톤수 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">톤수 (만재배수량)</td>
+              <td style="padding: 12px;">
+                <input type="text" id="edit-navy-tons" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="예: 9500 (숫자만 입력)" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+
+            <!-- 4행: 특수 시스템 체크형 -->
+            <tr style="border-bottom: 1px solid var(--border-color, #eee);">
+              <td style="padding: 12px; font-weight: bold;">특수 체계 여부</td>
+              <td style="padding: 12px; display: flex; gap: 20px; align-items: center;">
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-aegis" style="margin-right: 6px;"> 이지스 시스템</label>
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-nuclear" style="margin-right: 6px;"> 핵추진</label>
+                <label style="cursor: pointer;"><input type="checkbox" id="check-navy-vls" style="margin-right: 6px;"> VLS (수직발사대)</label>
+              </td>
+            </tr>
+
+            <!-- 5행: 대수 -->
+            <tr>
+              <td style="padding: 12px; font-weight: bold;">보유 대수</td>
+              <td style="padding: 12px;">
+                <input type="text" id="edit-navy-count" value="1" inputmode="text" pattern="-?[0-9]*" oninput="sanitizeSignedIntegerInput(this)" placeholder="보유 대수 입력" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 모달 버튼 영역 -->
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">저장하기</button>
+        <button type="button" onclick="closeNavyEditModal()" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
   <script src="script.js"></script>
 </body>
 </html>
