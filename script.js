@@ -1409,8 +1409,10 @@ window.addEventListener('DOMContentLoaded', initGoogleAuth);
 
     const popValEl = document.getElementById('my-pop-display');
     const popRankEl = document.getElementById('my-pop-rank');
+    const popValE2 = document.getElementById('my-pop-next');
     if (popValEl) popValEl.innerText = formatPopulation(parseNumber(myObj['인구'] || myObj['인구(만명)']));
     if (popRankEl) popRankEl.innerText = getRankStr(popSorted);
+    if (popValE2) popValE2.innerText = formatPopulation(parseNumber(myObj['다음연도인구'] || myObj['다음연도 인구']));
 
     const perGdpValEl = document.getElementById('my-per-gdp-display');
     const perGdpRankEl = document.getElementById('my-per-gdp-rank');
